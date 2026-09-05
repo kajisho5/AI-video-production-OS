@@ -1,0 +1,113 @@
+{
+  "skill": {
+    "id": "ffmpeg-skill",
+    "version": "0.9.1"
+  },
+  "provides": [
+    {
+      "id": "ffmpeg-skill.audio",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/audio"
+    },
+    {
+      "id": "ffmpeg-skill.batch",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/batch"
+    },
+    {
+      "id": "ffmpeg-skill.caption",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/caption"
+    },
+    {
+      "id": "ffmpeg-skill.check",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/check"
+    },
+    {
+      "id": "ffmpeg-skill.color",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/color"
+    },
+    {
+      "id": "ffmpeg-skill.cut",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/cut"
+    },
+    {
+      "id": "ffmpeg-skill.export",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/export"
+    },
+    {
+      "id": "ffmpeg-skill.fit",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/fit"
+    },
+    {
+      "id": "ffmpeg-skill.graphics",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/graphics"
+    },
+    {
+      "id": "ffmpeg-skill.join",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/join"
+    },
+    {
+      "id": "ffmpeg-skill.look",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/look"
+    },
+    {
+      "id": "ffmpeg-skill.loudness",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/loudness"
+    },
+    {
+      "id": "ffmpeg-skill.multicam",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/multicam"
+    },
+    {
+      "id": "ffmpeg-skill.overlay",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/overlay"
+    },
+    {
+      "id": "ffmpeg-skill.probe",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/probe"
+    },
+    {
+      "id": "ffmpeg-skill.render",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/render"
+    },
+    {
+      "id": "ffmpeg-skill.report",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/report"
+    },
+    {
+      "id": "ffmpeg-skill.scenes",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/scenes"
+    },
+    {
+      "id": "ffmpeg-skill.silence",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/silence"
+    },
+    {
+      "id": "ffmpeg-skill.sync",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/sync"
+    },
+    {
+      "id": "ffmpeg-skill.verify",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/verify"
+    }
+  ]
+}

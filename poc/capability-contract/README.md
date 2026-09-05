@@ -2,6 +2,13 @@
 
 Write-up and conclusions (three rounds, all 10 Skills): [`docs/POC_CAPABILITY_CONTRACT.md`](../../docs/POC_CAPABILITY_CONTRACT.md).
 
+**This PoC's real successor is [`registry/`](../../registry/)** (`docs/ROADMAP.md`
+Phase 1): a tested library that formalizes what `validate.py`/`registry_demo.py` here
+demonstrated by hand. This directory is kept as-is — a frozen historical snapshot of the
+Round 1-3 findings, including `schema.json`'s now-superseded `skill_version`/`capabilities`
+field names (Findings 1-2, corrected everywhere else, including `registry/`) — not
+updated further; do not import from here.
+
 Everything in this directory is real and reproducible, not illustrative.
 
 ## Real contract data — all 10 Skills in the ecosystem

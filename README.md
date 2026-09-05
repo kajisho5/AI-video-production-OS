@@ -307,6 +307,12 @@ separate repos' commit histories individually? [`ECOSYSTEM_CHANGELOG.md`](docs/E
 is a single running log of every cross-repository change made under this project's
 architecture, newest first, with links to the real PR/diff for each one.
 
+Want the actual code, not just the design? [`registry/`](registry/) is a small, tested,
+dependency-free Python library — Phase 1 of `ROADMAP.md` — that loads real
+`CapabilityContract` documents, answers "who provides Capability X", and detects the
+ecosystem's real Capability collisions. `python3 -m unittest discover -s registry/tests -t .`
+runs its 21 tests against real captured data from five Skills.
+
 ## License
 
 Not yet set for this repository (`UNKNOWN`). The individual Skill and Agent

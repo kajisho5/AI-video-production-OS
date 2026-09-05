@@ -1,0 +1,10 @@
+{
+  "id": "transcription-skill",
+  "provides": [
+    {
+      "id": "transcribe.audio",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "transcription/transcribe"
+    }
+  ]
+}

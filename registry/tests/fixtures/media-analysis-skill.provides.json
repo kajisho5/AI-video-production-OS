@@ -1,0 +1,35 @@
+{
+  "skill_id": "media-analysis",
+  "provides": [
+    {
+      "id": "measure.audio.integrity",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/integrity",
+      "kind": "integrity"
+    },
+    {
+      "id": "measure.audio.loudness",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/loudness",
+      "kind": "loudness"
+    },
+    {
+      "id": "measure.video.scene_detection",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/scenes",
+      "kind": "scene_detection"
+    },
+    {
+      "id": "measure.audio.silence",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/silence",
+      "kind": "silence"
+    },
+    {
+      "id": "measure.video.timing",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/timing",
+      "kind": "timing"
+    }
+  ]
+}
