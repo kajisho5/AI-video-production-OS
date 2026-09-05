@@ -158,7 +158,42 @@ proven, existing pattern, not a proposal. A README in this ecosystem should lead
 3. Installation/usage matching the Skill's actual CLI (`--json`, `contract`, `doctor` —
    per `SKILL_SPEC.md` §2), not aspirational usage.
 
-## 6. What this document deliberately does not define
+## 6. Repository README checklist
+
+**PROPOSED — a consistency checklist, not a redesign.** `REPOSITORY_MAP.md`'s own audit
+already found that every existing Skill repo has both a `SKILL.md` and a `README.md`
+covering most of what a reader needs — this section does not change anything about a
+README that already works, and it is not a new design system. It exists only so that
+future Skill repos (and, where cheap, existing ones) stay consistent about *which* items
+land on that first screen, rather than each README improvising its own subset.
+
+A reader should be able to tell all of the following within seconds, from one screen,
+without opening a second file:
+
+1. **What it is** — one line, its domain.
+2. **Why use it** — the concrete need it satisfies (mirrors §5.1's "say what it does *and*
+   explicitly what it doesn't").
+3. **Install command.**
+4. **Minimal example** — the shortest real invocation that does something.
+5. **Input → output shape** — what artifact type(s) go in, what come out.
+6. **Capabilities** — the Capability id(s) it provides (`CORE_PRIMITIVES.md` §1).
+7. **Standalone usage** — how to run it with no Agent or OS involved at all
+   (`ARCHITECTURE.md` §11's "can a human operate this without an AI agent" test, applied
+   at the single-Skill level).
+8. **OS integration** — how an Agent discovers and invokes it (`SKILL_PROPOSAL.md` §1.6,
+   §1.7).
+9. **Version/compatibility** — `skill.version` and the `contract_version` range it
+   supports (`VERSIONING.md`).
+10. **Security notes** — filesystem/network permissions it declares (§1.5 of
+    `SKILL_PROPOSAL.md`; `PLUGIN_MODEL.md` §4).
+11. **Repository link.**
+12. **Related Skills** — what it depends on and what commonly composes with it.
+
+This is a checklist for the next README written or revised, not a mandate to rewrite the
+existing ones — apply it opportunistically, the same restraint this document uses
+elsewhere against inventing work nothing today needs.
+
+## 7. What this document deliberately does not define
 
 - **A logo, color palette, or marketing brand identity.** Explicitly out of scope for
   this phase: the ecosystem has no UI today (`REPOSITORY_MAP.md`), and per Rule 9 (no

@@ -168,6 +168,88 @@ a claim that code review has no value — a Skill author's own project may well 
 OS-maintainer gatekeeping decision. See `PLUGIN_MODEL.md` §How the OS rejects an unsafe
 plugin for the corresponding rejection-side mechanism.
 
+## 1.10 Decision procedure: should this be a new Skill repository at all?
+
+**PROPOSED — this section does not introduce new criteria.** `CAPABILITY_MODEL.md`
+§Granularity already defines what deserves to be a new Skill, what should remain a
+Capability, an Operation, a Provider, or a library. What that document does not do —
+and what a contributor or an Agent filling out §1.2 above actually needs — is an
+**ordered procedure**: a sequence of questions to ask, in order, that stops at the first
+one that resolves the question, rather than a set of criteria to weigh all at once. This
+section is that procedure. It restates nothing from `CAPABILITY_MODEL.md`'s criteria
+themselves; it only orders them.
+
+```mermaid
+graph TD
+    A[New capability need identified] --> B{"1. Can an EXISTING Skill's\nCapability satisfy this,\npossibly with new parameters?"}
+    B -->|Yes| B1[Extend that Skill's existing\nCapability with new parameters.\nNot a new repo. See CORE_PRIMITIVES.md\nSkill explosion note.]
+    B -->|No| C{"2. Can this be a new Capability\nwithin an EXISTING Skill's domain?"}
+    C -->|Yes| C1[Add a Capability to that\nexisting Skill. Not a new repo.]
+    C -->|No| D{"3. Can this be a new Provider\nof an EXISTING Capability\n(a different implementation/backend)?"}
+    D -->|Yes| D1[Register as a Provider of the\nexisting Capability id.\nNot a new repo. See\ntranscription-skill engines/registry.py.]
+    D -->|No| E{"4. Does it need its own judgment\ndomain + execution/security boundary\n+ independent release cadence,\nand is it more than a thin wrapper?\n(CAPABILITY_MODEL.md 4-part test)"}
+    E -->|No| F[Redirect: this is not a Skill,\na Provider, or a Capability as posed.\nReconsider the proposal.]
+    E -->|Yes| G[Only now: propose a new Skill\nrepository, using this document's\ntemplate, Section 1.]
+    G --> H{Does creating the repository\nrequire a user action?}
+    H -->|Yes| I[Emit the NEW SKILL REQUIRED /\nUSER ACTION REQUIRED block —\nsee IMPLEMENTATION_PROTOCOL.md]
+    H -->|No, repo already exists\nor user has delegated creation| J[Proceed with the proposal\nreview per Section 2 below]
+```
+
+Walking the four steps in order:
+
+1. **Can an existing Skill's Capability satisfy this, possibly with new parameters?** If
+   the need is a parameter variant of something a Capability already does — the exact
+   "Operation, not Capability" case §1.2 already names (e.g. "silence-based trim" vs.
+   "explicit-range trim") — this is a pull request against an existing Skill's existing
+   Capability. Stop here. No new repo, no new Capability id, no new Provider
+   registration.
+2. **Can this be a new Capability within an existing Skill's domain?** If the need is a
+   genuinely new accomplishable thing, but it fits squarely inside a Skill that already
+   owns that domain and already shares its execution substrate (the `ffmpeg-skill`
+   "shared execution substrate" test from `CAPABILITY_MODEL.md` §Avoiding both failure
+   modes), add it as a new Capability to that existing Skill. Stop here. No new repo.
+3. **Can this be a new Provider of an existing Capability?** If a Capability with this id
+   (or an equivalent one) is already registered, and what's actually being proposed is a
+   different backend or implementation — not a different accomplishable thing — this is a
+   Provider proposal, not a Skill proposal, exactly as §1.2 already states. This is the
+   shape `transcription-skill`'s own `engines/registry.py` already uses one level down
+   (multiple ASR engines behind one `transcribe.audio`-shaped internal interface), lifted
+   to the OS level: a hypothetical cloud-ASR Provider of `transcribe.audio` alongside
+   `transcription-skill`'s local `faster-whisper` Provider registers against the existing
+   Capability id, per `CAPABILITY_MODEL.md`'s Provider examples — it does not need a new
+   Skill identity. Stop here. No new repo.
+4. **Only if steps 1–3 all answer "no"**: does this need its own judgment domain, its own
+   execution/security boundary worth an independent release cadence, independent
+   testability/versionability, and is it more than a thin wrapper around another Skill
+   with different default parameters — `CAPABILITY_MODEL.md` §Granularity's full four-part
+   "deserves a new Skill" test, all four parts, not a subset? If yes to all four, **this is
+   the only point at which proposing a new Skill repository is warranted**, and the
+   contributor proceeds to fill in this document's template (§1) in full.
+
+**Why the ordering matters, not just the criteria.** `CAPABILITY_MODEL.md`'s own
+§Avoiding both failure modes names **Skill explosion** — proposing what should be a thin
+wrapper, a Provider, or a parameter variant as a brand-new Skill repository — as one of
+the two failure modes this whole granularity model exists to prevent (the
+`voice-production-skill`/`dubbing-skill`/`localization-skill` hypothetical is that
+document's own worked example of exactly this trap). Weighing all of `CAPABILITY_MODEL.md`'s
+criteria simultaneously, without an order, leaves room for a contributor to jump straight
+to "does it pass the 4-part Skill test" and answer yes without first checking whether
+steps 1–3 already resolve the need more cheaply. Forcing the check to happen **in this
+order** — cheapest, least-committing resolution first — is what actually prevents the
+sprawl `CAPABILITY_MODEL.md` names as a risk, rather than merely describing what sprawl
+looks like after the fact.
+
+**Where this connects to `IMPLEMENTATION_PROTOCOL.md`.** Reaching step 4 and concluding a
+new Skill repository genuinely is needed is exactly the point at which creating that
+repository becomes an externally-visible, hard-to-reverse action on the user's behalf —
+and that action must never happen silently. See `IMPLEMENTATION_PROTOCOL.md` for the
+`NEW SKILL REQUIRED / USER ACTION REQUIRED` reporting block: this document (`SKILL_PROPOSAL.md`)
+still governs *what* the proposal must contain to be evaluated (§1's template, §2's review
+checklist); `IMPLEMENTATION_PROTOCOL.md` governs *how* the need for a repository the agent
+cannot create unilaterally gets surfaced to the user. The two are complementary, not
+duplicative — this document does not restate that reporting mechanism, and
+`IMPLEMENTATION_PROTOCOL.md` does not restate this document's granularity criteria.
+
 ## 2. Review checklist (for whoever evaluates a proposal)
 
 A reviewer should be able to answer every one of these with evidence from the proposal
