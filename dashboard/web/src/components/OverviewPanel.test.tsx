@@ -26,12 +26,12 @@ describe("OverviewPanel", () => {
 
   it("renders every maturity level even when its count is zero, never omitting a level", () => {
     render(<OverviewPanel overview={overview()} />);
-    expect(screen.getByText(/0\. Proposed/)).toBeInTheDocument();
-    expect(screen.getByText(/6\. Distributed/)).toBeInTheDocument();
+    expect(screen.getByText(/0\. 提案段階/)).toBeInTheDocument();
+    expect(screen.getByText(/6\. 配布済み/)).toBeInTheDocument();
   });
 
   it("does not crash when maturityDistribution.totalRepos is 0 (all counts zero)", () => {
     render(<OverviewPanel overview={overview({ maturityDistribution: { counts: [0, 0, 0, 0, 0, 0, 0], totalRepos: 0 } })} />);
-    expect(screen.getByText(/0 Skill\/Provider\/Extension repos/)).toBeInTheDocument();
+    expect(screen.getByText(/Skill\/Provider\/Extension 0件/)).toBeInTheDocument();
   });
 });

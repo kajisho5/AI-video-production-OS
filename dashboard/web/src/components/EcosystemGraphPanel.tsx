@@ -1,14 +1,8 @@
 import type { EcosystemGraph, RepoType } from "@ecosystem/types";
 import { Section } from "./Section.js";
+import { REPO_TYPE_LABEL_JA } from "../lib/labels.js";
 
 const TIER_ORDER: RepoType[] = ["OS", "Agent", "Skill", "Provider", "Extension"];
-const TIER_LABEL: Record<RepoType, string> = {
-  OS: "OS",
-  Agent: "Agent",
-  Skill: "Skills",
-  Provider: "Providers",
-  Extension: "Extensions",
-};
 
 /** v1, deliberately simple per the task's own instruction: a tiered list grouped by
  * repo type (real data, from registry.json's `type` field) plus the real `depends_on`
@@ -34,11 +28,11 @@ export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
   }
 
   return (
-    <Section title="Ecosystem graph">
+    <Section title="エコシステム構成図">
       <div className="graph-list">
         {TIER_ORDER.filter((t) => nodesByType.has(t)).map((type) => (
           <div key={type}>
-            <div className="graph-tier-label">{TIER_LABEL[type]}</div>
+            <div className="graph-tier-label">{REPO_TYPE_LABEL_JA[type]}</div>
             <div className="graph-tier">
               {nodesByType.get(type)!.map((slug) => (
                 <span key={slug} className="graph-node" title={slug}>
@@ -50,7 +44,7 @@ export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
         ))}
       </div>
       <div style={{ marginTop: "var(--space-4)" }}>
-        <div className="panel-title">Dependencies</div>
+        <div className="panel-title">依存関係</div>
         <div style={{ fontSize: 12.5, display: "flex", flexDirection: "column", gap: 4 }}>
           {[...edgesByFrom.entries()].map(([from, tos]) => (
             <div key={from}>

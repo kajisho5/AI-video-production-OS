@@ -35,9 +35,10 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: "AI Video Production OS — Ecosystem Dashboard",
-        short_name: "Ecosystem Dashboard",
-        description: "Read-only observation layer over the AI Video Production OS ecosystem's real GitHub state.",
+        name: "AI Video Production OS — エコシステムダッシュボード",
+        short_name: "エコシステム",
+        description: "AI Video Production OS エコシステムの実際のGitHub状態を映す、読み取り専用の観測レイヤー。",
+        lang: "ja",
         start_url: base,
         scope: base,
         display: "standalone",

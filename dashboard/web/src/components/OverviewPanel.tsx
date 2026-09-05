@@ -1,5 +1,5 @@
 import type { OsOverview } from "@ecosystem/types";
-import { MATURITY_LEVEL_NAMES } from "@ecosystem/types";
+import { MATURITY_LEVEL_NAMES_JA } from "../lib/labels.js";
 import { Section } from "./Section.js";
 
 /** Deliberately never renders a single "progress %" -- docs/ecosystem/MATURITY_MODEL.md
@@ -9,36 +9,36 @@ export function OverviewPanel({ overview }: { overview: OsOverview }) {
   const maxCount = Math.max(1, ...overview.maturityDistribution.counts);
 
   return (
-    <Section title="OS Overview" defaultOpen>
+    <Section title="OS概要" defaultOpen>
       <div className="stat-grid">
         <div className="stat">
           <div className="stat-value">{overview.totalRepos}</div>
-          <div className="stat-label">Repositories</div>
+          <div className="stat-label">リポジトリ数</div>
         </div>
         <div className="stat">
           <div className="stat-value">{overview.openPullRequestsTotal}</div>
-          <div className="stat-label">Open PRs</div>
+          <div className="stat-label">オープンPR</div>
         </div>
         <div className="stat">
           <div className="stat-value">{overview.openIssuesTotal}</div>
-          <div className="stat-label">Open issues</div>
+          <div className="stat-label">オープンIssue</div>
         </div>
         <div className="stat">
           <div className="stat-value" style={overview.ciFailingCount > 0 ? { color: "var(--status-bad)" } : undefined}>
             {overview.ciFailingCount}
           </div>
-          <div className="stat-label">CI failing</div>
+          <div className="stat-label">CI失敗</div>
         </div>
       </div>
 
       <div style={{ marginTop: "var(--space-4)" }}>
         <div className="panel-title" style={{ marginBottom: "var(--space-2)" }}>
-          Maturity distribution ({overview.maturityDistribution.totalRepos} Skill/Provider/Extension repos — see MATURITY_MODEL.md)
+          成熟度分布（Skill/Provider/Extension {overview.maturityDistribution.totalRepos}件 — MATURITY_MODEL.md参照）
         </div>
         {overview.maturityDistribution.counts.map((count, level) => (
           <div key={level} style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: 4 }}>
             <div style={{ width: 150, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0 }}>
-              {level}. {MATURITY_LEVEL_NAMES[level as 0 | 1 | 2 | 3 | 4 | 5 | 6]}
+              {level}. {MATURITY_LEVEL_NAMES_JA[level as 0 | 1 | 2 | 3 | 4 | 5 | 6]}
             </div>
             <div style={{ flex: 1, background: "var(--border)", borderRadius: 3, height: 10, position: "relative" }}>
               <div
@@ -61,7 +61,7 @@ export function OverviewPanel({ overview }: { overview: OsOverview }) {
       {overview.recentlyChangedRepos.length > 0 && (
         <div style={{ marginTop: "var(--space-4)" }}>
           <div className="panel-title" style={{ marginBottom: "var(--space-2)" }}>
-            Recently changed
+            最近の更新
           </div>
           <div style={{ fontSize: 13, display: "flex", flexDirection: "column", gap: 4 }}>
             {overview.recentlyChangedRepos.slice(0, 6).map((r) => (

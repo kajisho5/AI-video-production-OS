@@ -40,14 +40,14 @@ describe("RepoList", () => {
 
   it("renders UNKNOWN CI distinctly, never as if it were failing or passing", () => {
     render(<RepoList repos={[repo({ ci: { conclusion: UNKNOWN, workflowName: UNKNOWN, runUrl: UNKNOWN, updatedAt: UNKNOWN } })]} />);
-    const chips = screen.getAllByText(/CI UNKNOWN/);
+    const chips = screen.getAllByText(/CI 不明/);
     expect(chips.length).toBeGreaterThan(0);
   });
 
-  it("renders 'provides: no' distinctly from UNKNOWN when the fact is actually documented as false", () => {
+  it("renders 'provides: なし' distinctly from 不明 when the fact is actually documented as false", () => {
     render(<RepoList repos={[repo({ providesPublished: { value: false, source: "documented", detail: "PR still open" } })]} />);
-    expect(screen.getAllByText(/provides: no/).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/provides: UNKNOWN/)).toBeNull();
+    expect(screen.getAllByText(/provides: なし/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/provides: 不明/)).toBeNull();
   });
 
   it("does not render a provides chip for non-Skill repo types", () => {
@@ -65,6 +65,6 @@ describe("RepoList", () => {
         ]}
       />,
     );
-    expect(screen.getAllByText("conflict").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("競合あり").length).toBeGreaterThan(0);
   });
 });

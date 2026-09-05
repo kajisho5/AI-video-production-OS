@@ -144,6 +144,14 @@ code,
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  /* Inside a non-wrapping flex row (e.g. .bottleneck-row), a flex item's default
+   * min-width:auto lets it shrink below its own nowrap text's width under space
+   * pressure, so the unclipped text visually spills into the next sibling instead of
+   * the chip keeping its shape. Most visible with a long, space-free Japanese label
+   * (no natural wrap point) next to a mono repo slug -- found during Japanese
+   * localization. flex-shrink:0 keeps the chip at its natural content width always;
+   * the sibling already shrinks instead (.bottleneck-row > * { min-width: 0 }). */
+  flex-shrink: 0;
 }
 
 .status-chip.ok {

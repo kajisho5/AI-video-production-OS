@@ -37,7 +37,7 @@ describe("App", () => {
   it("shows a loading state before the snapshot arrives", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {}))); // never resolves
     render(<App />);
-    expect(screen.getByText(/Loading ecosystem snapshot/)).toBeInTheDocument();
+    expect(screen.getByText(/読み込み中/)).toBeInTheDocument();
   });
 
   it("renders the overview once the snapshot loads, calling fetch exactly once against the static JSON path (never GitHub)", async () => {
@@ -46,7 +46,7 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/authenticated GitHub API access/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/認証あり/)).toBeInTheDocument());
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const calledUrl = String(fetchMock.mock.calls[0][0]);
@@ -59,7 +59,7 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/Could not load the ecosystem snapshot/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/読み込めませんでした/)).toBeInTheDocument());
   });
 
   it("surfaces unreachable repos explicitly rather than silently dropping them", async () => {
@@ -68,7 +68,7 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/could not be reached/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/到達できませんでした/)).toBeInTheDocument());
     expect(screen.getByText("kajisho5/renamed-skill")).toBeInTheDocument();
   });
 });
