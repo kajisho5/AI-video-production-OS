@@ -254,3 +254,187 @@ tool said it worked and QC disagrees" — it falls directly out of §5.1's trave
   existing four types unchanged.
 - Semantic subtitle QC (translation quality, speech-alignment correctness) — remains out
   of scope, unchanged from `qc-skill`'s current, deliberate boundary (§2).
+
+## 7. Creative Evaluation vs. Technical QC — kept strictly separate (ENTIRELY FUTURE/PROPOSED)
+
+**Status: nothing in this section exists anywhere in the audited ecosystem today.**
+Confirmed: `qc-skill` and `media-analysis-skill` are both purely technical/measurement —
+neither has any code path, schema field, or doc reference to pacing, narrative, emotional
+impact, visual consistency, brand fit, or subject emphasis. This section is written now,
+before any such capability exists, specifically so that if one is ever built, it does not
+get bolted onto the `QCReport` shape in a way that would need to be undone later.
+
+**Technical QC** is everything in §1–§2 above: resolution, codec, fps, audio level/
+clipping, black frame, freeze, subtitle timing, delivery spec conformance — deterministic,
+measured, judged against a fixed or plan-derived threshold (§5.2). It is restated here
+only by reference; nothing about it changes.
+
+**Creative Evaluation** — pacing, narrative coherence, emotional impact, visual
+consistency, brand fit, subject emphasis — is a fundamentally different kind of activity:
+it requires judgment against a goal, not measurement against a threshold. A shot's
+duration is a fact; whether that duration is "too slow for the piece" is a judgment, and
+two competent editors can disagree about it without either being factually wrong.
+Technical QC has no equivalent case: a LUFS reading is not a matter of editorial taste.
+
+### 7.1 Why creative evaluation must never collapse into one scalar with technical QC
+
+**Rule: a Creative Evaluation output MUST NOT be expressed as a single scalar "quality
+score," and MUST NOT be averaged, blended, or otherwise merged with
+`QCReport.overall_status` or any technical `QCFinding`.**
+
+The reason is the same one §3 already established for QC itself, taken one step further.
+§3's boundary is: QC measures and reports, it does not decide (`qc-skill`'s ADR-001,
+restated by `ARCHITECTURE.md` §3). A single creative "quality score" averaged against
+technical PASS/WARN/FAIL would violate that boundary twice over:
+
+- It would **hide which dimension failed and why.** A blended score of, say, 0.71 out of
+  1.0 tells nobody whether the piece is technically broken (clipped audio) or creatively
+  slow (pacing) or both — the two problems have completely different remedies
+  (re-normalize gain vs. re-cut a sequence), and a single number destroys exactly the
+  information needed to choose between them. Every existing type in this hierarchy
+  (`QCMeasurement → QCFinding → QCCheck → QCReport`) exists precisely to keep "what was
+  measured, against what threshold, with what verdict" traceable — a scalar quality score
+  is the collapse this whole hierarchy was built to prevent, reintroduced one level up.
+- It would **smuggle a Decision into a Finding.** Per `CORE_PRIMITIVES.md` §5, judging
+  whether something is *good enough to ship* — weighing a creative shortcoming against a
+  deadline, an audience, a budget — is a `Decision`: it has a `basis`, a `risk`, an
+  `approval` state, and mandatory cited `evidence`. A "quality score" that already encodes
+  a pass/fail-shaped verdict about creative judgment is a Decision wearing a QC-shaped
+  costume — it looks like a Finding (a QC report is usually accepted without further
+  argument) but it has actually already made the judgment call a Decision is supposed to
+  make, without `basis`, `approval`, or `risk` ever being recorded. This is precisely the
+  "QC silently decides" failure mode `ARCHITECTURE.md` §3 and this document's §3 already
+  rule out for technical QC; a scalar creative score would reintroduce it through a side
+  door, made more plausible only because it is more subjective.
+
+### 7.2 What a future creative-evaluation capability should produce instead
+
+If a future Skill or Agent capability performs creative evaluation, its output should be
+a set of **separate, named Findings-with-evidence** — not a `QCReport`, and never merged
+into `PASS/WARN/FAIL/UNKNOWN`. For example:
+
+```
+{
+  dimension: "pacing",
+  evidence: [{ shot_id: "shot_012", duration_s: 4.2 }, { shot_id: "shot_013", duration_s: 6.8 }],
+  inference: "shot_013 may be slower than the surrounding cutting rhythm suggests",
+  confidence: "low"
+  // explicitly NOT a verdict, NOT a score, NOT PASS/WARN/FAIL
+}
+```
+
+This shape is deliberately closer to `CORE_PRIMITIVES.md` §5's `Inference` (an
+interpretation that must cite evidence, and is not itself an executable verdict) than to a
+`QCFinding` (a measurement judged against a stated threshold) — creative evaluation has no
+fixed threshold to judge against, only a cited basis for an interpretation. Such Findings
+become **input to an Agent Decision** (with its own `basis`, `risk`, `approval`, and
+mandatory `evidence` drawn from — but not identical to — the creative Findings), exactly
+the way a technical `QCReport` already becomes evidence for a Decision today (§3, §8
+below). It is never itself a `QCReport`, and it is never aggregated with one — a Plan may
+have both a technical `QCCheck` list and a separate set of creative Findings feeding the
+same downstream Decision, but the two remain two distinct evidentiary inputs, never one
+number.
+
+## 8. The QC/Verification feedback loop: Accept vs. Replan
+
+This section does not introduce a new mechanism. `CORE_PRIMITIVES.md` §5 already allows a
+`Decision` to cite `QCFinding`/`QCReport` evidence, and `ARCHITECTURE.md` §3 and this
+document's §3 already establish that a QC verdict is a fact an Agent Decision acts on,
+never an instruction QC issues itself. What follows makes the loop those existing types
+already support explicit, end to end, because no single document currently states it as
+one continuous path.
+
+**The loop:**
+
+```
+Plan -> Execute -> Artifact -> QC (QCReport)
+                                   |
+                                   v
+                     Agent Decision: ACCEPT or REPLAN
+                     (QCReport used as evidence, per CORE_PRIMITIVES.md §5)
+                                   |
+                        +----------+----------+
+                        |                     |
+                     ACCEPT                REPLAN
+                        |                     |
+                  Artifact stage        revised ProductionPlan
+                  may advance           (new plan_hash, same Project —
+                  (Agent/human-         the revision/ADR-034 pattern,
+                  driven, per           CORE_PRIMITIVES.md §11's
+                  ARTIFACT_MODEL.md)    Project/Plan distinction)
+                                               |
+                                               v
+                                   re-execute only the affected
+                                   Operations (incremental
+                                   production — EXECUTION_MODEL.md)
+```
+
+- **ACCEPT**: the Agent Decision treats the `QCReport` (whatever its `overall_status`) as
+  sufficient to proceed — this includes accepting a `WARN`, or even a documented `FAIL`,
+  as a known, approved limitation. This is an ordinary Decision like any other in
+  `CORE_PRIMITIVES.md` §5: it has a `basis`, a `risk`, and an `approval` state, and it
+  cites the `QCReport` as evidence.
+- **REPLAN**: the Agent Decision instead authorizes a **revised** `ProductionPlan` for the
+  same `Project` — not a mutation of the existing Plan. Per `CORE_PRIMITIVES.md` §11, a
+  Project can accumulate multiple Plans over revisions (the `revision.md`/ADR-034 pattern
+  already present in `video-production-agent`); a REPLAN produces a new Plan with a new
+  `plan_hash`, authorized by this Decision, targeting the same Project.
+- **Re-execution is incremental, not a full re-render.** Per the DAG shape
+  (`CORE_PRIMITIVES.md` §6, `ARCHITECTURE.md` §6), a revised Plan need not re-run every
+  Operation — only the Operations affected by whatever changed (a re-cut shot, a
+  re-normalized audio pass) need re-execution; unaffected upstream Artifacts are reused.
+  This property is fully specified in `EXECUTION_MODEL.md`'s incremental-production
+  model — this document only names that the QC/Decision loop is one of the things that
+  triggers it, not a redefinition of the mechanism itself.
+
+**What this section restates as non-negotiable, because it is the entire point of the
+loop:** QC **never** triggers a re-render, a replan, or any other execution step by
+itself. `qc-skill`'s own ADR-001 and this document's §3 already make this the ecosystem's
+existing rule for technical QC; §7 extends the same rule to any future creative
+evaluation. A `QCReport` — technical or (per §7) a set of creative Findings — is always
+and only **evidence**. The Agent Decision, with its own recorded `basis` and `approval`,
+is what decides ACCEPT or REPLAN; nothing about this loop changes that division, it only
+makes explicit that the loop is a closed cycle back to a revised Plan on the same Project,
+rather than a one-shot check with no formalized path back.
+
+## 9. Verification State: rejecting a proposed six-state enum (PROPOSED — REJECTED)
+
+**The proposal under review:** a stakeholder proposed introducing a new "Verification
+State" enum — `UNVERIFIED | PASS | PASS_WITH_WARNINGS | FAIL | BLOCKED | UNKNOWN` — as a
+separate, parallel piece of state tracked alongside `QCStatus`.
+
+**This document rejects introducing that enum.** Adding a second state machine that
+describes "was this verified, and how did it go" alongside `qc-skill`'s existing
+`QCStatus` (`PASS | WARN | FAIL | UNKNOWN`, §1) would create **two sources of truth for
+the same underlying facts** — every one of the six proposed states already has an
+unambiguous existing representation, and the new enum would need to be kept in sync with
+`QCStatus` forever, for no additional expressive power:
+
+- **`UNVERIFIED`** — already representable as simply having no `QCReport` for an Artifact
+  yet. Where a report does exist but ran zero checks, §1 already specifies
+  `overall_status` defaults to `UNKNOWN` by design ("never a silent `PASS`") — this is the
+  existing state the proposed `UNVERIFIED` would duplicate.
+- **`PASS`**, **`FAIL`**, **`UNKNOWN`** — identical to the three same-named `QCStatus`
+  values already in §1. No new meaning is added by restating them under a different enum
+  name.
+- **`PASS_WITH_WARNINGS`** — already exactly what `QCStatus.WARN` means under worst-wins
+  aggregation (§1): at least one `QCFinding` was judged `WARN` and none was worse, so the
+  overall verdict is `WARN` rather than a clean `PASS`. Introducing a differently-named
+  state here would only rename an existing value, not add one.
+- **`BLOCKED`** — already exists, at the correct layer, as a `Decision.type` value
+  (`CORE_PRIMITIVES.md` §5: `KEEP/REMOVE/TRANSFORM/DELIVER/SKIP/REVIEW/BLOCK`). A Plan
+  step awaiting a `BLOCK`-type Decision is blocked at the **Decision/Plan** layer, not the
+  **QC** layer — QC has not "found" a block, an Agent has decided to block pending
+  something else (often, but not only, a QC result). Giving QC its own `BLOCKED` verdict
+  would mean two different parts of the system could independently claim authority over
+  the same fact, which is exactly the two-sources-of-truth problem this rejection exists
+  to avoid.
+
+**Recommendation: add nothing.** Reuse `QCStatus` for verification facts and
+`Decision.type` for Plan-level blocking, exactly as both already exist. This is simpler,
+and it avoids a maintenance and consistency burden between two enums that would otherwise
+need to be kept in permanent lockstep — the same "don't invent a fourth noun without a
+concrete job for it" discipline `ARCHITECTURE.md` §9 (lens 1) already applied to the
+Capability/Skill/Provider/Runtime split applies here in the opposite direction: where that
+split earned its keep by fixing a real, found bug, this six-state enum fixes nothing that
+`QCStatus` and `Decision.type` do not already fix, so it is not adopted.

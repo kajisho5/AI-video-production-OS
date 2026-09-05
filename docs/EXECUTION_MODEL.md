@@ -267,3 +267,180 @@ If a future Skill or Agent surfaces concrete evidence that any of these is neede
 Plan with enough independent branches that sequential execution is a measured
 bottleneck, for instance), that evidence — not this document's imagination — is what
 should drive the design, in a later Roadmap phase.
+
+## 7. Operation as a Production State transition, not merely an internal function call
+
+**CURRENT — a framing clarification, zero new fields.** Everywhere above, an `Operation`
+has been described mechanically ("one deterministic tool invocation," §1.1). That is the
+*shape*; it is worth being explicit about what an Operation's execution *means* at the
+Plan level, because the meaning is what makes provenance, verification, and the
+Artifact/Decision model in `CORE_PRIMITIVES.md` cohere as one system rather than a
+pipeline of unrelated steps.
+
+**The reframing:** an Operation is the unit that changes what is true about a Production.
+Concretely, per `SPEC.md` §2–§4, every successful `ExecutionResult` does exactly one of
+two things to the Production's state: it produces a new `Artifact` and, where the
+Operation was a QC pass, attaches a `QCReport` to one — i.e. it moves an Artifact from
+not-existing to `working` (`ARTIFACT_MODEL.md` §5), or it supplies the evidence/result
+that lets an Agent record a new `Decision` (`CORE_PRIMITIVES.md` §5). Nothing else in the
+model changes as a side effect of an Operation running — no stage self-promotes
+(`ARTIFACT_MODEL.md` §5's "stage transitions are not self-reported" rule), no Plan status
+is set by hand (`CORE_PRIMITIVES.md` §6). This is exactly why the `Operation` /
+`ExecutionResult` shape in `SPEC.md` §4 does not need a new field for this document to add:
+`outputs: [ArtifactId]` already **is** "what changed," and the Decision that authorized
+the step (`SPEC.md` §3's `steps[].decision_id`) already **is** "what this was for." The
+reframing requires nothing new to be declared — it only names, for readers of this
+document, why an Operation is never "just a function call with a return value": its return
+value is a change of record in the Production, not a value an Agent merely inspects and
+discards.
+
+This is consistent with, and does not revise, §1–§6 above — it is the vocabulary this
+document should have made explicit from the start for why the Executor's output is
+handled the way §1.2 and §5.2 describe (durably written, never buffered only in memory,
+never discarded on completion).
+
+## 8. Runtime responsibilities, consolidated
+
+`CORE_PRIMITIVES.md` §4 names the **Runtime** as "the OS-defined contract for how any
+Capability invocation actually executes." This document and `SECURITY_MODEL.md` have so
+far described its pieces where each was most relevant; this section consolidates the full
+responsibility list in one place, distinguishing what is real today from what is a named,
+honest gap.
+
+| Responsibility | Status | Grounding |
+|---|---|---|
+| **Execution** | CURRENT | One subprocess per call, JSON in/out, via a per-skill adapter (§1.2; `REPOSITORY_MAP.md`). |
+| **Isolation** | CURRENT | Every Operation runs as a single subprocess in its own process group (§4 above; `SECURITY_MODEL.md` §1.5, AST-walked "exactly one subprocess module" tests in `video-editing-skill`/`audio-production-skill`). |
+| **Timeout** | CURRENT | `Operation.timeout_seconds` enforced at the subprocess boundary, process-group kill-tree so the whole tree dies, not just the parent (§4 above). Honest gap carried over unchanged: most of `ffmpeg-skill`'s 20 scripts enforce no internal timeout of their own — the Execution layer's timeout is the outer net, not a redundant second layer (§4 above, `SECURITY_MODEL.md` §5). |
+| **Retry** | CURRENT (bounded) | `execution.recovery.max_attempts=2`, a verified `SYSTEM_CONSTRAINTS` value this document does not treat as free to change (§4 above). Category-aware retry-budgeting and rollback/resume semantics are specified fully in `FAILURE_RECOVERY.md`, not repeated here. |
+| **Artifact Handling** | CURRENT | `Artifact.stage` lifecycle (`working→candidate→approved→final→archive`), durable write on success, no write on failure (§5.1–§5.2 above; `ARTIFACT_MODEL.md` §5). |
+| **Permission Enforcement** | CURRENT | `FORBIDDEN_KEYS`/`FORBIDDEN_ARG_KEYS` denylist applied recursively before an `argv_or_request` reaches any adapter, plus symlink-resolved `PathPolicy` containment (§4 above; `SECURITY_MODEL.md` §1, §3). |
+| **Logging / Provenance** | CURRENT | `ExecutionResult.tool_output` preserves the Skill's own `--json` response verbatim; per-Operation provenance and the roll-up `ProductionReceipt` are specified in `PROVENANCE.md` §1–§4 and `SPEC.md` §6. |
+| **Cancellation** | **Does not exist anywhere in the ecosystem — a real, named gap, FUTURE.** | No audited repo implements deliberately stopping an in-flight Operation before its `timeout_seconds` elapses or before it exits on its own. This is a different mechanism from a timeout firing (which is an involuntary, time-triggered kill) — Cancellation would be a voluntary, externally-triggered stop (a human clicking "cancel," an Agent abandoning a Plan branch mid-run because an earlier Decision made it moot). No design for this exists in any audited repo, and none is invented here — it is named as a gap this document declines to design against, per the same discipline `EXECUTION_MODEL.md` §0 applies to scheduling and concurrency: no evidence of a concrete need yet, so no speculative mechanism. |
+| **Resource Control** | **Honest, already-documented gap — see `SECURITY_MODEL.md` §5, not re-litigated here.** | Every audited Skill enforces only a wall-clock timeout; none enforces CPU, memory, or disk limits. `SECURITY_MODEL.md` §5 already states the OS's position precisely (a `resource_limits` declaration naming the gap honestly, not a cgroups/rlimits subsystem invented without evidence) — this document cross-references that position rather than restating or revising it. |
+
+**Runtime variant extensibility (Local / Remote / Cloud / Container / GPU).** Today,
+**only local subprocess execution exists anywhere in the audited ecosystem** — every
+Skill, without exception, is invoked as a local child process on the same machine as its
+caller (§0 above, `EXECUTION_MODEL.md` §0: "No distributed execution... nothing in this
+document assumes otherwise"). This document does not design a Runtime abstraction over
+Local/Remote/Cloud/Container/GPU variants — it **DEFERS** that question, per
+`ARCHITECTURE.md` §10's minimal-resource-model stance, for the same reason
+`ARCHITECTURE.md` §4 gives for not designing a media-engine abstraction beyond
+`ffmpeg-skill` yet: there is exactly one implementation of the thing being abstracted, and
+a second, independently-real implementation is what should drive an abstraction's shape,
+not imagination of one. Concretely mirroring that argument: just as a hypothetical
+`gstreamer-skill` would be the evidence that justifies designing a media-engine
+abstraction (`ARCHITECTURE.md` §4), a second, real Runtime implementation (a
+container-based executor, a remote-worker executor, anything beyond local subprocess)
+would be the evidence that justifies designing a Runtime-variant abstraction — not before.
+The only foundation this document proposes laying now is the one already proposed and
+already minimal: the Capability Contract's coarse **resource hints**
+(`requires_visual_verification`, `audio_only`, `video_required` — already existing fields
+on `ffmpeg-skill`'s `ToolSpec`, generalized in `ARCHITECTURE.md` §10) are sufficient for an
+Agent to make a cheap local-vs-not-applicable choice today. Nothing beyond that — no
+Runtime-selection field on `Operation`, no Remote/Cloud/GPU enum anywhere in `SPEC.md` — is
+proposed here, consistent with `ARCHITECTURE.md` §10's explicit deferral of "cost-aware
+provider selection, concurrency limits, cloud/local routing" to Roadmap Phase 7+.
+
+## 9. Partial success: artifact-level vs. Plan-level status
+
+**PROPOSED, building directly on `SPEC.md` §3 and §5 and `PRINCIPLES.md` §4 — one small
+schema addition, justified below, not a new status model.**
+
+A single `ProductionPlan`'s execution routinely produces a *mix* of outcomes across its
+output Artifacts: a video, audio, and subtitle Artifact might each carry a `QCReport` with
+`overall_status: PASS`, while a thumbnail Artifact from the same Plan `FAIL`s. This section
+names two distinct levels of status that must not be conflated, and states the one policy
+question that decides how they interact.
+
+**Artifact-level status (CURRENT shape, already fully specified).** An Artifact's own
+status comes directly from two already-existing facts and needs nothing new: (1) its
+producing Operation's `ExecutionResult.status` (`success | failed | timed_out`, `SPEC.md`
+§4) — did the Operation that made it actually complete; and (2) if a QC Operation ran
+against it, that QC Operation's own `QCReport.overall_status` (`PASS | WARN | FAIL |
+UNKNOWN`, `SPEC.md` §5) — per `FAILURE_RECOVERY.md` §3, a QC `FAIL` is the *payload* of a
+successful `ExecutionResult`, not itself an execution failure. An Artifact's status is
+therefore always answerable from records that already exist per-Artifact; this document
+adds no new per-Artifact field.
+
+**Production-level (Plan-level) status is a separate aggregate, not a rollup with one
+obvious answer.** Whether one failed or `FAIL`-verdicted Artifact fails the *whole* Plan is
+a **policy decision**, not a mechanical one — this is precisely the Hard-Constraint-vs-
+Preference distinction `PRINCIPLES.md` §4 already establishes for `Decision.basis`
+("a preference can be overridden or traded off, a constraint cannot"), applied here to
+Plan steps instead of Decisions: if a Capability Contract or a specific `ProductionPlan`
+step is marked optional (e.g. "thumbnail generation" alongside a video/audio/subtitle
+delivery it does not gate), its failure is a tradeable, non-blocking fact about that one
+Artifact, not a Hard-Constraint violation that should by default block delivery of the
+rest of the Plan's outputs. If a step is *not* marked optional, its failure should, by
+default, fail the Plan — exactly the behavior every audited Skill and Agent already
+assumes implicitly by having no notion of "this step doesn't matter."
+
+**The one schema addition this section justifies:** a `ProductionPlan` step (`SPEC.md` §3
+`steps[]`) may declare `optional: bool` (default `false`, so today's implicit behavior —
+every step matters — is preserved exactly for any Plan that doesn't use the new field).
+This is the single new field this document proposes anywhere in this section; nothing else
+in `SPEC.md`'s `ProductionPlan`, `Operation`, or `Artifact` shapes needs to change to
+support partial success.
+
+**Plan-level aggregate status = worst-wins over all non-optional steps' Artifact
+statuses.** Rather than inventing new aggregation semantics, this mirrors `qc-skill`'s own
+worst-wins rule (`SPEC.md` §5: `overall_status` is the worst of its constituent findings,
+never defaulting to PASS on empty input, `CORE_PRIMITIVES.md` §9) one level up: a Plan's
+status is the worst status among the Artifact-level statuses of every step **not** marked
+`optional`; a `FAIL`ed or execution-`failed` **optional** step contributes a warning to the
+`ProductionReceipt` (`SPEC.md` §6 `warnings`) but does not itself drag the Plan's aggregate
+status down. This is not a new invention requiring its own justification — it is the same
+"worst wins, never silently improves on the bad outcome, never defaults to success on
+nothing having run" discipline the ecosystem already trusts at the QCReport level, applied
+to one more level of rollup. See `FAILURE_RECOVERY.md`'s companion amendment for how an
+`optional`-step failure is categorized and how it interacts with retry policy.
+
+## 10. Incremental production is free via content-hash + DAG — not a new subsystem
+
+**FUTURE (executor optimization), building entirely on primitives that already exist —
+named here as a Roadmap candidate, not Phase 1 kernel work.**
+
+Two facts already established elsewhere in this project, put together, yield a third for
+free: every `Artifact` has content-hash identity (`ARTIFACT_MODEL.md` §1 — "two Artifacts
+with identical content hash... are the same Artifact, regardless of where on disk they
+live... or when they were written"), and every `ProductionPlan` is already a DAG of
+Operations over Artifacts, not a fixed pipeline (`ARCHITECTURE.md` §6, `CORE_PRIMITIVES.md`
+§6). Together, these mean an executor **can** skip re-running an Operation whose declared
+inputs (by hash) and effective parameters are unchanged from a prior successful run,
+without needing anything new to determine that fact — the `idempotency_key`
+(`{capability_id, provider_id, skill_version, params, input_artifact_ids}`, §3.2 above) and
+the DAG's own `depends_on` edges already carry exactly the information required.
+
+**This is not a new primitive, and it is not "impact analysis" infrastructure — it is
+`qc-skill`'s own working cache, one level up.** §3.3 above already names this exact idea at
+the single-Skill level as PROPOSED ("cross-run cache reuse... exactly the `qc-skill`
+cache-hit pattern... lifted from one Skill to the Execution layer generally"); this section
+states the general principle it is one instance of: `qc-skill`'s cache
+(`ARTIFACT_MODEL.md` §6) returning a hit instead of recomputing, keyed on provenance
+identity with tamper re-verification on read, is the working, audited precedent that an
+*executor* applying the same discipline across an entire Plan's DAG is not inventing
+anything — it is generalizing one Skill's already-correct behavior to the layer that walks
+the whole graph. **No new primitive, no new dependency-tracking mechanism, and no "which
+Artifacts does changing X affect" analysis engine is proposed here** — the DAG's existing
+edges already answer that question by construction, the same way `qc-skill`'s cache key
+already answers "would re-running this produce the same result" without any additional
+bookkeeping. This is squarely an **executor implementation optimization**, scoped as
+**FUTURE work, a candidate for a later Roadmap phase** — not a Phase 1 kernel requirement,
+consistent with `ARCHITECTURE.md` §8's kernel list (§8 above) naming only the *execution
+contract*, never a specific executor's internal performance strategy.
+
+**Worked example.** Changing subtitle styling parameters affects only the
+`subtitle.generate`/`subtitle.render` Operations (`CAPABILITY_MODEL.md`'s worked examples)
+and whatever downstream Operations declare those Artifacts as inputs — e.g. a final muxed
+delivery step that takes the styled subtitle render as one of its inputs. It does **not**
+affect `audio.normalize` or `color.hdr_to_sdr` Operations elsewhere in the same Plan,
+because those Operations' own declared inputs did not change hash. An executor applying
+this optimization does not need to be told this by any new dependency-tracking
+machinery — the Plan's DAG edges (`SPEC.md` §3 `steps[].depends_on`, `steps[].inputs`)
+already express exactly this fact: an Operation with no path from the changed Artifact to
+one of its own inputs has nothing to re-run, and one that does, does. This is the DAG-not-
+pipeline framing (`ARCHITECTURE.md` §6) paying for itself a second time — first for
+dependency-correct execution order (§2.2 above), now for knowing what a change actually
+invalidates, with the same representation and no additional concept.

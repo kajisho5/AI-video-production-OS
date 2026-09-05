@@ -87,6 +87,8 @@ boundary below.
 | Cache tamper-detected mismatch | a stored result-hash no longer matches the recomputed hash of a cached report | N/A — not surfaced as a failure at all | N/A | Skill-internal cache layer | Treated as a cache miss, forcing recompute (`ARTIFACT_MODEL.md` §6) — see §8 |
 | QC `FAIL` | a `QCReport`'s `overall_status` is `FAIL` | N/A — not a failure category | N/A | N/A — a successful Operation's *content* | See §3 — this is the distinction this document must not conflate |
 | Human interruption / Job kill | process killed, machine restarted, Ctrl-C | N/A — Job-level, not a per-Operation failure | No | Job | `render --resume` (`EXECUTION_MODEL.md` §3.1) |
+| DEGRADED | preferred Provider unavailable; a lower-quality, permitted alternative Provider exists | Against the *original* preferred Provider, on a later Job re-run (idempotency semantics, §1) | No — proceeds as a new Operation against the alternative Provider | Plan compile-time (Provider re-selection) / Execution (recorded outcome) | See §12; `CAPABILITY_MODEL.md` §Collision policy, §4 below's "no automatic cross-Provider failover" rule |
+| OPTIONAL | a Plan step marked `optional: true` (`EXECUTION_MODEL.md` §9) fails or `FAIL`s QC | No — recorded as a warning, not retried automatically unless the Plan is revised | No — the rest of the Plan proceeds | Plan-level aggregation | See §12; `EXECUTION_MODEL.md` §9's worst-wins-over-non-optional-steps rule |
 
 The table's ordering matters: categories 1–2 are the only ones this document treats as
 genuinely retryable in the ordinary sense. Categories 3–6 are **terminal on first
@@ -317,6 +319,8 @@ undetected tamper costs correctness).
 | Cache tamper mismatch | N/A — self-healing recompute | N/A | N/A | N/A — not a caller-visible failure |
 | QC `FAIL` | N/A — not a failure | N/A | N/A | No — a successful Operation's payload |
 | Human interruption / Job kill | N/A — resume, not retry | No | Resets per §7 (UNKNOWN whether counter persists) | No — completed prefix persists |
+| DEGRADED | Against original preferred Provider, on later Job re-run | No | New `idempotency_key` — does not count against the failed attempt's budget | No — the degraded-path Artifact is a new Operation's normal output |
+| OPTIONAL | No — automatic retry only via explicit Plan revision | No | N/A — not an Execution-layer retry at all | No — no Artifact was expected to roll back; rest of Plan is unaffected |
 
 ## 10. What this document deliberately does not add
 
@@ -345,3 +349,126 @@ undetected tamper costs correctness).
 - Whether a Plan that stops partway through (not merely one that finishes with QC
   failures) should emit a partial `ProductionReceipt` — named as an open question in
   `PROVENANCE.md` §4, not re-answered here.
+
+## 12. DEGRADED and OPTIONAL: two additional categories, from a stakeholder review
+
+Two more outcome categories, surfaced in a stakeholder review, extend the taxonomy above
+without changing the retryable/terminal split already established in §2/§4: **DEGRADED**
+and **OPTIONAL**. Neither is a new *failure* in the sense §1 defines one (an
+`ExecutionResult` with `status: failed | timed_out`) — both describe how the OS should
+report and route an outcome that is not a clean success but is also not the kind of stop
+this document's terminal categories describe. They are named here as a distinct pair
+because a stakeholder review specifically flagged the risk of collapsing them into each
+other, or into an ordinary FAIL, and this document treats that as a real finding worth a
+named section, not folded silently into §2's table.
+
+### 12.1 DEGRADED — an acceptable fallback Provider, chosen explicitly and provenanced
+
+**Definition.** DEGRADED describes the situation where a preferred Provider or Capability
+path is unavailable (missing, `AVAILABLE` state lost, or itself exhausted its retry
+budget per §4), but a lower-quality-but-still-acceptable alternative Provider of the same
+Capability exists **and is permitted**. Concretely, the two-Provider
+`measure.audio.loudness` situation `CAPABILITY_MODEL.md` already documents
+(`qc-skill` and `media-analysis-skill` as independent Providers) is the shape: if the
+preferred Provider is unavailable and the Plan (or a resolvable default-provider policy)
+permits the other one, proceeding against it is a DEGRADED outcome, not a FAIL.
+
+**This is not silent runtime fallback — it is exactly the mechanism §4 above already
+describes, named.** §4's "No automatic cross-Provider failover" rule already establishes
+that Provider substitution is never silent: "a genuinely failed Provider surfaces as a
+failed Operation for a human or Agent to replan against, explicitly, with a different
+`provider_id`... a new Operation with a new `idempotency_key`, not a retry." DEGRADED is
+the name for exactly that replanned outcome, when the newly-chosen Provider is understood
+to be a lower-quality alternative rather than an equivalent one. It requires the same
+explicit re-selection `CAPABILITY_MODEL.md`'s collision policy already mandates for any
+multi-Provider Capability — DEGRADED does not relax that policy, it is one named outcome
+of applying it after a failure.
+
+**The constraint a parallel review made explicit, and this document adopts without
+restating its exact wording: a degraded fallback must never silently violate an
+Intent-level Hard Constraint or Permission.** `PRINCIPLES.md` §4 already establishes that
+a Hard Constraint is not something an Agent's preferences — or, by direct extension, an
+Agent's *fallback* choices — may relax: "a preference can be overridden or traded off, a
+constraint cannot." `INTENT_MODEL.md` §2 and §6 name the two concrete shapes this
+protects here: a Hard Constraint ("deliver as .mp4," "duration <= 60s") and a Permission
+("local rendering allowed," `INTENT_MODEL.md` §6 — a Runtime-boundary-scoped
+authorization, not yet enforced machinery anywhere in the ecosystem today, but named as
+the exact slot this rule references). Concretely, per `INTENT_MODEL.md` §6's own worked
+example: **falling back from a local Provider to a hypothetical cloud Provider when
+"local-only" was a stated constraint is not a valid DEGRADED path — it is FATAL**, because
+it would silently change *what was promised* (a local-only guarantee), not merely *how
+well* the Capability was accomplished. The distinguishing test is exactly this: does the
+alternative Provider still satisfy every Hard Constraint and Permission the original
+choice did, and differ only in quality/preference-shaped terms (resolution ceiling,
+measurement precision, latency)? If yes, DEGRADED. If the alternative would violate a Hard
+Constraint or exceed a Permission's scope to reach, it is not a permitted alternative at
+all — the Operation must surface as a terminal failure (§2's "missing/ambiguous
+Capability or Provider" category, or a new named FATAL case if none of the registered,
+*permitted* Providers can satisfy the Plan) for a human or Agent to resolve, never a
+silent substitution.
+
+**Recording is mandatory, never silent.** Per `PROVENANCE.md` §2's required field list
+("Capability id + Provider id... Two Providers of `measure.audio.loudness` are not
+interchangeable for reproducibility purposes"), a DEGRADED outcome's actual `provider_id`
+is already a required provenance field for the resulting Artifact and, at the Plan level,
+belongs in the `ProductionReceipt`'s `warnings` (`SPEC.md` §6) — a DEGRADED path is not
+merely permitted to be recorded, it is a `warnings`-worthy fact by the same logic a QC
+`WARN` is: something acceptable happened, but not the originally-preferred thing, and a
+human or downstream Agent reviewing the Receipt should be able to see that without
+re-deriving it from the raw Operation log.
+
+**Interaction with retry policy.** A DEGRADED outcome does not retry the failed preferred
+Provider automatically — per §4's mechanical rule, that would require a new Decision and
+therefore a new `idempotency_key`, exactly like any other replanned Provider choice. What
+DEGRADED specifically permits, consistent with idempotency semantics already established
+in §1 and `EXECUTION_MODEL.md` §3.2: on a **later** Job re-run (a fresh `render --resume`
+or a fresh Plan execution against the same inputs), the Execution layer may retry against
+the **original** preferred Provider again — its own `idempotency_key` is unchanged from
+before, so if it is `AVAILABLE` again on the later run, nothing prevents the ordinary
+compile-time resolution (`EXECUTION_MODEL.md` §1.1) from choosing it as it would have the
+first time. DEGRADED is a per-run outcome, not a permanent demotion of the preferred
+Provider.
+
+### 12.2 OPTIONAL — a Plan step's failure that does not gate the rest of the Plan
+
+**Definition.** OPTIONAL describes an Operation's failure (or a `QCReport`'s `FAIL`
+verdict, per §3's distinction) on a `ProductionPlan` step explicitly marked
+`optional: true` — the field `EXECUTION_MODEL.md` §9 proposes on `SPEC.md` §3's
+`steps[]`, e.g. thumbnail generation failing while video/audio/subtitle delivery from the
+same Plan is unaffected. Per `EXECUTION_MODEL.md` §9's worst-wins-over-non-optional-steps
+aggregation rule, an OPTIONAL step's failed or `FAIL`-verdicted Artifact does not drag the
+Plan's aggregate status down — it is recorded and the walk continues.
+
+**OPTIONAL is not DEGRADED.** No fallback occurs — there is no alternative Provider being
+substituted in, no Operation runs in the failed step's place, and no Artifact of that
+logical role is produced at all. The optional output is simply absent from the Plan's
+final result set, and that absence is itself the recorded fact.
+
+**OPTIONAL is not a terminal FATAL failure either.** The rest of the Plan proceeds exactly
+as if the optional step's dependents (if any — an optional step with dependents is a Plan
+design choice worth Agent-side scrutiny, not something this document forbids) were
+satisfied by absence rather than by a produced Artifact. This is deliberately a third
+outcome distinct from both ends of §2's retryable/terminal spectrum: not "retry and maybe
+succeed," not "stop the Plan," but "note it, and keep going."
+
+**Interaction with retry policy.** An OPTIONAL step's failure is recorded as a warning
+(`ProductionReceipt.warnings`, `SPEC.md` §6) — it is **not retried automatically**, at all,
+regardless of whether the underlying failure category would ordinarily be retryable under
+§2/§4 (a transient tool crash on an optional thumbnail render does not consume any of the
+Plan's attention the way the same crash on a non-optional step would). The only path back
+to attempting that output is an **explicit Plan revision** — a human or Agent adding a new
+step (a new Decision, a new `idempotency_key`, per §3's mechanics) that tries again,
+exactly as any other re-attempt after a terminal or exhausted-retry-budget outcome would
+require. This keeps OPTIONAL's failure mode symmetric with the rest of this document's
+central rule: nothing retries itself without an explicit authorizing Decision, and marking
+a step optional changes *whether its absence blocks the Plan*, not *whether failures are
+free to retry themselves silently*.
+
+### 12.3 Where these fit in this document's existing structure
+
+Both categories have been added as rows to §2's and §9's tables above; §1's
+failure-identity rules (Operation/Plan/Job scope, `idempotency_key` as retry-identity) and
+§5's rollback rules (a failed attempt produces no Artifact, so there is nothing to roll
+back) apply to DEGRADED and OPTIONAL exactly as written — neither introduces a new
+rollback or checkpoint mechanism, consistent with §10's list of what this document
+declines to add.
