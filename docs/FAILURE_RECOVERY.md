@@ -472,3 +472,91 @@ failure-identity rules (Operation/Plan/Job scope, `idempotency_key` as retry-ide
 back) apply to DEGRADED and OPTIONAL exactly as written — neither introduces a new
 rollback or checkpoint mechanism, consistent with §10's list of what this document
 declines to add.
+
+## 13. Error taxonomy by SOURCE — a second, complementary axis
+
+Everything in §2/§9/§12 above classifies a failure by **SEVERITY**: what should happen
+next (retry, stop, degrade, ignore). This section adds a distinct **SOURCE** taxonomy:
+*where did the error originate*. These are two different axes over the same failure, not
+competing classification systems — a single `ExecutionResult` failure has exactly one
+SEVERITY (from §2's table) and exactly one SOURCE (from the list below), and the two
+questions are answered independently. Nothing in §1–§12 is revised by this section; it is
+purely an additional, orthogonal dimension named against the same evidence base.
+
+### 13.1 The eight SOURCEs
+
+| SOURCE | What it means | Grounding | Possible SEVERITY categories (§2) |
+|---|---|---|---|
+| **Contract error** | The request does not match the Capability Contract's own declared schema (a parameter fails `input_schema`, an unexpected key is present). | The real, existing precedent is per-Skill schema validation — concretely, the `FORBIDDEN_KEYS`/`FORBIDDEN_ARG_KEYS` rejection already in §2's table ("a parameter fails the Capability's `input_schema`... `FORBIDDEN_KEYS`/`FORBIDDEN_ARG_KEYS` trip"), `SKILL_SPEC.md` §3.1's "rejected... never silently stripped" rule, and `SECURITY_MODEL.md` §1.1's denylist enforced independently across at least seven repos. | **Always terminal, never retryable** (§2's "Validation / schema error" row). Retrying the same malformed request against the same schema rejects identically every time — nothing about a Contract error changes between attempts unless a human or Agent revises the request itself. |
+| **Capability error** | The requested Capability id does not exist in the registry at all — distinct from a Contract error (the id is valid but the *parameters* are wrong) or a Provider error (the id resolves but the chosen implementation fails). | `CAPABILITY_MODEL.md`'s registry model (a Capability is "a named, typed, versioned unit... independent of which Skill implements it," `CORE_PRIMITIVES.md` §1) and `EXECUTION_MODEL.md` §1.1's compile-time resolution step, which fails before any Operation exists if the id cannot be resolved at all. | **Always terminal**, and — like the existing "Missing/ambiguous Capability or Provider" row in §2 — **never reaches Execution**; it is a Plan compile-time failure, not an Operation-level one. Retrying does nothing without a registry change (a new Skill installed, a typo fixed). |
+| **Permission error** | A Hard-Constraint or Permission violation — a fallback or Provider choice that would exceed what the Project's Intent authorized (e.g. a network-requiring fallback blocked because "local-only" was a stated constraint). | `INTENT_MODEL.md` §6's Permission concept (a Runtime-boundary-scoped authorization, today **FUTURE** with no live use case, since `SPEC.md` §7 confirms no Skill uses network access anywhere) and §12.1 above's own worked example: "falling back from a local Provider to a hypothetical cloud Provider when 'local-only' was a stated constraint is not a valid DEGRADED path — it is FATAL." | **Always terminal.** A Permission error is definitionally about what is *authorized*, not about transient execution state — retrying the same request against the same unauthorized reach cannot succeed; only an explicit new Permission grant (a human/Agent decision, not a retry) changes the outcome. Today this SOURCE is **entirely forward-looking**: since no Provider anywhere in the ecosystem is network-based, no Permission error has ever actually occurred — it is named now, per §12.1's own reasoning, "precisely because... permission boundaries need to exist before that first cloud Provider does, not be retrofitted afterward." |
+| **Security error** | A `PathPolicy` violation (symlink-based containment escape, write outside the declared workspace root) or a forbidden key detected in a parameter tree. | `SECURITY_MODEL.md` §1's existing enforcement, items 1–2: the `FORBIDDEN_KEYS` denylist and symlink-resolved `PathPolicy` containment, "independently reinvented in at least seven of the eleven audited repositories." This is distinct from a Contract error even though both can trip on the same `FORBIDDEN_KEYS` check: a Contract error is "this parameter shape is not what the schema allows," while a Security error is "this specific value is a recognized attack shape" (a path-traversal payload, a `command`/`shell` key) — the same mechanical check, but the distinction matters for how the rejection should be *reported* (§13.3 below) and audited. | **Always terminal**, exactly like Contract errors, and for the identical reason: `SECURITY_MODEL.md`'s denylist is deterministic — the same forbidden key or containment escape is rejected identically on every attempt. A Security error must never be silently stripped and retried; per `SKILL_SPEC.md` §3.1, it is rejected outright. |
+| **Provider error** | The chosen Provider itself failed to execute correctly — a subprocess crash, an OOM-kill, a non-parameter-caused nonzero exit, a timeout. This is what the large majority of this document's existing content (§1–§12) already covers. | `execution/recovery.py`'s bounded-retry handling of exactly this shape (§2's "Transient tool failure" and "Timeout" rows; `REPOSITORY_MAP.md`, `EXECUTION_MODEL.md` §4). | **Retryable, bounded** (§4's `max_attempts=2`) in the ordinary case; **DEGRADED-eligible** per the existing fallback policy (§12.1) if the retry budget is exhausted and a permitted, Intent-respecting alternative Provider exists; otherwise surfaces as a terminal failure for replanning (§4's "No automatic cross-Provider failover" rule). A Provider error is the one SOURCE in this table that spans the widest range of possible SEVERITY outcomes, which is exactly why §1–§12 needed this much space to specify it fully. |
+| **Runtime error** | A process-level failure distinct from the Provider's own logic failing: a timeout enforced at the subprocess boundary, a crash of the subprocess itself, resource exhaustion (memory, disk) that the Runtime — not the Skill — observes. | `EXECUTION_MODEL.md` §8's consolidated Runtime responsibilities table: "Isolation," "Timeout," and "Resource Control" rows, plus `SECURITY_MODEL.md` §5's honest gap (only a wall-clock timeout is enforced anywhere; no CPU/memory/disk limits exist in any audited Skill). A Runtime error and a Provider error can look identical from outside (both surface as `status: failed | timed_out`) — the distinction is *whose* fault the failure was: the Runtime killing a process-group on `timeout_seconds` elapsing is a Runtime error even if the underlying Provider would have eventually succeeded; a Provider crashing on its own before any Runtime-imposed limit is reached is a Provider error. This distinction is useful for the error-presentation convention in §13.3 below (a human debugging "why did this fail" benefits from knowing whether the Runtime cut it off or the Provider gave up on its own) even though both currently share one `ExecutionResult.status` value. | **Typically retryable** — §2's "Timeout" row is explicitly bounded-retryable, and a resource-exhaustion kill is mechanically identical to a transient tool failure for retry purposes (nothing about the request itself was wrong, so a retry may succeed if the transient condition clears). Not terminal by default, unlike Contract/Capability/Permission/Security errors above. |
+| **QC/Verification error** | **Not a failure in the execution sense at all — included here only to state explicitly that it is a different SOURCE than a Runtime error, never to imply the two are equivalent.** A `QCReport.overall_status: FAIL` is the *payload* of a successful `ExecutionResult`, not an error. | `QC_ARCHITECTURE.md` §3's existing, code-enforced position: "qc-skill is not an AI agent and does not make production decisions"; a `QCReport.overall_status = FAIL` is "a fact about measured reality against a stated threshold," never itself a system failure — this document's own §3 already states the identical rule ("a QC `FAIL` is not a failure... It is not an `ExecutionResult` with `status: failed`"). | **N/A for SEVERITY** — this row exists in the SOURCE taxonomy purely so that a reader classifying an outcome by source does not reach for "Runtime error" or "Provider error" merely because a QC check reported something unwelcome. The one genuine exception, already stated in §3: if the QC *tool itself* crashes or times out without producing a `QCReport` at all, that specific failure is a Runtime or Provider error like any other (whichever applies) — the SOURCE is never "QC/Verification error" in that case, because nothing about QC's own judgment was involved; the QC tool simply didn't run. |
+| **External-service error** | A network/API failure — a timeout or error response from a remote service a Provider depends on. | **Entirely hypothetical today.** Per `SPEC.md` §7 and `REPOSITORY_MAP.md`, no Skill in the ecosystem uses network access anywhere; every Provider is a local subprocess against a local binary. This SOURCE is named now for the same forward-looking reason `INTENT_MODEL.md` §6 names Permissions now: "the day a Skill needs network access... there should already be a place in the [taxonomy] for" the failure mode that comes with it, rather than inventing one ad hoc at that point. | **Entirely FUTURE** — no SEVERITY mapping is proposed because no such error has ever actually occurred in the audited ecosystem to observe a mapping from. A plausible future shape (network timeout → retryable; API auth failure → terminal, closer to a Permission error) is deliberately not specified here, to avoid fabricating detail about a mechanism that does not exist. |
+
+### 13.2 Why SOURCE and SEVERITY must stay two axes, not one
+
+Collapsing them would lose information both ways: two errors with the same SEVERITY
+(both terminal, say) can have completely different SOURCEs requiring different fixes — a
+Contract error is fixed by correcting the request's parameters; a Capability error is
+fixed by installing or registering the missing Skill; a Permission error is fixed by an
+explicit new grant. Conversely, two errors with the same SOURCE can have different
+SEVERITY depending on circumstance — a Provider error is sometimes retryable (a transient
+crash) and sometimes not (the Provider's retry budget is exhausted and no permitted
+fallback exists, per §4/§12.1). Neither axis substitutes for the other; §2's table answers
+"what should the Execution layer do next," and this section's table answers "what part of
+the system is actually responsible," and a complete error record needs both, exactly as
+`SPEC.md` §4's `ExecutionResult` already carries `status`/`retryable` (SEVERITY-shaped)
+independently of `tool_output` (which is where SOURCE-relevant detail — which Provider,
+which check, which parameter — already lives verbatim).
+
+### 13.3 Internal error detail vs. user-facing error message (PROPOSED presentation convention, not a new data structure)
+
+**This is a formatting convention, not a schema change.** `SPEC.md`'s existing
+`ExecutionResult` (`status`, `outputs`, `tool_output`, `duration_ms`, `retryable`) already
+carries enough information for everything below — this section proposes no new field
+anywhere in `SPEC.md`, `ARTIFACT_MODEL.md`, or this document. What it proposes is a
+convention for how that existing information gets **presented** to a human or an Agent
+consuming a failure, rather than handing over a raw stack trace or an unfiltered
+`tool_output` blob as the only interface.
+
+**The precedent this generalizes is already real, not invented for this section.**
+`video-production-agent`'s own `tools/skill_process.py` implements a function named
+exactly `scrub(obj, forbidden)`, whose docstring reads: *"Error details the Skill
+returned, minus anything that looks like a command or credential (recorded for humans
+only)."* It strips any key matching the `FORBIDDEN_KEYS`-shaped denylist out of a Skill's
+error payload before that payload is recorded — the same discipline `SECURITY_MODEL.md`
+§1 already documents for ordinary request parameters, applied a second time to error
+*output*. This section proposes the same discipline, one step further: not just
+*sanitizing* error detail (already real, per `scrub()`), but *structuring its
+presentation* so a consumer isn't left parsing a sanitized-but-still-raw blob to answer
+basic questions.
+
+**The proposed presentation convention.** An error surfaced to a human or an Agent should
+answer, in a fixed, scannable shape:
+
+1. **What failed** — the Operation/Capability/step in plain terms, not merely an id.
+2. **Where** (which SOURCE, §13.1) — a Contract error and a Provider error call for
+   completely different next actions, and a consumer should not have to reverse-engineer
+   which one occurred from an unstructured message.
+3. **Why, in plain terms** — the sanitized (`scrub()`-style) detail already available in
+   `ExecutionResult.tool_output`, summarized rather than dumped verbatim.
+4. **Whether it's retryable** — `ExecutionResult.retryable` (`SPEC.md` §4) already carries
+   exactly this fact; the presentation convention's only job is to surface it prominently
+   rather than requiring the consumer to know to look for that field.
+5. **What's affected** — which downstream Artifacts/steps, if any, are blocked as a
+   result (per `EXECUTION_MODEL.md` §9's Plan-level aggregation — an optional step's
+   failure affects less than a non-optional one, and a presentation that doesn't say so
+   forces the consumer to re-derive it).
+
+**Status: PROPOSED/FUTURE.** No repository in the audited ecosystem documents a formal
+error-presentation convention today — this is named as a gap, not claimed as existing
+practice. It is, however, a **low-risk formalization rather than a speculative one**:
+several of the audited CLIs already do something reasonable in this direction on their
+own initiative (structured `--json` error output, the `scrub()` sanitization pattern
+above) without it being written down anywhere as a cross-ecosystem convention. This
+section's contribution is naming that convention explicitly, once, using fields
+(`ExecutionResult.status`/`retryable`/`tool_output`, plus this section's new SOURCE
+taxonomy) that already exist — not inventing new machinery to produce it.

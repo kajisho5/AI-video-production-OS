@@ -209,3 +209,74 @@ as a Capability Contract).
   and `CAPABILITY_MODEL.md` does not specify this either; left to `ROADMAP.md`.
 - Multi-version serving infrastructure — explicitly addressed and rejected for now in
   §6, not merely omitted.
+
+## 10. The Compatibility Matrix: an aggregatable artifact, not a new mechanism
+
+**Purpose.** §1–§2 above establish the *philosophy* — two independent version axes, and
+dependencies pinned as `contract_version` ranges rather than exact pins. This section
+defines the concrete, queryable **artifact** that philosophy already implies but that
+this document has not, until now, actually produced: a record of which
+`contract_version` range of each dependency Skill a given Skill (or, eventually, an
+Agent) actually supports. At minimum this is a clearly-structured markdown table; nothing
+about this section requires a database or a service — a flat, regenerable table is
+sufficient for an ecosystem this size (`SPEC.md` §7: "a flat lookup by id is sufficient
+for the ecosystem size that exists today").
+
+**This is NOT a new mechanism.** The data a Compatibility Matrix reports already exists,
+scattered, as hardcoded `SUPPORTED_MIN`/`SUPPORTED_MAX` constants inside five separate
+adapter modules today: `video-editing-skill`'s, `audio-production-skill`'s,
+`color-grading-skill`'s, `motion-graphics-skill`'s, and `thumbnail-skill`'s
+`ffmpeg-skill` adapters each already check the located `ffmpeg-skill` checkout's
+`contract_version` against exactly this kind of range at startup (`REPOSITORY_MAP.md`
+`video-editing-skill and audio-production-skill` §; `DEPENDENCY_GRAPH.md` §1.1, §2). §2
+of this document already generalizes that pattern as the OS-wide pinning rule. **The only
+genuinely new thing this section proposes is making that already-existing fact
+queryable and aggregatable across the whole ecosystem in one place**, instead of
+requiring someone to open five separate adapter modules (and read source, not a
+published contract) to reconstruct it — which is exactly the manual-audit cost
+`DEPENDENCY_GRAPH.md` §2 shows is real (see the CI-pinning inconsistency below).
+
+**How this should be produced: generated, not hand-maintained (PROPOSED, data already
+PROPOSED elsewhere; aggregation tool FUTURE).** The underlying data this matrix reports
+is not new — it is exactly the Capability Contract's `dependencies: [{ skill_id,
+version_range }]` field already specified in `SPEC.md` §1 and required of every
+delegating Skill by `SKILL_SPEC.md` §6. That field is **PROPOSED** (as a formal,
+published contract field every Skill exposes) but not invented here — this document does
+not redefine its shape. What is genuinely **FUTURE** — does not exist anywhere in the
+audited ecosystem today — is an OS-level tool that walks every registered Skill's
+published `CapabilityContract`, reads each one's `dependencies[]`, and aggregates them
+into one matrix on demand. Building that tool is Roadmap work; the data it would read is
+already specified.
+
+**Worked example**, using real Skill names and versions from `REPOSITORY_MAP.md`'s
+ecosystem table:
+
+| Skill (version) | Depends on | Required `contract_version` range | Basis |
+|---|---|---|---|
+| `ffmpeg-skill` 0.9.1 | — (base layer; stdlib + ffmpeg/ffprobe binaries only) | n/a | `REPOSITORY_MAP.md` §`ffmpeg-skill` |
+| `video-editing-skill` 0.1.0 | `ffmpeg-skill` | `contract_version` range containing `"1.0"` (illustratively `>=1.0,<2.0` — the audit confirmed the `SUPPORTED_MIN`/`SUPPORTED_MAX` check exists and that `ffmpeg-skill`'s `contract_version` has stayed at `"1.0"` throughout, not the exact literal range string each adapter hardcodes, which is `UNKNOWN`) | `REPOSITORY_MAP.md` §`ffmpeg-skill` (two-axis versioning); §`video-editing-skill and audio-production-skill` |
+| `audio-production-skill` 0.1.0 | `ffmpeg-skill` | same shape as above | `REPOSITORY_MAP.md` §`video-editing-skill and audio-production-skill` |
+
+**Why an aggregated, visible matrix has real, already-demonstrated value.**
+`DEPENDENCY_GRAPH.md` §2 documents a real, present inconsistency that a queryable
+Compatibility Matrix would have surfaced immediately rather than requiring a manual
+cross-repo audit to find: the five delegating Skills above each pin their CI's
+`ffmpeg-skill` checkout to a **specific commit (`2abd89c`)** for reproducible testing,
+while `video-production-agent`'s own integration CI clones **all** ten sibling Skills —
+`ffmpeg-skill` included — at their **default-branch HEAD**, not at any pinned
+commit or `contract_version` range. Today, discovering that these two patterns disagree
+required reading CI configuration in six separate repos side by side. An aggregated
+matrix that recorded "what does each consumer actually pin against" in one place would
+have made this visible as a single inconsistent row, not a finding that required a
+dedicated audit to notice — this is the concrete value case for treating the matrix as
+an OS-level artifact rather than five (or, counting the orchestrator's own untracked
+HEAD-following, six) independently-scattered facts.
+
+**What this section does not propose:** a runtime enforcement mechanism (the matrix is a
+reporting artifact, not a gate — compatibility is still actually enforced the same way it
+is today, by each Skill's own startup `contract_version` check, per §2); a database or
+index service (per `SPEC.md` §7's existing rejection of that for the Capability
+registry, the same reasoning applies here); or a mandate that every Skill's `dependencies`
+field be populated before this is useful — a partial matrix, built from whichever Skills
+already publish the field, is still strictly more visible than today's zero Skills
+publishing it as structured data.
