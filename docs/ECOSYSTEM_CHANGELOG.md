@@ -38,6 +38,33 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 4 — ffmpeg-skill, rollout complete)
+
+- **Repo(s)**: `kajisho5/ffmpeg-skill`
+- **PR(s)**: https://github.com/kajisho5/ffmpeg-skill/pull/24
+- **What changed**: adds `provides` to `contract --json`, listing all 21 base-layer tools
+  by a cross-repository Capability id (`ffmpeg-skill.cut`, `ffmpeg-skill.loudness`, ...
+  one per tool), matching `docs/CAPABILITY_MATRIX.md` section 9. This repo's contract
+  shape differs structurally from every other Skill's (`skill: {id, version, ...}` is a
+  nested sub-object, not flat top-level fields — `POC_CAPABILITY_CONTRACT.md` Finding 7),
+  so `provides` was added at the top level alongside `tools`, not inside `skill`.
+- **Why**: `ffmpeg-skill` is the dependency of six other Skills already in this rollout
+  (`video-editing-skill`, `subtitle-skill`, `thumbnail-skill`, `audio-production-skill`,
+  `color-grading-skill`, `motion-graphics-skill`) and, per `CAPABILITY_MATRIX.md` section
+  9, its 21 tools are Capabilities in their own right, independent of those higher-level
+  Skills — an Agent may invoke any of them directly. This is the last repo in the
+  `provides` rollout: with this PR, all 10 audited Skills now publish the field.
+- **Status**: draft (CI pending/running as of this entry)
+
+**Rollout summary (all 10 Skills, 8 PRs, 1 shared architecture change):**
+`video-editing-skill`, `subtitle-skill`, `thumbnail-skill`, `audio-production-skill`,
+`color-grading-skill`, `motion-graphics-skill`, `qc-skill`, `media-analysis-skill`,
+`transcription-skill`, `ffmpeg-skill` — see the four entries above for links and per-repo
+detail. Next: monitor these 8 PRs to green/merge, then re-run the `Observe` step of the
+autonomous development loop to find the next highest-value gap.
+
+---
+
 ### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 3 — transcription-skill)
 
 - **Repo(s)**: `kajisho5/transcription-skill`

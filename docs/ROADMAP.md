@@ -91,6 +91,29 @@ decision again.
 
 ## Phase 2 — Retrofit existing Skills to publish the CapabilityContract shape
 
+**Status: CURRENT / IMPLEMENTED as of 2026-09-05.** All 10 audited Skills now have an
+open PR adding `provides` — see `docs/ECOSYSTEM_CHANGELOG.md` for the full list of PRs,
+per-repo Capability-id mappings, and the current CI/review state of each (this roadmap
+entry is not updated again as those PRs merge; check the changelog and the PRs
+themselves for that). The per-Skill effort estimates below were written before any of
+that work started and are kept as-is because they turned out accurate, not because they
+still describe unstarted work: `video-editing-skill` was in fact near-zero-cost;
+`audio-production-skill`/`color-grading-skill`/`motion-graphics-skill` did each need one
+naming decision per operation, recorded as a new ADR in each repo; `qc-skill` did need
+real manual mapping (35 checks grouped into 10 Capability ids) and now publishes
+identical ids to `media-analysis-skill` for their three collision Capabilities, the
+first real demonstration of `CAPABILITY_MODEL.md`'s collision model; and both
+`transcription-skill` and `ffmpeg-skill`'s structurally different contract shapes each
+needed their own small, documented decision rather than a mechanical retrofit. One
+genuine gap surfaced during the work and was **not** forced shut: `media-analysis-skill`
+has four analysis kinds (`media_probe`, `stream_layout`, `video_format`, `audio_format`,
+`duration`) with no settled Capability id in `CAPABILITY_MATRIX.md` §8c — publishing a
+guessed id there risked creating a false collision the matrix had already ruled out
+(`video_format` is explicitly *not* the same capability as `qc-skill`'s
+`measure.video.format`), so those four kinds are intentionally left out of `provides`
+until that matrix decision is made. That decision is unstarted, real follow-up work, not
+part of this phase's "done."
+
 **Delivers:** each of the 10 existing Skill repos (11 counting `ffmpeg-skill` itself)
 extends its existing `contract.py`/contract-emission code to output the Phase 1 schema's
 shape, additively. Every audited repo already has a `contract` command emitting *some*
