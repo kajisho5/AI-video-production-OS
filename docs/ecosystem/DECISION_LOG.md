@@ -112,3 +112,31 @@ The observable-behavior redesign is answerable against `qc-skill` as it actually
 today, and the property it verifies (no stray writes outside the workspace; the input is
 never mutated) is the same real safety guarantee `SKILL_SPEC.md` §8 items 4-5 are meant
 to protect, reached by a different, equally valid route.
+
+## D6 — `no_unsafe_shell_out` uses a full AST walk, not a text/regex scan, after the regex draft produced two real false positives
+
+**Context**: the first implementation of this check scanned each Skill's source files
+as raw text for patterns like `shell=True`, `eval(`, `exec(`. Run against the real
+ecosystem (all 9 Python Skills' actual cloned source), it immediately produced two false
+FAILs: `qc-skill`'s `rules.py` has a comment literally reading "no eval()/exec()... or
+shell" (documenting the constraint, not violating it), and `subtitle-skill`'s
+`engine.py` module docstring says "no shell=True" for the same reason — plus a related,
+distinct false positive where the AST-level check itself flagged the safe, explicit
+`shell=False` keyword as if any `shell=` presence were dangerous.
+
+**Decision**: rewrote the check to walk the parsed AST exclusively, with no text/regex
+fallback: `eval`/`exec` are only flagged as an `ast.Call` whose `func` is a bare
+`ast.Name`, `os.system`/`os.popen` only as an `ast.Attribute` call, and a `shell=`
+keyword's `ast.Constant` value is inspected directly — `False` clears, `True` fails, and
+anything else (a variable, a dynamic expression) fails conservatively as "cannot
+statically prove this is never True."
+
+**Why**: a comment or docstring is a string literal in the AST, never a `Call` node, so
+switching from text to AST structure eliminates the false-positive class entirely rather
+than trying to special-case comment syntax on top of a fundamentally text-based
+approach. This is the same principle D5 already established for `workspace_confinement`/
+`no_clobber_input`: test the actual, real behavior of real ecosystem code before
+trusting a check's first design, and fix the check's *design* rather than special-casing
+away an inconvenient real finding. Verified: all 9 real Python Skills now correctly PASS
+(`registry/tests/test_no_unsafe_shell_out.py` also carries both false positives as
+permanent regression tests).

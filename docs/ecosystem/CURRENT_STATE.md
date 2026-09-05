@@ -53,7 +53,12 @@ question right now (see `WORK_QUEUE.md` item 1).
 - **`registry/`** (this repo, Phase 1): a small, tested Python library — loads a
   `CapabilityContract` document, resolves Skill identity across the ecosystem's three real
   shapes, registers `provides` entries, detects collisions, applies the 3-tier resolution
-  policy. 21 tests, all passing, against real captured data.
+  policy, and implements **all 8** of `SKILL_SPEC.md` §8's conformance checks for real
+  (3 from a contract document alone; 4 against a live Skill process, verified end-to-end
+  against `qc-skill`; 1 — `no_unsafe_shell_out` — via a static AST walk, manually
+  verified PASS against all 9 real Python Skills' source trees). 50 tests, all passing,
+  against real captured data, a real live `qc-skill` process, and synthetic
+  AST-walk fixtures.
 - **`provides` rollout** (this repo, Phase 2): all 10 audited Skills have a PR adding
   `provides`; as of this snapshot most are merged (see `CROSS_REPO_STATUS.md` for the live
   count) — including the ecosystem's one real documented Capability collision
@@ -83,12 +88,12 @@ question right now (see `WORK_QUEUE.md` item 1).
   discovery in this document that `video-production-agent` already solved an equivalent
   problem independently. The remaining real work is connecting the two, not building
   Phase 4 from scratch (see `WORK_QUEUE.md`).
-- `registry/` item 1 (a standalone JSON Schema file for the CapabilityContract shape) and
-  item 3's one remaining stubbed conformance check (`no_unsafe_shell_out` — the other 4
-  of the original 5 process-based checks, `forbidden_keys_rejected`, `doctor_status`,
-  `workspace_confinement` and `no_clobber_input`, are now real, verified against a live
-  `qc-skill` process; the latter two were redesigned mid-implementation once live testing
-  showed `qc-skill` exposes no output-path field to probe — see `registry/README.md`).
+- `registry/` item 1 (a standalone JSON Schema file for the CapabilityContract shape).
+  The conformance harness itself (item 3) is **done**: all 8 of `SKILL_SPEC.md` §8's
+  checks are now real functions, including `no_unsafe_shell_out` (a static AST walk,
+  manually verified PASS against all 9 real Python Skills' source trees — it does not
+  cover `ffmpeg-skill`, a Node.js package). What remains is wiring these checks into an
+  actual CI job per Skill, which no repository does yet.
 - The four unresolved `media-analysis-skill` analysis kinds noted in `CAPABILITY_MATRIX.md`
   §8c were resolved during this session (all ten kinds now have Capability ids) — this line
   is intentionally kept to record that PLANNED work here is now DONE, not silently dropped.

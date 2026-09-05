@@ -1,18 +1,21 @@
 """Conformance suite skeleton (docs/ROADMAP.md Phase 1, item 3; checks defined in
 docs/SKILL_SPEC.md section 8).
 
-Three of the eight checks are answerable from a contract document alone. Four more
-(`forbidden_keys_rejected`, `doctor_status`, `workspace_confinement`, `no_clobber_input`)
-are real when given callables that talk to a live Skill process -
+All eight checks are now real. Three are answerable from a contract document alone. Four
+more (`forbidden_keys_rejected`, `doctor_status`, `workspace_confinement`,
+`no_clobber_input`) are real when given callables that talk to a live Skill process -
 `make_stdin_json_runner` below builds one for the ecosystem's common "one JSON request on
 stdin, one JSON response on stdout" convention (confirmed for qc-skill,
 media-analysis-skill, transcription-skill, audio-production-skill, color-grading-skill,
 motion-graphics-skill; all four process-based checks verified end-to-end against a real
-qc-skill process in registry/tests/test_conformance_live.py). The remaining one
-(`no_unsafe_shell_out`) stays a documented stub: it needs either source-level AST analysis
-or a callable submitting shell-metacharacter injection probes, neither of which this
-library builds yet - real future work (docs/ROADMAP.md), and marking it PASS today would
-be exactly the kind of unearned claim this project's architecture rules out.
+qc-skill process in registry/tests/test_conformance_live.py). The eighth
+(`no_unsafe_shell_out`) is real when given a Skill's own Python package root: it
+statically AST-walks the source tree (SKILL_SPEC.md section 4.3's pattern, confirmed
+present in video-editing-skill and audio-production-skill) rather than the weaker
+injection-probe fallback SKILL_SPEC.md #3 describes for closed-source Skills - every
+Skill in this ecosystem is open source, so the stronger structural proof applies; it does
+not cover `ffmpeg-skill`, a Node.js package the AST-walk approach cannot parse (a
+language-appropriate equivalent is real future work).
 
 `workspace_confinement` and `no_clobber_input` were originally scoped (see git history) as
 "submit a request whose output path is outside the workspace / equals an input path, and
@@ -31,6 +34,7 @@ Skill changed it. Both are real properties every Skill must hold, not proxies fo
 """
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import os
@@ -193,23 +197,109 @@ def check_doctor_status(runner: Optional[Callable[[], Dict[str, Any]]] = None) -
     return CheckResult("doctor_status", "PASS", f"doctor returned a JSON object with {len(doc)} top-level keys")
 
 
-def _stub(name: str, spec_ref: str, wiring: str) -> Callable[..., CheckResult]:
-    def check(*_args: Any, **_kwargs: Any) -> CheckResult:
+_SUBPROCESS_SPAWN_FUNCS = {"run", "Popen", "call", "check_call", "check_output"}
+_OS_SHELL_FUNCS = {"system", "popen"}
+_DEFAULT_EXCLUDED_DIR_NAMES = {"__pycache__", "tests", "test"}
+
+
+def _python_sources(source_dir: str, exclude_dir_names: Sequence[str]) -> List[Path]:
+    root = Path(source_dir)
+    excluded = set(exclude_dir_names)
+    return [
+        p for p in sorted(root.rglob("*.py"))
+        if not excluded.intersection(p.relative_to(root).parts) and not any(part.endswith(".egg-info") for part in p.parts)
+    ]
+
+
+def check_no_unsafe_shell_out(
+    source_dir: Optional[str] = None,
+    exclude_dir_names: Optional[Sequence[str]] = None,
+) -> CheckResult:
+    """SKILL_SPEC.md #3: never shell out unsafely. Real when `source_dir` (the Skill's
+    own Python package root) is given: statically AST-walks every `.py` file in the tree
+    (per SKILL_SPEC.md section 4.3's AST-walk pattern, confirmed in video-editing-skill
+    and audio-production-skill) and fails if any file contains a bare `eval`/`exec`
+    call, an `os.system`/`os.popen` call, a `subprocess.{run,Popen,call,check_call,
+    check_output}` call whose first argument is a string/f-string literal rather than a
+    list (a string command line is what makes shell injection possible in the first
+    place; a list argv is not), or any subprocess/os call carrying `shell=True` (or a
+    non-literal `shell=` value this check cannot statically prove is always `False`).
+
+    Deliberately AST-based rather than a text/regex scan: an earlier draft of this check
+    used regexes and produced two real false positives on first run against the
+    ecosystem's actual source - qc-skill's `rules.py` merely *mentions* "eval()/exec()"
+    in a comment documenting that they're forbidden, and several Skills pass the
+    perfectly safe, explicit `shell=False` - both look identical to a real violation to
+    a text scanner but not to an AST, since a comment/docstring's text is a string
+    literal (never a `Call` node) and `shell=False` is a `Constant` this check can
+    resolve and clear.
+
+    This is the AST-walk half of SKILL_SPEC.md #3, not the weaker injection-probe
+    fallback it also describes for closed-source Skills - not applicable here since
+    every Skill in this ecosystem is open source. It also does not apply to
+    `ffmpeg-skill` (a Node.js package, not Python) - a language-appropriate equivalent
+    (an eslint rule banning the shell-spawning API outside an allow-listed file, per
+    SKILL_SPEC.md section 4.3's own language-independence note) is real future work, not
+    built here.
+
+    `exclude_dir_names` defaults (when left as `None`) to skipping `__pycache__` and any
+    `tests`/`test` directory (a Skill's own test suite intentionally exercises
+    unsafe-looking calls to prove they're rejected, which would otherwise
+    false-positive this check); pass `()` explicitly to check everything, including
+    tests. Raises NotImplementedError if `source_dir` is not given.
+    """
+    if source_dir is None:
         raise NotImplementedError(
-            f"{name} ({spec_ref}) needs a per-Skill process runner ({wiring}); "
-            "docs/SKILL_SPEC.md section 5 notes invocation mechanics differ per Skill, "
-            "so this library does not invent a generic one. Not implemented here yet - "
-            "see docs/ROADMAP.md."
+            "no_unsafe_shell_out (SKILL_SPEC.md #3) needs source_dir (the Skill's own Python package root)."
         )
-
-    check.__name__ = name
-    return check
-
-
-check_no_unsafe_shell_out: Callable[..., CheckResult] = _stub(
-    "no_unsafe_shell_out", "SKILL_SPEC.md #3",
-    "either source access for an AST walk, or a callable submitting shell-metacharacter injection probes",
-)
+    exclude = _DEFAULT_EXCLUDED_DIR_NAMES if exclude_dir_names is None else set(exclude_dir_names)
+    problems: List[str] = []
+    files = _python_sources(source_dir, exclude)
+    if not files:
+        return CheckResult("no_unsafe_shell_out", "FAIL", f"no .py files found under {source_dir!r} - wrong source_dir?")
+    for path in files:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError as exc:
+            problems.append(f"{path.name}: could not parse as Python ({exc})")
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if isinstance(func, ast.Name) and func.id in ("eval", "exec"):
+                problems.append(f"{path.name}:{node.lineno}: bare {func.id}() call")
+                continue
+            is_os_shell_call = isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) and func.value.id == "os" and func.attr in _OS_SHELL_FUNCS
+            if is_os_shell_call:
+                problems.append(f"{path.name}:{node.lineno}: os.{func.attr}() call")
+                continue
+            is_subprocess_call = (
+                isinstance(func, ast.Attribute)
+                and isinstance(func.value, ast.Name)
+                and func.value.id == "subprocess"
+                and func.attr in _SUBPROCESS_SPAWN_FUNCS
+            )
+            if not is_subprocess_call:
+                continue
+            if not node.args:
+                problems.append(f"{path.name}:{node.lineno}: subprocess.{func.attr}() with no argv")
+                continue
+            first = node.args[0]
+            if isinstance(first, (ast.Constant, ast.JoinedStr)):
+                problems.append(f"{path.name}:{node.lineno}: subprocess.{func.attr}() called with a string/f-string command instead of a list")
+            for kw in node.keywords:
+                if kw.arg != "shell":
+                    continue
+                if isinstance(kw.value, ast.Constant) and kw.value.value is False:
+                    continue  # the safe, explicit declaration - not a violation
+                if isinstance(kw.value, ast.Constant) and kw.value.value is True:
+                    problems.append(f"{path.name}:{node.lineno}: subprocess.{func.attr}(..., shell=True)")
+                else:
+                    problems.append(f"{path.name}:{node.lineno}: subprocess.{func.attr}(..., shell=<non-literal>) - cannot statically prove this is never True")
+    if problems:
+        return CheckResult("no_unsafe_shell_out", "FAIL", "; ".join(problems))
+    return CheckResult("no_unsafe_shell_out", "PASS", f"{len(files)} source files clean of unsafe shell-out patterns")
 
 
 def _snapshot(directory: str) -> Set[str]:
@@ -291,6 +381,7 @@ def check_no_clobber_input(
         return CheckResult("no_clobber_input", "FAIL", f"input file content changed after the run (sha256 {before} -> {after})")
     return CheckResult("no_clobber_input", "PASS", f"input file unchanged (sha256 {after})")
 
+
 CHECKS: Dict[str, Callable[..., CheckResult]] = {
     "publishes_contract": check_publishes_contract,
     "lifecycle_declared": check_lifecycle_declared,
@@ -304,6 +395,8 @@ CHECKS: Dict[str, Callable[..., CheckResult]] = {
 
 
 def run_static_checks(doc: Dict[str, Any]) -> List[CheckResult]:
-    """The three checks answerable from a contract document alone (see module docstring
-    for why the other five are not run here)."""
+    """The three checks answerable from a contract document alone. The other five are
+    real too (see module docstring) but each needs something beyond the contract
+    document itself - a live process, or the Skill's own source tree - so a caller runs
+    them directly with the extra argument(s) they need, rather than through here."""
     return [check_publishes_contract(doc), check_lifecycle_declared(doc), check_dependency_version_ranges(doc)]

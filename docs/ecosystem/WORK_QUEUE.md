@@ -79,15 +79,25 @@ Six PRs still open as of the last check (`subtitle-skill#2`, `thumbnail-skill#2`
 CI-green, driven per the standing PR-maintenance rules. Mostly reactive (respond to CI/
 review events as they arrive) rather than work to actively schedule.
 
-## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — MOSTLY DONE 2026-09-05
+## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — DONE 2026-09-05
 
-**Done:** `forbidden_keys_rejected`, `doctor_status`, `workspace_confinement` and
-`no_clobber_input` (4 of the 5 process-based checks) are now real, verified end-to-end
-against a real `qc-skill` process (`registry/tests/test_conformance_live.py`, 11 tests —
-4 real checks × ~2-3 tests each including a synthetic "does this check actually FAIL"
-sanity test per check — skipped when `qc` isn't on `PATH`).
+All 8 of `SKILL_SPEC.md` §8's checks are now real functions in `registry/conformance.py`
+(50 tests total, all passing — see `registry/README.md`).
 
-Two findings worth recording:
+- `forbidden_keys_rejected`, `doctor_status`, `workspace_confinement` and
+  `no_clobber_input` (4 process-based checks) verified end-to-end against a real
+  `qc-skill` process (`registry/tests/test_conformance_live.py`, 11 tests, skipped when
+  `qc` isn't on `PATH`).
+- `no_unsafe_shell_out` implemented via a static AST walk of a Skill's own Python source
+  tree (SKILL_SPEC.md section 4.3's pattern) — manually verified **PASS against all 9
+  real Python Skills** in the ecosystem (qc-skill, media-analysis-skill,
+  video-editing-skill, audio-production-skill, color-grading-skill,
+  motion-graphics-skill, thumbnail-skill, subtitle-skill, transcription-skill). Does not
+  cover `ffmpeg-skill` (Node.js, not Python) — a language-appropriate lint-rule
+  equivalent is real future work, not built here.
+
+Three findings worth recording, each caught by testing against real ecosystem source
+rather than trusting the first implementation:
 - The first `forbidden_keys_rejected` implementation assumed every Skill's failure
   envelope carries `ok: false`, but `qc-skill`'s real responses use `status: "failed"`
   with no `ok` key at all — `_is_rejected()` now checks both real conventions this
@@ -104,14 +114,19 @@ Two findings worth recording:
   `workspace_confinement` snapshots caller-chosen directories outside the declared
   workspace before/after a real run and fails if any gained a file;
   `no_clobber_input` hashes the input fixture before/after and fails if it changed.
+- `no_unsafe_shell_out`'s first draft used a text/regex scan and produced two real false
+  positives on its first run against actual ecosystem source: `qc-skill`'s `rules.py`
+  merely *mentions* "eval()/exec()" inside a comment documenting they're forbidden, and
+  several Skills pass the safe, explicit `shell=False` — both looked identical to a real
+  violation to a regex but not to an AST (a comment/docstring is a string literal, never
+  a `Call` node; `shell=False` is a `Constant` the check can resolve and clear). Switched
+  to a full AST walk, which also now conservatively flags a non-literal `shell=` value
+  (one it cannot statically prove is always `False`) rather than assuming it's safe.
 
-**Still open:** `no_unsafe_shell_out` — needs either source-level AST analysis or a
-callable submitting shell-metacharacter injection probes, neither built yet. Real value
-remains: this is the mechanism `PLUGIN_MODEL.md` names for rejecting an unsafe
-third-party Skill without human judgment. Scope for next attempt: the AST-walk variant
-needs source access, which every Skill in this ecosystem happens to provide (all are
-open source) — worth attempting before assuming the weaker injection-probe variant is
-necessary.
+**Not done, and out of scope for this item:** wiring any of these 8 checks into an
+actual CI job in any Skill's own repository — each is a real, callable function today,
+not yet an automated gate anywhere. That would be a per-Skill PR (adding a conformance
+CI step), a different and separate piece of work from building the checks themselves.
 
 ## 4. A standalone JSON Schema file for the CapabilityContract's `provides` shape
 

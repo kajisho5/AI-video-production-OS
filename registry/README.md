@@ -18,9 +18,9 @@ python3 -m unittest discover -s registry/tests -t .
   `is_collision(id)`, `collisions()`, `resolve(id, explicit_skill_id=, default_skill_id=)`
   (raises `CollisionError` — registry refusal — only when neither an explicit nor a
   default choice was given for an id with 2+ independent Providers).
-- `conformance.py` — the eight checks from `docs/SKILL_SPEC.md` section 8. Three
-  (`publishes_contract`, `lifecycle_declared`, `dependency_version_ranges`) are real,
-  answerable from a contract document alone. Four more (`forbidden_keys_rejected`,
+- `conformance.py` — **all eight** checks from `docs/SKILL_SPEC.md` section 8 are now
+  real. Three (`publishes_contract`, `lifecycle_declared`, `dependency_version_ranges`)
+  are answerable from a contract document alone. Four more (`forbidden_keys_rejected`,
   `doctor_status`, `workspace_confinement`, `no_clobber_input`) are real when given
   callables that talk to a live Skill process — `make_stdin_json_runner()` builds one
   for the ecosystem's common "one JSON request on stdin, one JSON response on stdout"
@@ -33,10 +33,18 @@ python3 -m unittest discover -s registry/tests -t .
   path). They're instead observational — snapshot directories outside the workspace
   before/after a real run (`workspace_confinement`), or hash the input fixture
   before/after (`no_clobber_input`) — properties that hold for any Skill regardless of
-  whether it exposes an output-path field. The remaining check (`no_unsafe_shell_out`)
-  is a documented stub that raises `NotImplementedError` naming exactly what wiring
-  (source access for an AST walk, or an injection-probe callable) it still needs.
-- `tests/` — 32 tests: 21 against real captured `provides` data (`tests/fixtures/`,
+  whether it exposes an output-path field. The eighth (`no_unsafe_shell_out`) is real
+  when given a Skill's own Python package root: it statically AST-walks the source tree
+  (SKILL_SPEC.md section 4.3's pattern) for `eval`/`exec`, `os.system`/`os.popen`, a
+  string/f-string first argument to `subprocess.{run,Popen,call,check_call,
+  check_output}`, or a `shell=` keyword that isn't the literal, safe `False` — deliberately
+  AST-based rather than text/regex, since an earlier draft's regex scan produced two real
+  false positives against the ecosystem's actual source (a comment merely *mentioning*
+  "eval()/exec()" in `qc-skill`, and the safe, explicit `shell=False` several Skills
+  actually use). Manually verified PASS against all 9 real Python Skills' source trees;
+  does not cover `ffmpeg-skill` (Node.js, not Python — a language-appropriate lint-rule
+  equivalent is future work).
+- `tests/` — 50 tests: 21 against real captured `provides` data (`tests/fixtures/`,
   trimmed excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
   `transcription-skill` and `ffmpeg-skill`'s actual `contract`/`skill --json` output
   after their `provides` field was added — see `docs/ECOSYSTEM_CHANGELOG.md`), including
@@ -44,7 +52,10 @@ python3 -m unittest discover -s registry/tests -t .
   (`measure.audio.loudness`/`measure.audio.silence`/`measure.audio.integrity` between
   `qc-skill` and `media-analysis-skill`); 11 more (`tests/test_conformance_live.py`) run
   all four live conformance checks against a real `qc-skill` process, each paired with a
-  synthetic sanity check proving it can actually FAIL (not just always PASS).
+  synthetic sanity check proving it can actually FAIL (not just always PASS); 18 more
+  (`tests/test_no_unsafe_shell_out.py`) exercise the AST-walk check's logic against
+  synthetic fixtures — every real unsafe pattern, plus regression tests for the two
+  false positives found against real ecosystem source.
 
 ## What this deliberately is not
 
@@ -63,9 +74,11 @@ python3 -m unittest discover -s registry/tests -t .
 - **Not Phase 3.** This library can *apply* an explicit or default-provider choice once
   one is given; deciding what a deployment's default-provider policy should be, and
   where it is configured, is `docs/ROADMAP.md` Phase 3's job, not this library's.
-- **Not the full conformance harness.** One of the eight `SKILL_SPEC.md` checks
-  (`no_unsafe_shell_out`) still needs per-Skill wiring this library does not provide —
-  future work.
+- **Not a CI-integrated harness yet.** All eight `SKILL_SPEC.md` §8 checks are real
+  functions a caller can invoke, but nothing here runs them automatically against every
+  Skill on a schedule or in a shared CI job — a caller (a future CLI, or each Skill's own
+  CI) still wires them in per-Skill. `no_unsafe_shell_out` also has no non-Python
+  equivalent yet, so `ffmpeg-skill` (Node.js) is not covered by any check in this file.
 
 ## Why it lives here, not a new repository
 

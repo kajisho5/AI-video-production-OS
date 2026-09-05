@@ -38,6 +38,35 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — `registry/` conformance harness complete: all 8 `SKILL_SPEC.md` §8 checks now real
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: (pushed to `claude/ai-video-production-os-arch-fck6fy`, same branch as the
+  two entries below)
+- **What changed**: `registry/conformance.py`'s last remaining stub, `no_unsafe_shell_out`,
+  is now real — a static AST walk of a Skill's own Python package (SKILL_SPEC.md section
+  4.3's pattern), flagging bare `eval`/`exec`, `os.system`/`os.popen`, a string/f-string
+  first argument to a `subprocess` spawn call, or a `shell=` keyword that isn't the
+  literal `False`. Manually run against all 9 real Python Skills in the ecosystem
+  (qc-skill, media-analysis-skill, video-editing-skill, audio-production-skill,
+  color-grading-skill, motion-graphics-skill, thumbnail-skill, subtitle-skill,
+  transcription-skill) — all 9 PASS. Does not cover `ffmpeg-skill` (Node.js, not Python).
+  An initial text/regex-based draft produced two real false positives on that same first
+  run (a comment in `qc-skill`'s `rules.py` merely mentioning "eval()/exec()"; the safe,
+  explicit `shell=False` several Skills use) - fixed by rewriting the check as a full AST
+  walk instead, which structurally cannot mistake a string literal's contents for
+  executable code. New test file `registry/tests/test_no_unsafe_shell_out.py` (18 tests
+  against synthetic fixtures, including both false positives as permanent regressions).
+  Registry suite is now 50 tests, all passing. All eight `SKILL_SPEC.md` §8 conformance
+  checks are real as of this entry - `registry/README.md`, `docs/ROADMAP.md`, and
+  `docs/ecosystem/{CURRENT_STATE,WORK_QUEUE,DECISION_LOG}.md` updated to match.
+- **Why**: `docs/ecosystem/WORK_QUEUE.md` item 3 — finishing the conformance-harness work
+  started earlier the same day.
+- **Status**: pushed directly to the branch (registry/ is this project's own reference
+  library, not a cross-repo Skill change requiring PR review).
+
+---
+
 ### 2026-09-05 — `registry/` conformance: wire `workspace_confinement` and `no_clobber_input` for real
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS`
