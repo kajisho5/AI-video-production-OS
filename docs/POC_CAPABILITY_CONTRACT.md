@@ -1,11 +1,13 @@
 # PoC: Does the Capability Contract model actually work against real data?
 
-Status: **completed proof-of-concept, two rounds.** First piece of this project's work
-checked against live code rather than only against static repository reading. Round 1
-checked the known collision case (`qc-skill`/`media-analysis-skill`, 2 Skills); Round 2
-checked three more, non-colliding Skills to isolate what actually drives Phase 2
-retrofit cost. 5 of the ecosystem's 10 Skills have now been checked this way; 5 remain
-(see "What this PoC does not prove"). Per
+Status: **completed proof-of-concept, three rounds — all 10 Skills in the ecosystem now
+checked against real contract data.** First piece of this project's work checked
+against live code rather than only against static repository reading. Round 1 checked
+the known collision case (`qc-skill`/`media-analysis-skill`); Round 2 checked three
+more, non-colliding Skills to isolate what actually drives Phase 2 retrofit cost; Round
+3 completed the remaining five (`ffmpeg-skill`, `color-grading-skill`,
+`motion-graphics-skill`, `subtitle-skill`, `thumbnail-skill`) for a full ecosystem-wide
+picture. Per
 [`docs/FINAL_REVIEW.md`](FINAL_REVIEW.md) §3, the single biggest open risk in the
 architecture was that nobody had ever exercised the Capability/Provider model against
 real contract data — only read it in source. This PoC closes that specific gap, in the
@@ -202,36 +204,108 @@ because unlike Findings 1–3 this one doesn't have an obviously-correct resolut
 be at least as common once more Skills are checked. Left as an open, named question
 rather than a snap decision.
 
+## Round 3 — the remaining five Skills, and the full ecosystem-wide picture
+
+`ffmpeg-skill`, `color-grading-skill`, `motion-graphics-skill`, `subtitle-skill`, and
+`thumbnail-skill` were captured the same way (`color-grading` / `motion-graphics` /
+`thumbnail` via their real `contract --json`; `ffmpeg-skill` via its real
+`scripts/_contract.py --json` generator, since it is Node-wrapped rather than a Python
+console script; `thumbnail-skill` required installing its one real dependency,
+`Pillow`, to import at all — done, not worked around). All ten Skills' real contracts
+now live in [`poc/capability-contract/`](../poc/capability-contract/).
+
+**Finding 6 — `contract_version` is rare, not just inconsistent.** Only 3 of 10 Skills
+publish it at all: `qc-skill` (`1`, an int), `ffmpeg-skill` (`"1.0"`, a string),
+`subtitle-skill` (`"1.0.0"`, a three-part string). Round 1 called this "not
+consistently present"; with all 10 checked, the more accurate statement is that
+**most Skills don't publish this field yet, at all** — this is a bigger gap than Round
+1's framing suggested, and belongs explicitly in every remaining Skill's Phase 2 scope,
+not treated as a minor cleanup.
+
+**Finding 7 — `ffmpeg-skill` itself, the literal source `SPEC.md` §1 was generalized
+from, does not match the flat shape `SPEC.md` proposed.** Its real top-level contract
+nests `skill_id` and `version` inside a `skill: {id, version, description,
+entrypoints, ...}` sub-object, with `contract_version` and `tools` as top-level
+siblings — not the flat `skill_id`/`version`/`contract_version`/`provides` shape
+`SPEC.md` describes. This matters because `SPEC.md` §1 explicitly claims to generalize
+"`ffmpeg-skill`'s `ToolSpec`... into one cross-ecosystem shape" — that claim was true in
+*spirit* (the same information exists) but not in literal structure. Recorded here
+rather than silently smoothed over; `SPEC.md`'s flat shape is still a reasonable target
+to converge *toward*, but no existing Skill, including the one it was modeled on,
+already matches it exactly.
+
+**Finding 8 — the ecosystem already has a common per-operation identifier convention,
+and it is not the one `CAPABILITY_MODEL.md` proposed.** Across all 10 Skills:
+
+| Convention | Shape | Skills that already have it natively |
+|---|---|---|
+| **Tool id** (`<skill>/<tool>`) | one id per concrete, invokable operation, namespaced by Skill | `ffmpeg-skill` (`ffmpeg-skill/audio`), `media-analysis-skill` (`media-analysis/loudness`), `thumbnail-skill` (`thumbnail/render`) — 3 Skills |
+| **Capability id** (`<domain>.<verb>`) | cross-Skill, groups equivalent operations from *different* Skills under one name | `video-editing-skill` only (`video.trim`) — 1 Skill |
+| **Neither, one generic tool per Skill** | a single `<skill>/run` tool id; real operations are `type`-tagged entries in a separate `operations` list one level deeper, not independently addressable | `audio-production-skill`, `color-grading-skill`, `motion-graphics-skill` — 3 Skills |
+| **Neither, no tools array at all** | operations named directly (`generate`, `render`) with no id field | `subtitle-skill` — 1 Skill |
+| **Neither, checks are dotted but skill-internal** | e.g. `audio.integrated_loudness_within_tolerance` — namespaced like a Capability id, but never intended to match another Skill's check of the same name | `qc-skill` — 1 Skill |
+| **`id`-only, flat skill-wide list, no per-operation structure** | | `transcription-skill` — 1 Skill |
+
+This re-centers what Phase 2 actually needs to produce, ecosystem-wide: **the Tool id
+convention (`<skill>/<tool>`) is already the closer-to-universal one** (3 Skills have it
+natively, and `qc-skill`'s/`media-analysis-skill`'s own check/tool names are a short
+step from it) — it identifies *one Skill's one operation*. What's almost entirely
+missing (video-editing-skill is the sole exception) is the **cross-Skill grouping
+label** — the actual `CAPABILITY_MODEL.md` "Capability id" — that lets a Plan say
+"I need `measure.audio.loudness`" without caring whether `qc-skill`'s
+`audio.integrated_loudness_within_tolerance` or `media-analysis-skill`'s
+`media-analysis/loudness` answers it. Phase 2's real, central task is adding that
+grouping label on top of identifiers that mostly already exist — not inventing
+per-operation identifiers from nothing.
+
+**Finding 9 — `skill_id` is the dominant, safe convention; `transcription-skill` is the
+outlier.** With all 10 checked (`ffmpeg-skill`'s nested shape counted separately): 8 of
+9 flat-shaped Skills publish `skill_id`; 4 of those 8 (`audio-production-skill`,
+`color-grading-skill`, `motion-graphics-skill`, `thumbnail-skill`) *also* publish a
+redundant `id` field with the same value, for no evidenced reason; only
+`transcription-skill` publishes `id` and no `skill_id` at all. This resolves Round 1's
+open question with real confidence: `SPEC.md`'s `skill_id` field name is correct as
+written, and `transcription-skill`'s divergence is the one Skill worth flagging for a
+future, low-priority fix on its own side — not a reason to change `SPEC.md`.
+
 ## What this PoC does not prove
 
 - It does not prove the *full* Phase 1 registry (dynamic discovery, multiple Skills,
-  real Plan validation) works — only that the specific collision-resolution logic does,
-  in isolation, against two real Skills' real data, and that five real Skills' contract
-  shapes were checked field-by-field against the proposed schema.
+  real Plan validation, actual runtime enforcement) works — only that the specific
+  collision-resolution logic does, in isolation, against two real Skills' real data,
+  and that all 10 Skills' contract shapes were checked field-by-field against the
+  proposed schema and against each other.
 - It does not touch `video-production-agent`'s actual `SkillRegistry` code at all — a
   faithful next step would be replacing its hardcoded ordered-candidate-list
   (`silence_cleanup` → `["ffmpeg-skill/cut", "video-editing/cut"]`, per
   `REPOSITORY_MAP.md`) with something backed by this registry model, which this PoC
   does not attempt.
-- It says nothing about `ffmpeg-skill`'s, `color-grading-skill`'s,
-  `motion-graphics-skill`'s, `subtitle-skill`'s, or `thumbnail-skill`'s actual contract
-  shapes — 5 of 10 Skills remain unchecked against this schema. `ffmpeg-skill`'s
-  contract was the direct source `SPEC.md` generalized from, so it is expected (not
-  assumed) to match well; the other four are genuinely unverified.
+- `motion-graphics-skill`'s per-element structure (`element_types`,
+  `unsupported_element_types`, `animations`) was not decomposed in the same depth as
+  the other Skills' `operations`/`tools` — it has no `operations` key at all, and
+  fully mapping its identifier shape is left for whoever does its actual Phase 2 work.
 
 ## Recommendation
 
-1. Apply the field-naming corrections above to `SPEC.md` §1 now — cheap, and this is
-   exactly the point where doing it costs a documentation edit instead of a breaking
-   schema change after Phase 1 code exists. (Done for Findings 1–3; Finding 5 left
-   open, deliberately, per its own explanation above.)
-2. Treat "does this Skill's contract already have a native capability-shaped field, or
-   does it need manual mapping" as a per-Skill fact to check, not assume, when scoping
-   each Skill's `ROADMAP.md` Phase 2 entry — Finding 4 shows the answer varies Skill by
-   Skill and materially changes the effort.
-3. Still do not build the full Phase 1 registry library yet. Two rounds of this PoC
-   have now produced concrete, real findings each time at very low cost (a few hours,
-   no new repository, no retrofit). The next-smallest useful increment is checking the
-   remaining 5 unverified Skills' contracts the same way — cheap insurance against
-   discovering a sixth or seventh field-naming surprise only after Phase 1 code exists
-   and a schema change would be breaking.
+1. Apply the field-naming corrections above to `SPEC.md` §1 — done for Findings 1–3;
+   Finding 5/9 resolved `skill_id` as correct-as-written; Finding 7 (`ffmpeg-skill`'s
+   real nested shape) is recorded here as a known, accepted gap between the proposed
+   target shape and every existing Skill including its own model, not fixed by forcing
+   `ffmpeg-skill` to change or by further loosening `SPEC.md`.
+2. Treat "does this Skill already have a native capability-shaped field, a Tool id, a
+   single generic tool, or neither" as a per-Skill fact to check before scoping its
+   `ROADMAP.md` Phase 2 entry — Findings 4 and 8 show this varies by Skill and changes
+   the effort by more than a little.
+3. Scope Phase 2's actual work correctly given Finding 8: for most Skills the task is
+   *not* "invent identifiers from nothing," it is "add the cross-Skill Capability
+   grouping label on top of Tool ids/check names that mostly already exist." This is a
+   smaller, better-defined task than "publish a full CapabilityContract" made it sound
+   before this PoC.
+4. This PoC's evidence-gathering purpose is now complete — all 10 Skills checked, at
+   low cost (roughly a day's work total across three rounds, zero new repositories, zero
+   Skill retrofits, zero synthetic examples). The next step that would cost
+   meaningfully more than this is either (a) building a real, minimal registry
+   implementation against this now-verified understanding, or (b) actually touching
+   `video-production-agent`'s `SkillRegistry` — both are Phase 1/3 work, not further
+   PoC work, and should be scoped and decided on their own terms rather than treated as
+   "more of the same cheap investigation."

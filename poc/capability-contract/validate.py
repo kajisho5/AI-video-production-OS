@@ -92,6 +92,11 @@ def main():
         here / "video-editing-skill.contract.json",
         here / "audio-production-skill.contract.json",
         here / "transcription-skill.contract.json",
+        here / "ffmpeg-skill.contract.json",
+        here / "color-grading-skill.contract.json",
+        here / "motion-graphics-skill.contract.json",
+        here / "subtitle-skill.contract.json",
+        here / "thumbnail-skill.contract.json",
     ]
 
     exit_code = 0

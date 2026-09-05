@@ -3,15 +3,18 @@
 Proof-of-concept: does CAPABILITY_MODEL.md's Provider collision-resolution
 policy actually resolve anything, when pointed at the REAL, already-published
 contract data from qc-skill and media-analysis-skill (not synthetic
-examples)?
+examples)? And, having checked all 10 real Skills' contracts (see
+docs/POC_CAPABILITY_CONTRACT.md Rounds 1-3), what does the ecosystem's real
+identifier landscape actually look like?
 
-This does NOT modify either Skill. It reads their real `contract --json`
-output (already captured in this directory) and manually maps each Skill's
-existing check/tool identifiers onto the OS-level Capability ids proposed in
-CAPABILITY_MODEL.md's worked examples. That mapping step is itself a finding:
-nothing in either Skill's real contract does this mapping today (see
-FINDINGS.md), so a registry that wants Capability ids has to be told this
-correspondence out-of-band, at least until every Skill publishes one.
+This does NOT modify any Skill. It reads real `contract`/`skill` CLI output
+(already captured in this directory) and manually maps each Skill's existing
+check/tool identifiers onto the OS-level Capability ids proposed in
+CAPABILITY_MODEL.md's worked examples where no native one exists. That
+mapping step is itself a finding: most Skills' real contracts don't do this
+mapping today (see FINDINGS.md), so a registry that wants Capability ids has
+to be told this correspondence out-of-band, at least until every Skill
+publishes one.
 """
 import json
 from pathlib import Path
@@ -20,7 +23,7 @@ HERE = Path(__file__).parent
 
 
 def load(name: str) -> dict:
-    return json.loads((HERE / name).read_text())
+    return json.loads((HERE / f"{name}.contract.json").read_text())
 
 
 # --- The manual mapping a real registry would need today ------------------
@@ -88,11 +91,11 @@ class Registry:
                             f"— CAPABILITY_MODEL.md requires this to fail loudly, not pick silently")
 
 
-def main():
-    qc = load("qc-skill.contract.json")
-    ma = load("media-analysis-skill.contract.json")
+def round1_and_2():
+    qc = load("qc-skill")
+    ma = load("media-analysis-skill")
 
-    print("=== Confirming the real data actually contains what CAPABILITY_TO_PROVIDERS claims ===")
+    print("=== ROUND 1: Confirming the real data actually contains the collision ===")
     qc_checks = set(qc["checks"])
     ma_tool_ids = {t["tool_id"] for t in ma["tools"]}
     for cap_id, providers in CAPABILITY_TO_PROVIDERS.items():
@@ -107,7 +110,7 @@ def main():
 
     print("\n=== Confirming the two known ABSENCES (not a strict subset relationship) ===")
     print(f"  qc-skill has scene-detection check?      "
-          f"{'video.scene' in ' '.join(qc_checks).lower() or any('scene' in c for c in qc_checks)}")
+          f"{any('scene' in c for c in qc_checks)}")
     print(f"  media-analysis-skill has a freeze tool?  "
           f"{any('freeze' in t['tool_id'] for t in ma['tools'])}")
 
@@ -133,52 +136,67 @@ def main():
         print(f"    resolve({cap_id!r}, explicit={explicit!r}, policy={policy!r})")
         print(f"    -> {result}")
 
-    # --- Round 2: does mapping-to-Capability-id get easier with no collision? ----
-    # Three MORE real, non-colliding Skills, to test the follow-up question from
-    # docs/POC_CAPABILITY_CONTRACT.md's "Recommendation" section: is the manual
-    # mapping step (Finding 3, above) specific to the qc-skill/media-analysis-skill
-    # collision case, or does every Skill need it regardless of collision?
-    print("\n\n=== Round 2: Capability-id extraction cost for three more real, "
-          "non-overlapping Skills ===")
-
-    ve = load("video-editing-skill.contract.json")
-    ap = load("audio-production-skill.contract.json")
-    ts = load("transcription-skill.contract.json")
+    print("\n\n=== ROUND 2: Capability-id extraction cost for three non-overlapping Skills ===")
+    ve = load("video-editing-skill")
+    ap = load("audio-production-skill")
+    ts = load("transcription-skill")
 
     print("\n--- video-editing-skill: ZERO manual mapping needed ---")
-    print("Its own contract's `operations` dict already carries a native")
-    print("`capability` field per operation, in exactly the dotted-namespace shape")
-    print("CAPABILITY_MODEL.md proposed (e.g. 'video.trim', not 'edit.trim' as this")
-    print("project's own worked example guessed — the real Skill's own naming wins):")
     for name, spec in ve["operations"].items():
-        print(f"    {name:<10} -> capability={spec.get('capability')!r}  (extracted automatically, no human judgment required)")
+        print(f"    {name:<10} -> capability={spec.get('capability')!r}  (extracted automatically)")
 
     print("\n--- audio-production-skill: manual mapping still needed ---")
-    print("Its `operations` list has a `type` (e.g. 'NORMALIZE') and a `tool`")
-    print("(e.g. 'ffmpeg-skill/loudness') but no native OS-level capability id field —")
-    print("structurally similar to qc-skill/media-analysis-skill's situation, even")
-    print("though audio-production-skill has no capability COLLISION with anyone:")
     sample_ops = [op for op in ap["operations"] if op["type"] in ("NORMALIZE", "GAIN", "MIX")]
     for op in sample_ops:
         guessed_id = {"NORMALIZE": "audio.normalize.loudness", "GAIN": "audio.gain", "MIX": "audio.mix"}[op["type"]]
-        print(f"    type={op['type']:<10} tool={op['tool']!r:<28} -> a human would need to decide this is {guessed_id!r}")
+        print(f"    type={op['type']:<10} tool={op['tool']!r:<28} -> a human would decide this is {guessed_id!r}")
 
-    print("\n--- transcription-skill: manual mapping needed, plus its own naming drift ---")
-    print(f"    id field used: 'id' = {ts.get('id')!r}  (NOT 'skill_id' — see Finding 5)")
+    print("\n--- transcription-skill: manual mapping needed, plus 'id' not 'skill_id' ---")
+    print(f"    id field used: 'id' = {ts.get('id')!r}")
     print(f"    flat capabilities list (not per-operation): {ts.get('capabilities')}")
-    print("    -> 'speech_recognition' is the closest analog to an OS Capability id")
-    print("       (e.g. transcribe.audio) but it names a general ABILITY, not one")
-    print("       typed, invokable operation with its own input/output schema —")
-    print("       still requires a human decision, just a smaller one.")
 
-    print("\n=== Round 2 conclusion ===")
-    print("Mapping cost is NOT determined by whether a Capability collision exists.")
-    print("It is determined by whether a Skill's own contract generator already")
-    print("emits a per-operation capability-shaped id. video-editing-skill happens to")
-    print("(cost: ~zero). audio-production-skill, transcription-skill, qc-skill, and")
-    print("media-analysis-skill do not (cost: one human decision per operation/check,")
-    print("regardless of collision). See docs/POC_CAPABILITY_CONTRACT.md Finding 4.")
+
+def round3_ecosystem_wide_summary():
+    print("\n\n=== ROUND 3: ecosystem-wide summary across all 10 real Skills ===")
+    names = ["qc-skill", "media-analysis-skill", "video-editing-skill", "audio-production-skill",
+             "transcription-skill", "ffmpeg-skill", "color-grading-skill", "motion-graphics-skill",
+             "subtitle-skill", "thumbnail-skill"]
+
+    print(f"\n{'Skill':<24}{'id field':<14}{'contract_version':<20}{'native domain.verb capability id?'}")
+    for n in names:
+        d = load(n)
+        if n == "ffmpeg-skill":
+            idf, cv, dv = "skill.id (nested!)", repr(d.get("contract_version")), "no"
+        else:
+            idf = "skill_id" if "skill_id" in d else ("id-only" if "id" in d else "NEITHER")
+            if "skill_id" in d and "id" in d:
+                idf += "+id"
+            cv = repr(d.get("contract_version"))
+            ops = d.get("operations")
+            dv = "no"
+            if isinstance(ops, dict):
+                sample = next(iter(ops.values()))
+                if isinstance(sample, dict) and "capability" in sample:
+                    dv = f"YES ({sample['capability']!r} style)"
+        print(f"{n:<24}{idf:<14}{cv:<20}{dv}")
+
+    have_cv = sum(1 for n in names if load(n).get("contract_version") not in (None,))
+    print(f"\ncontract_version actually published: {have_cv}/10 Skills "
+          f"(qc-skill, ffmpeg-skill, subtitle-skill — three different value types: int, '1.0', '1.0.0')")
+    print("A native cross-Skill-style Capability id (domain.verb, e.g. 'video.trim') "
+          "exists natively in exactly 1/10 Skills (video-editing-skill).")
+    print("A native per-operation Tool id (skill/tool, e.g. 'ffmpeg-skill/audio') — a "
+          "DIFFERENT, already-common convention — exists in 4/10 Skills (ffmpeg-skill, "
+          "media-analysis-skill, thumbnail-skill, and partially qc-skill's checks[] "
+          "strings, which are dotted but skill-internal, e.g. "
+          "'audio.integrated_loudness_within_tolerance').")
+    print("3/10 Skills (audio-production-skill, color-grading-skill, motion-graphics-skill) "
+          "expose only ONE generic '<skill>/run' tool at the top level — their real, "
+          "granular operations live one level deeper (an 'operations' list keyed by "
+          "'type', e.g. NORMALIZE/HDR_TO_SDR) and are not independently addressable "
+          "tool ids today, only request parameters to the single 'run' tool.")
 
 
 if __name__ == "__main__":
-    main()
+    round1_and_2()
+    round3_ecosystem_wide_summary()

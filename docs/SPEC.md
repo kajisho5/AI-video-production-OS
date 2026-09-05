@@ -14,9 +14,11 @@ every other Skill's `contract.py` output into one cross-ecosystem shape.
 
 ```
 CapabilityContract {
-  skill_id: string            // e.g. "qc"                 (existing in 4 of 5 Skills checked so far as
-                               //   "skill_id"; transcription-skill instead calls this "id" — see
-                               //   POC_CAPABILITY_CONTRACT.md Finding 5, not yet reconciled)
+  skill_id: string            // e.g. "qc"                 (existing: 8 of 9 flat-shaped Skills use
+                               //   "skill_id" (confirmed across all 10 Skills in the ecosystem, see
+                               //   POC_CAPABILITY_CONTRACT.md Finding 9); transcription-skill is the
+                               //   sole outlier using "id" instead — a fix for that Skill, not for
+                               //   this field name)
   version: string             // e.g. "0.1.0"              (existing: every repo's own version field — RENAMED
                                //   from an earlier "skill_version" draft; see POC_CAPABILITY_CONTRACT.md
                                //   Finding 1 — no real Skill uses "skill_version", they all just say "version")
