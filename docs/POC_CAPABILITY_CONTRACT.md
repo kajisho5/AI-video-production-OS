@@ -1,7 +1,11 @@
 # PoC: Does the Capability Contract model actually work against real data?
 
-Status: **completed proof-of-concept**, first piece of this project's work checked
-against live code rather than only against static repository reading. Per
+Status: **completed proof-of-concept, two rounds.** First piece of this project's work
+checked against live code rather than only against static repository reading. Round 1
+checked the known collision case (`qc-skill`/`media-analysis-skill`, 2 Skills); Round 2
+checked three more, non-colliding Skills to isolate what actually drives Phase 2
+retrofit cost. 5 of the ecosystem's 10 Skills have now been checked this way; 5 remain
+(see "What this PoC does not prove"). Per
 [`docs/FINAL_REVIEW.md`](FINAL_REVIEW.md) §3, the single biggest open risk in the
 architecture was that nobody had ever exercised the Capability/Provider model against
 real contract data — only read it in source. This PoC closes that specific gap, in the
@@ -138,35 +142,96 @@ checks/tools should be registered under. This is a real, sizeable-but-bounded ta
 a mechanical one — worth calling out explicitly in `ROADMAP.md` Phase 2's scope, which
 this PoC's findings should be read alongside.
 
+## Round 2 — does the mapping cost (Finding 3) depend on collision, or something else?
+
+Following this PoC's own recommendation, three more real Skills with **no capability
+overlap with each other or with qc-skill/media-analysis-skill** were pulled the same
+way — real, unmodified `contract --json` (`transcription-skill`: `skill --json`, its
+own real subcommand name) — and added to
+[`poc/capability-contract/`](../poc/capability-contract/):
+[`video-editing-skill.contract.json`](../poc/capability-contract/video-editing-skill.contract.json),
+[`audio-production-skill.contract.json`](../poc/capability-contract/audio-production-skill.contract.json),
+[`transcription-skill.contract.json`](../poc/capability-contract/transcription-skill.contract.json).
+
+**Finding 4 — mapping cost tracks contract richness, not collision.** This is the
+answer to the open question Round 1 ended on, and it is more specific and more useful
+than "yes, easier" or "no, the same":
+
+- `video-editing-skill`'s own contract already carries a **native, per-operation
+  `capability` field**, in exactly the dotted-namespace shape this project proposed —
+  `TRIM → "video.trim"`, `CONCAT → "video.concat"`, `OVERLAY → "video.overlay"`, all 8
+  operations. Extracting an OS-level Capability id from this Skill's real contract
+  today requires **zero human judgment** — `registry_demo.py`'s Round 2 output reads
+  the field directly. (One correction to this project's own prior work: the worked
+  example in `CAPABILITY_MODEL.md` guessed the id `edit.trim`; the real Skill already
+  publishes `video.trim`. The real Skill's own naming should win — noted here, not yet
+  propagated back into `CAPABILITY_MODEL.md`'s prose, which is a small follow-up.)
+- `audio-production-skill`'s contract has a `type` (`NORMALIZE`, `GAIN`, `MIX`, ...) and
+  a `tool` (`ffmpeg-skill/loudness`, ...) per operation, but **no native Capability id
+  field** — a human still has to decide `NORMALIZE` means `audio.normalize.loudness`.
+  This Skill has zero collision with anything else in the ecosystem, and still needs
+  the same manual step qc-skill/media-analysis-skill needed.
+- `transcription-skill`'s contract has a flat, skill-wide `capabilities` list
+  (`speech_recognition`, `word_timestamps`, `transcript_export:json`, ...) — closer in
+  *spirit* to an OS Capability than qc-skill's/media-analysis-skill's environment-flag
+  usage of the same word, but not itemized per typed operation, so it still needs a
+  human decision, just a smaller one (mapping ~1 ability name, not N per-operation
+  identifiers).
+
+**Conclusion: whether a Skill needs manual Capability-id mapping in its Phase 2
+retrofit has nothing to do with whether it collides with another Skill.** It depends
+entirely on whether that Skill's own contract generator happens to already emit a
+capability-shaped identifier per operation. Of the five Skills checked, one
+(`video-editing-skill`) needs none; four need a bounded, per-operation human decision
+regardless of collision status. This should be read directly into `ROADMAP.md` Phase
+2's per-Skill scoping: it is not one uniform task repeated ten times, it ranges from
+"add one top-level field, mechanically" to "make N small naming decisions," and which
+case a given Skill falls into is now a knowable, checkable fact rather than an
+assumption — check each Skill's real contract for a native capability-shaped field
+before estimating its Phase 2 effort.
+
+**Finding 5 — the Skill's own identifier field name is not even consistent.**
+`qc-skill`, `media-analysis-skill`, `video-editing-skill`, and `audio-production-skill`
+all self-report as `"skill_id": "..."`. `transcription-skill` instead uses
+`"id": "transcription-skill"` — no `skill_id` field exists in its contract at all. This
+is the same class of finding as Finding 1 (`skill_version` vs. `version`): `SPEC.md`
+assumed a field name because 4 of 5 checked Skills agreed, and the 5th disagreed. Noted
+directly in `SPEC.md` §1 rather than silently generalized away; **not yet fixed**,
+because unlike Findings 1–3 this one doesn't have an obviously-correct resolution yet —
+`transcription-skill` may be the outlier worth asking to change, or `id` may turn out to
+be at least as common once more Skills are checked. Left as an open, named question
+rather than a snap decision.
+
 ## What this PoC does not prove
 
 - It does not prove the *full* Phase 1 registry (dynamic discovery, multiple Skills,
   real Plan validation) works — only that the specific collision-resolution logic does,
-  in isolation, against two real Skills' real data.
+  in isolation, against two real Skills' real data, and that five real Skills' contract
+  shapes were checked field-by-field against the proposed schema.
 - It does not touch `video-production-agent`'s actual `SkillRegistry` code at all — a
   faithful next step would be replacing its hardcoded ordered-candidate-list
   (`silence_cleanup` → `["ffmpeg-skill/cut", "video-editing/cut"]`, per
   `REPOSITORY_MAP.md`) with something backed by this registry model, which this PoC
   does not attempt.
-- It says nothing about the other 8 Skills' contract shapes — `qc-skill` and
-  `media-analysis-skill` were chosen specifically because they are the known collision
-  case; the other Skills' contracts may match `SPEC.md` more or less closely than these
-  two did (recall `ffmpeg-skill`'s own contract already closely matches the *general
-  shape* `SPEC.md` generalized from it, per `REPOSITORY_MAP.md` — it was not re-checked
-  here since it was the direct source of the design, not an independent check).
+- It says nothing about `ffmpeg-skill`'s, `color-grading-skill`'s,
+  `motion-graphics-skill`'s, `subtitle-skill`'s, or `thumbnail-skill`'s actual contract
+  shapes — 5 of 10 Skills remain unchecked against this schema. `ffmpeg-skill`'s
+  contract was the direct source `SPEC.md` generalized from, so it is expected (not
+  assumed) to match well; the other four are genuinely unverified.
 
 ## Recommendation
 
-1. Apply the three field-naming corrections above to `SPEC.md` §1 now — cheap, and
-   this is exactly the point where doing it costs a documentation edit instead of a
-   breaking schema change after Phase 1 code exists. (Done — see the amendment to
-   `SPEC.md` this PoC's findings are attached to.)
-2. Treat "map this Skill's existing identifiers onto Capability ids" as an explicit,
-   named line item in each Skill's `ROADMAP.md` Phase 2 entry, not an assumed
-   side-effect of "publish a contract."
-3. Do not yet build the full Phase 1 registry library. This PoC validated the model at
-   the smallest scale that could falsify it; the next-smallest useful step is doing the
-   same exercise against one or two *more* Skills (ideally ones with less contract
-   overlap than qc-skill/media-analysis-skill, to see whether the mapping step gets
-   easier or harder at the "no collision" end of the spectrum) before committing to a
-   registry implementation shape.
+1. Apply the field-naming corrections above to `SPEC.md` §1 now — cheap, and this is
+   exactly the point where doing it costs a documentation edit instead of a breaking
+   schema change after Phase 1 code exists. (Done for Findings 1–3; Finding 5 left
+   open, deliberately, per its own explanation above.)
+2. Treat "does this Skill's contract already have a native capability-shaped field, or
+   does it need manual mapping" as a per-Skill fact to check, not assume, when scoping
+   each Skill's `ROADMAP.md` Phase 2 entry — Finding 4 shows the answer varies Skill by
+   Skill and materially changes the effort.
+3. Still do not build the full Phase 1 registry library yet. Two rounds of this PoC
+   have now produced concrete, real findings each time at very low cost (a few hours,
+   no new repository, no retrofit). The next-smallest useful increment is checking the
+   remaining 5 unverified Skills' contracts the same way — cheap insurance against
+   discovering a sixth or seventh field-naming surprise only after Phase 1 code exists
+   and a schema change would be breaking.

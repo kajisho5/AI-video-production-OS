@@ -1,0 +1,1220 @@
+{
+  "capabilities": [
+    {
+      "capability": "video.concat",
+      "operations": [
+        "CONCAT"
+      ],
+      "tool": "ffmpeg-skill/join"
+    },
+    {
+      "capability": "video.cut",
+      "operations": [
+        "CUT"
+      ],
+      "tool": "ffmpeg-skill/cut"
+    },
+    {
+      "capability": "video.fill",
+      "operations": [
+        "FILL"
+      ],
+      "tool": "ffmpeg-skill/fit"
+    },
+    {
+      "capability": "video.fit",
+      "operations": [
+        "FIT"
+      ],
+      "tool": "ffmpeg-skill/fit"
+    },
+    {
+      "capability": "video.overlay",
+      "operations": [
+        "OVERLAY"
+      ],
+      "tool": "ffmpeg-skill/overlay"
+    },
+    {
+      "capability": "video.reorder",
+      "operations": [
+        "CONCAT (input order)",
+        "CUT (keep order)"
+      ],
+      "tool": "ffmpeg-skill/cut | ffmpeg-skill/join"
+    },
+    {
+      "capability": "video.resize",
+      "operations": [
+        "RESIZE"
+      ],
+      "tool": "ffmpeg-skill/fit"
+    },
+    {
+      "capability": "video.speed",
+      "operations": [
+        "SPEED"
+      ],
+      "tool": "ffmpeg-skill/fit"
+    },
+    {
+      "capability": "video.transition",
+      "operations": [
+        "CONCAT (params.transition)"
+      ],
+      "tool": "ffmpeg-skill/join"
+    },
+    {
+      "capability": "video.trim",
+      "operations": [
+        "TRIM"
+      ],
+      "tool": "ffmpeg-skill/cut"
+    }
+  ],
+  "capability_names": [
+    "video.concat",
+    "video.cut",
+    "video.fill",
+    "video.fit",
+    "video.overlay",
+    "video.reorder",
+    "video.resize",
+    "video.speed",
+    "video.transition",
+    "video.trim"
+  ],
+  "description": "Deterministic video editing: typed edit requests (trim, cut, concat with transitions, speed, fit/fill/resize, image overlay) compiled to an operation graph with source/timeline mapping and executed through ffmpeg-skill. Not an agent: no editing decisions, no LLM, no commands.",
+  "doctor_shape": {
+    "checks": "\u2026",
+    "contract": "schema ids",
+    "engine": "ffmpeg-skill location, version, ffmpeg / ffprobe, missing capabilities",
+    "ok": "bool",
+    "operations": [
+      {
+        "missing": [
+          "what is missing"
+        ],
+        "status": "AVAILABLE | MISSING",
+        "tool_id": "\u2026",
+        "type": "\u2026"
+      }
+    ],
+    "problems": "\u2026",
+    "schema": "video-editing/doctor@1",
+    "skill": {
+      "id": "video-editing",
+      "version": "0.1.0"
+    },
+    "supported_operations": "types whose status is AVAILABLE (never a guess)",
+    "unsupported": "declared gaps"
+  },
+  "encoding": {
+    "applies_to": "the operation that produces the output: its re-encode uses the profile; an intermediate feeding two outputs must be asked for one profile",
+    "fixed_by_engine": {
+      "audio_codec": "aac 192 kb/s, source sample rate and layout (CONCAT: stereo)",
+      "container": "from the output extension (.mp4 | .mov | .mkv)",
+      "frame_rate": "by params.fps of CONCAT / FIT / FILL / RESIZE; VFR sources are conformed to CFR",
+      "resolution": "by RESIZE / FIT / FILL / CONCAT (frame_semantics), never by the profile",
+      "video_codec": "h264 (libx264, High, yuv420p, bt709 tags) for SDR sources; hevc (libx265, 10-bit, hvc1) for HDR sources"
+    },
+    "identity": "part of operation_id and idempotency_key when present, so a different profile is a different artifact",
+    "not_configurable": [
+      "video codec choice",
+      "bitrate / CBR / ABR modes",
+      "pixel format / bit depth",
+      "colour space tags",
+      "audio codec, bitrate, sample rate, channel layout",
+      "keyframe interval / GOP",
+      "two-pass encoding",
+      "hardware encoders"
+    ],
+    "parameters": {
+      "crf": "integer 14..28: x264 constant-quality factor (lower = larger, better; engine default 18; +2 on HEVC for HDR sources)",
+      "preset": "ultrafast|superfast|veryfast|faster|fast|medium|slow|slower|veryslow (encoder speed / efficiency trade-off; engine default medium)"
+    },
+    "refused": [
+      "unknown keys (INVALID_REQUEST)",
+      "crf or preset outside the vocabulary (INVALID_REQUEST)",
+      "a profile on an output produced by TRIM / CUT with precision keyframe: stream copy ignores it (INVALID_REQUEST)",
+      "two outputs of one operation with different profiles (DEPENDENCY_ERROR)"
+    ],
+    "request_field": "project.outputs[].encoding (optional object)"
+  },
+  "engine": {
+    "id": "ffmpeg-skill",
+    "invocation": "[python, <ffmpeg-skill>/scripts/<tool>.py, typed argv, --json]; process group; scrubbed env; timeout",
+    "location": "VIDEO_EDITING_FFMPEG_SKILL_DIR | --ffmpeg-skill-dir | ~/.claude/skills/ffmpeg-skill | ./vendor/ffmpeg-skill | ../ffmpeg-skill",
+    "tools_used": [
+      "ffmpeg-skill/probe",
+      "ffmpeg-skill/cut",
+      "ffmpeg-skill/join",
+      "ffmpeg-skill/fit",
+      "ffmpeg-skill/overlay"
+    ],
+    "version_range": ">=0.9.0,<1.0.0"
+  },
+  "errors": {
+    "codes": [
+      "INVALID_REQUEST",
+      "INVALID_INPUT",
+      "PATH_NOT_ALLOWED",
+      "UNSUPPORTED_OPERATION",
+      "UNSUPPORTED_FORMAT",
+      "MISSING_INPUT",
+      "INVALID_TIME_RANGE",
+      "DEPENDENCY_ERROR",
+      "TOOL_ERROR",
+      "OUTPUT_ERROR",
+      "VALIDATION_ERROR",
+      "CANCELLED",
+      "INTERNAL_ERROR"
+    ],
+    "exit_codes": {
+      "CANCELLED": 130,
+      "DEPENDENCY_ERROR": 9,
+      "INTERNAL_ERROR": 1,
+      "INVALID_INPUT": 3,
+      "INVALID_REQUEST": 2,
+      "INVALID_TIME_RANGE": 8,
+      "MISSING_INPUT": 7,
+      "OUTPUT_ERROR": 11,
+      "PATH_NOT_ALLOWED": 4,
+      "TOOL_ERROR": 10,
+      "UNSUPPORTED_FORMAT": 6,
+      "UNSUPPORTED_OPERATION": 5,
+      "VALIDATION_ERROR": 12
+    },
+    "retryable_default": {
+      "CANCELLED": true,
+      "DEPENDENCY_ERROR": false,
+      "INTERNAL_ERROR": false,
+      "INVALID_INPUT": false,
+      "INVALID_REQUEST": false,
+      "INVALID_TIME_RANGE": false,
+      "MISSING_INPUT": false,
+      "OUTPUT_ERROR": false,
+      "PATH_NOT_ALLOWED": false,
+      "TOOL_ERROR": true,
+      "UNSUPPORTED_FORMAT": false,
+      "UNSUPPORTED_OPERATION": false,
+      "VALIDATION_ERROR": false
+    },
+    "shape": {
+      "error": {
+        "code": "...",
+        "details": {},
+        "message": "...",
+        "retryable": false
+      },
+      "ok": false
+    }
+  },
+  "execution": {
+    "ai": false,
+    "arbitrary_executables": false,
+    "canonical_invocation": [
+      "video-editing",
+      "run",
+      "-",
+      "--json",
+      "--workspace",
+      "<dir>",
+      "--allowed-input",
+      "<root>"
+    ],
+    "dry_run": "plan - --json compiles, checks ranges against probed durations and asks ffmpeg-skill --dry-run for commands; no media is written",
+    "executable_resolution": "ffmpeg-skill directory from environment / CLI only; ffmpeg and ffprobe from PATH by ffmpeg-skill; nothing from the request",
+    "filter_strings": false,
+    "input_mutation": false,
+    "mode": "local_subprocess",
+    "network": false,
+    "output_location": "request output paths are relative to --workspace and may not leave it",
+    "raw_ffmpeg_arguments": false,
+    "shell": false,
+    "stderr": "diagnostics only; never part of the contract",
+    "stdin": "EditRequest JSON when the request argument is '-'",
+    "stdout": "exactly one response document when --json is given"
+  },
+  "formats": {
+    "image_inputs": [
+      ".png",
+      ".jpg",
+      ".jpeg"
+    ],
+    "outputs": [
+      ".mp4",
+      ".mov",
+      ".mkv"
+    ],
+    "video_inputs": [
+      ".mp4",
+      ".mov",
+      ".mkv",
+      ".m4v",
+      ".webm",
+      ".mts",
+      ".m2ts",
+      ".avi",
+      ".mxf",
+      ".ts"
+    ]
+  },
+  "frame_semantics": {
+    "FILL": {
+      "changes": "frame aspect ratio",
+      "keeps": "the centre of the picture (scaled to cover, centre-cropped); edges are lost",
+      "target": "same rule as FIT",
+      "when": "a delivery aspect differs from the source and a full frame matters more than the edges"
+    },
+    "FIT": {
+      "changes": "frame aspect ratio",
+      "keeps": "every source pixel (scaled to fit inside, letterboxed / pillarboxed with pad_color)",
+      "target": "width = params.width, else source_width when aspect <= source_aspect, else even(source_height * aspect); height = even(width / aspect)",
+      "when": "a delivery aspect differs from the source and nothing may be lost"
+    },
+    "RESIZE": {
+      "changes": "frame size",
+      "keeps": "the source aspect ratio; nothing is padded, cropped or stretched",
+      "target": "width = params.width (even); height = even(width * source_height / source_width)",
+      "when": "the picture must become smaller / larger and keep its shape"
+    },
+    "rules": [
+      "a source whose rotation metadata is \u00b190 / 270 is measured with width and height swapped (as the engine does)",
+      "even(n) = int(round(n)), +1 when odd (ffmpeg-skill fit.py)",
+      "CONCAT (ffmpeg-skill join.py): params.width x params.height; only one given -> the other from the first input's aspect (round); none -> the first input's frame; then floored to even",
+      "TRIM / CUT / SPEED / OVERLAY keep the input frame; an input with an odd width or height is refused before execution (INVALID_INPUT odd_frame) because the engine's encoders need even sizes",
+      "no operation stretches (distorts) the picture; anamorphic output is not provided",
+      "the normalized target frame is reported in plan.steps[].normalized and execution.operations[].normalized and verified on the output exactly"
+    ]
+  },
+  "graph": {
+    "forbidden_keys": [
+      "command",
+      "commands",
+      "cmd",
+      "argv",
+      "args",
+      "shell",
+      "exec",
+      "executable",
+      "executables",
+      "script",
+      "binary",
+      "filter",
+      "filters",
+      "filter_complex",
+      "filtergraph",
+      "ffmpeg",
+      "ffprobe",
+      "env",
+      "environment",
+      "cwd",
+      "pythonpath",
+      "api_key",
+      "api_token",
+      "token",
+      "secret",
+      "password",
+      "credentials",
+      "workspace",
+      "allowed_input",
+      "allowed_inputs",
+      "allowed_input_roots",
+      "ffmpeg_skill_dir",
+      "engine_dir",
+      "path_policy"
+    ],
+    "limits": {
+      "concat_inputs": 100,
+      "cut_ranges": 500,
+      "operations": 500,
+      "outputs": 50,
+      "sources": 200
+    },
+    "model": "sources -> operations (DAG) -> outputs; every operation feeds an output; order is topological, ties by id",
+    "refused": [
+      "cycle (DEPENDENCY_ERROR)",
+      "unknown input / operation reference (DEPENDENCY_ERROR)",
+      "duplicate source / operation / output id (INVALID_REQUEST)",
+      "operation that leads to no output (DEPENDENCY_ERROR)",
+      "two outputs on one path (DEPENDENCY_ERROR)",
+      "video slot fed by an image or image slot fed by a video / operation (DEPENDENCY_ERROR)",
+      "unknown operation type (UNSUPPORTED_OPERATION)",
+      "unknown or forbidden key anywhere (INVALID_REQUEST)",
+      "media an operation cannot take (INVALID_INPUT, before execution)",
+      "engine tool / encoder / filter missing (TOOL_ERROR, before execution)"
+    ]
+  },
+  "identity": {
+    "idempotency_key": "sha256(operation_id, tool, tool versions, skill version, container)",
+    "operation_id": "op_ + sha256(type, canonical params, input identities)[:16]; input identity = sha256 of source bytes or upstream operation_id",
+    "reuse": "a work-dir intermediate whose record matches the idempotency key and hash is reused and reported status: reused"
+  },
+  "media_compatibility": {
+    "CONCAT": {
+      "inputs": "two or more videos (any sizes / frame rates; conformed by params.mode to params.width/height/fps or the first input)",
+      "output": {
+        "audio": "stereo AAC when any input has audio (silence is inserted for inputs without); none when no input has audio",
+        "fps": "params.fps, else the first input",
+        "frame_size": "params.width x params.height, else the first input"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration",
+        "an input shorter than twice the transition"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "CUT": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input",
+        "fps": "as input",
+        "frame_size": "as input"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration",
+        "range beyond the input duration",
+        "input frame with an odd width or height (odd_frame)"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "FILL": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input",
+        "fps": "params.fps or as input",
+        "frame_size": "params.aspect (params.width when given; centre-cropped)"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "FIT": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input",
+        "fps": "params.fps or as input",
+        "frame_size": "params.aspect (params.width when given; padded, nothing cropped)"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "OVERLAY": {
+      "inputs": "one video plus one image source (png / jpg; alpha respected)",
+      "output": {
+        "audio": "as input",
+        "fps": "as input",
+        "frame_size": "as input"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration",
+        "image that does not decode",
+        "video input without an audio stream: ffmpeg-skill 0.9.x overlay (-loop 1 image, -shortest) never terminates on it",
+        "start / end beyond the input duration",
+        "input frame with an odd width or height (odd_frame)"
+      ],
+      "requires": {
+        "audio": true,
+        "image": true,
+        "video": true
+      }
+    },
+    "RESIZE": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input",
+        "fps": "params.fps or as input",
+        "frame_size": "params.width, height by the input aspect (even)"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "SPEED": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input, pitch preserved (atempo)",
+        "duration": "input duration / factor",
+        "fps": "as input",
+        "frame_size": "as input"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration",
+        "factor outside [1/4, 4]",
+        "input frame with an odd width or height (odd_frame)"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    },
+    "TRIM": {
+      "inputs": "one video",
+      "output": {
+        "audio": "as input",
+        "fps": "as input",
+        "frame_size": "as input"
+      },
+      "refused_before_execution": [
+        "source without a video stream or duration",
+        "range beyond the input duration",
+        "input frame with an odd width or height (odd_frame)"
+      ],
+      "requires": {
+        "audio": false,
+        "image": false,
+        "video": true
+      }
+    }
+  },
+  "media_policy": {
+    "by_stream": {
+      "audio_only": "refused as a source (no_video_stream); audio-only editing is not provided",
+      "different_frame_rate_in_concat": "allowed; conformed to params.fps or the first input's rate",
+      "different_resolution_in_concat": "allowed; conformed by params.mode to the normalized frame",
+      "hdr": "allowed alone (output hevc, warning); not mixed with SDR in CONCAT",
+      "image": "OVERLAY.params.image only (png / jpg, alpha respected); an image in a video slot is DEPENDENCY_ERROR kind_mismatch",
+      "mixed_audio_presence_in_concat": "allowed; the engine inserts silence for the inputs without audio and the output has audio (validated)",
+      "odd_frame": "RESIZE / FIT / FILL / CONCAT normalize to even sizes; TRIM / CUT / SPEED / OVERLAY refuse it up front (odd_frame)",
+      "rotation_metadata": "honoured (a display matrix): the frame is measured as displayed; a legacy `rotate` tag is ignored by ffmpeg >= 5 and therefore by the probe",
+      "variable_frame_rate": "allowed; conformed to constant fps by the engine (warning)",
+      "video_and_audio": "all operations; the audio stream is kept (validated)",
+      "video_only": "TRIM / CUT / SPEED / FIT / FILL / RESIZE / CONCAT: allowed; the output has no audio stream (validated). OVERLAY: refused (audio_required)"
+    },
+    "delegated_to_engine": [
+      "scaling, padding, cropping filters and their exact pixel maths",
+      "constant-frame-rate conform of variable-frame-rate sources (a warning is reported)",
+      "resampling, silence insertion and stereo layout in CONCAT",
+      "HDR sources encoded HEVC 10-bit (the output codec is hevc; a warning is reported)",
+      "audio codec / bitrate / sample rate (AAC 192 kb/s)",
+      "keyframe snapping for precision keyframe TRIM / CUT"
+    ],
+    "normalized_by_skill": [
+      "times in any accepted form -> exact rational seconds",
+      "target frame of RESIZE / FIT / FILL / CONCAT (frame_semantics)",
+      "target duration of SPEED (input duration / factor)",
+      "encoding profile -> typed engine flags (crf, preset)",
+      "audio expectation per operation (kept / added / none)"
+    ],
+    "refused_before_execution": [
+      "source with no video stream (audio-only files, corrupt containers): INVALID_INPUT no_video_stream",
+      "video source without a duration (a still image or a broken container declared as video): INVALID_INPUT no_duration",
+      "image source that does not decode to a frame: INVALID_INPUT image_undecodable",
+      "OVERLAY on a video input without an audio stream: INVALID_INPUT audio_required (ffmpeg-skill 0.9.x overlay never terminates on it)",
+      "TRIM / CUT / SPEED / OVERLAY on an input whose frame has an odd width or height: INVALID_INPUT odd_frame (the encoder needs even sizes; RESIZE / FIT / FILL / CONCAT normalize to even)",
+      "CONCAT of HDR and SDR inputs: INVALID_INPUT hdr_mismatch (the engine encodes from the first input's colour system)",
+      "unsupported input extension / output container: UNSUPPORTED_FORMAT",
+      "ranges beyond the input duration, transitions longer than half an input: INVALID_TIME_RANGE",
+      "engine tool / encoder / filter missing: TOOL_ERROR (not retryable)"
+    ]
+  },
+  "name": "Video Editing Skill",
+  "not_provided": [
+    "AI reasoning",
+    "editing decisions",
+    "production plans",
+    "project IR",
+    "speaker / scene detection",
+    "transcription",
+    "captions",
+    "colour grading",
+    "audio mastering",
+    "thumbnails",
+    "QC beyond output validation"
+  ],
+  "operations": {
+    "CONCAT": {
+      "arity": "many",
+      "capability": "video.concat",
+      "parameters": {
+        "fps": "number or N/D (optional)",
+        "height": "even int (optional)",
+        "mode": "pad | crop (how inputs of another aspect reach the frame)",
+        "pad_color": "named colour or 0xRRGGBB",
+        "transition": "{type: fade|dissolve|wipeleft|wiperight|wipeup|wipedown|slideleft|slideright|circleopen|circleclose|fadeblack|fadewhite|smoothleft|smoothright|radial, duration: time 0.01..10} (optional)",
+        "width": "even int (optional)"
+      },
+      "tool": "ffmpeg-skill/join"
+    },
+    "CUT": {
+      "arity": "one",
+      "capability": "video.cut",
+      "parameters": {
+        "keep": "[{start, end}, ...] in output order",
+        "precision": "frame | keyframe"
+      },
+      "tool": "ffmpeg-skill/cut"
+    },
+    "FILL": {
+      "arity": "one",
+      "capability": "video.fill",
+      "parameters": {
+        "aspect": "W:H",
+        "fps": "optional",
+        "width": "even int (optional)"
+      },
+      "tool": "ffmpeg-skill/fit"
+    },
+    "FIT": {
+      "arity": "one",
+      "capability": "video.fit",
+      "parameters": {
+        "aspect": "W:H",
+        "fps": "optional",
+        "pad_color": "named colour or 0xRRGGBB",
+        "width": "even int (optional)"
+      },
+      "tool": "ffmpeg-skill/fit"
+    },
+    "OVERLAY": {
+      "arity": "one",
+      "capability": "video.overlay",
+      "parameters": {
+        "end": "time (optional)",
+        "fade": "seconds 0..10 (optional)",
+        "image": "image source id",
+        "margin": "int px",
+        "opacity": "(0, 1]",
+        "position": "top-left|top|top-right|left|center|right|bottom-left|bottom|bottom-right or {x, y} px",
+        "scale": "image width px (optional)",
+        "start": "time (optional)"
+      },
+      "tool": "ffmpeg-skill/overlay"
+    },
+    "RESIZE": {
+      "arity": "one",
+      "capability": "video.resize",
+      "parameters": {
+        "fps": "optional",
+        "width": "even int"
+      },
+      "tool": "ffmpeg-skill/fit"
+    },
+    "SPEED": {
+      "arity": "one",
+      "capability": "video.speed",
+      "parameters": {
+        "factor": "number or N/D in [1/4, 4], not 1"
+      },
+      "tool": "ffmpeg-skill/fit"
+    },
+    "TRIM": {
+      "arity": "one",
+      "capability": "video.trim",
+      "parameters": {
+        "end": "time (> start)",
+        "precision": "frame (default, re-encode) | keyframe (lossless when possible)",
+        "start": "time"
+      },
+      "tool": "ffmpeg-skill/cut"
+    }
+  },
+  "package": "video-editing-skill",
+  "provenance": {
+    "observation": "probe documents are OBSERVED with source ffmpeg-skill/probe@<version>; request values are never reported as observations",
+    "per_operation": [
+      "skill",
+      "skill_version",
+      "tool",
+      "tool_versions",
+      "operation_id",
+      "type",
+      "inputs[].sha256",
+      "output.sha256",
+      "parameters",
+      "commands",
+      "started_at",
+      "finished_at",
+      "status"
+    ]
+  },
+  "repository": "https://github.com/kajisho5/video-editing-skill",
+  "request_shape": {
+    "options": {
+      "overwrite": "bool (default false)",
+      "reuse": "bool (default true)",
+      "timeout_seconds": "1..86400 (default 3600)"
+    },
+    "project": {
+      "id": "optional label",
+      "operations": [
+        {
+          "id": "label",
+          "input": "source or operation id",
+          "inputs": "[ids] for CONCAT",
+          "params": {},
+          "type": "one of operations"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "label",
+          "operation": "operation id",
+          "path": "relative path under the workspace (.mp4 | .mov | .mkv)"
+        }
+      ],
+      "sources": [
+        {
+          "id": "label",
+          "kind": "video | image",
+          "path": "file under an allowed root"
+        }
+      ]
+    },
+    "schema": "video-editing/request@1"
+  },
+  "response_shape": {
+    "execution": {
+      "operations": [
+        "provenance records"
+      ],
+      "outputs": [
+        "path, sha256, timeline, observation"
+      ]
+    },
+    "ok": true,
+    "project": "...",
+    "schema": "video-editing/response@1",
+    "skill": {
+      "id": "video-editing",
+      "version": "0.1.0"
+    },
+    "status": "completed | reused"
+  },
+  "role": "execution",
+  "schema": "video-editing/contract@1",
+  "schemas": {
+    "contract": "video-editing/contract@1",
+    "doctor": "video-editing/doctor@1",
+    "plan": "video-editing/plan@1",
+    "request": "video-editing/request@1",
+    "response": "video-editing/response@1"
+  },
+  "skill_id": "video-editing",
+  "time": {
+    "forms": [
+      "number (seconds)",
+      "'ss.fff' | 'mm:ss' | 'hh:mm:ss.fff'",
+      "{seconds}",
+      "{rational: 'N/D'}",
+      "{frames, timebase}",
+      "{frames, fps}"
+    ],
+    "mapping": "every output carries a timeline: tracks[].segments[] with source_range and timeline_range per source",
+    "representation": "exact rationals; serialised as {seconds: 'fixed 6 places', rational: 'N/D'}"
+  },
+  "tools": [
+    {
+      "capability": "video.concat",
+      "description": "join two or more inputs in order, optionally with a transition, conforming size / fps",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/join",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "many",
+      "inputs": [
+        "inputs"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "two or more videos (any sizes / frame rates; conformed by params.mode to params.width/height/fps or the first input)",
+        "output": {
+          "audio": "stereo AAC when any input has audio (silence is inserted for inputs without); none when no input has audio",
+          "fps": "params.fps, else the first input",
+          "frame_size": "params.width x params.height, else the first input"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "CONCAT",
+      "parameters": {
+        "fps": "number or N/D (optional)",
+        "height": "even int (optional)",
+        "mode": "pad | crop (how inputs of another aspect reach the frame)",
+        "pad_color": "named colour or 0xRRGGBB",
+        "transition": "{type: fade|dissolve|wipeleft|wiperight|wipeup|wipedown|slideleft|slideright|circleopen|circleclose|fadeblack|fadewhite|smoothleft|smoothright|radial, duration: time 0.01..10} (optional)",
+        "width": "even int (optional)"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac",
+        "filter:xfade",
+        "filter:acrossfade"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/concat",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.cut",
+      "description": "keep several ranges of one input, joined in the order given (removes everything else)",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/cut",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input",
+          "fps": "as input",
+          "frame_size": "as input"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "CUT",
+      "parameters": {
+        "keep": "[{start, end}, ...] in output order",
+        "precision": "frame | keyframe"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/cut",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.fill",
+      "description": "centre-crop into an aspect ratio (edges are lost)",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/fit",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input",
+          "fps": "params.fps or as input",
+          "frame_size": "params.aspect (params.width when given; centre-cropped)"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "FILL",
+      "parameters": {
+        "aspect": "W:H",
+        "fps": "optional",
+        "width": "even int (optional)"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/fill",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.fit",
+      "description": "letterbox / pillarbox into an aspect ratio (nothing is cropped)",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/fit",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input",
+          "fps": "params.fps or as input",
+          "frame_size": "params.aspect (params.width when given; padded, nothing cropped)"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "FIT",
+      "parameters": {
+        "aspect": "W:H",
+        "fps": "optional",
+        "pad_color": "named colour or 0xRRGGBB",
+        "width": "even int (optional)"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/fit",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.overlay",
+      "description": "composite a still image (logo, lower-third PNG) at a named position for a time range",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/overlay",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video plus one image source (png / jpg; alpha respected)",
+        "output": {
+          "audio": "as input",
+          "fps": "as input",
+          "frame_size": "as input"
+        },
+        "requires": {
+          "audio": true,
+          "image": true,
+          "video": true
+        }
+      },
+      "operation_type": "OVERLAY",
+      "parameters": {
+        "end": "time (optional)",
+        "fade": "seconds 0..10 (optional)",
+        "image": "image source id",
+        "margin": "int px",
+        "opacity": "(0, 1]",
+        "position": "top-left|top|top-right|left|center|right|bottom-left|bottom|bottom-right or {x, y} px",
+        "scale": "image width px (optional)",
+        "start": "time (optional)"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/overlay",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.resize",
+      "description": "scale to a width keeping the aspect ratio",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/fit",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input",
+          "fps": "params.fps or as input",
+          "frame_size": "params.width, height by the input aspect (even)"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "RESIZE",
+      "parameters": {
+        "fps": "optional",
+        "width": "even int"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/resize",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.speed",
+      "description": "retime by a constant factor (video and pitch-preserved audio)",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/fit",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input, pitch preserved (atempo)",
+          "duration": "input duration / factor",
+          "fps": "as input",
+          "frame_size": "as input"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "SPEED",
+      "parameters": {
+        "factor": "number or N/D in [1/4, 4], not 1"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/speed",
+      "version": "0.1.0",
+      "writes_media": true
+    },
+    {
+      "capability": "video.trim",
+      "description": "keep one source time range [start, end)",
+      "deterministic": true,
+      "executed_by": "ffmpeg-skill/cut",
+      "idempotency_hint": "content_equivalent",
+      "input_arity": "one",
+      "inputs": [
+        "input"
+      ],
+      "kind": "transform",
+      "media": {
+        "inputs": "one video",
+        "output": {
+          "audio": "as input",
+          "fps": "as input",
+          "frame_size": "as input"
+        },
+        "requires": {
+          "audio": false,
+          "image": false,
+          "video": true
+        }
+      },
+      "operation_type": "TRIM",
+      "parameters": {
+        "end": "time (> start)",
+        "precision": "frame (default, re-encode) | keyframe (lossless when possible)",
+        "start": "time"
+      },
+      "produces_output": true,
+      "required_capabilities": [
+        "ffmpeg",
+        "ffprobe",
+        "encoder:libx264",
+        "encoder:aac"
+      ],
+      "result_keys": [
+        "operation_id",
+        "output",
+        "probe",
+        "commands",
+        "provenance"
+      ],
+      "skill_id": "video-editing",
+      "tool_id": "video-editing/trim",
+      "version": "0.1.0",
+      "writes_media": true
+    }
+  ],
+  "unsupported": [
+    {
+      "capability": "video.crop",
+      "reason": "ffmpeg-skill has no pixel-rectangle crop tool (fit.py only crops to an aspect ratio); use FILL for aspect-ratio crops",
+      "status": "NOT_IMPLEMENTED",
+      "type": "CROP"
+    },
+    {
+      "capability": "video.freeze",
+      "reason": "ffmpeg-skill has no freeze-frame tool",
+      "status": "NOT_IMPLEMENTED",
+      "type": "FREEZE"
+    },
+    {
+      "capability": "video.image_insert",
+      "reason": "ffmpeg-skill has no still-image-to-clip tool (join.py needs video inputs)",
+      "status": "NOT_IMPLEMENTED",
+      "type": "IMAGE_INSERT"
+    },
+    {
+      "capability": "video.position",
+      "reason": "free placement of a video layer is not provided (overlay.py composites images only)",
+      "status": "NOT_IMPLEMENTED",
+      "type": "POSITION"
+    },
+    {
+      "capability": "video.reverse",
+      "reason": "ffmpeg-skill has no reverse tool",
+      "status": "NOT_IMPLEMENTED",
+      "type": "REVERSE"
+    }
+  ],
+  "validation": {
+    "after_each_operation": [
+      "file exists, non-empty, readable",
+      "probe: video stream, duration, frame size",
+      "duration within tolerance of the timeline (frame 0.35 s, keyframe 1.5 s)",
+      "frame size / aspect / width as requested, or equal to the input for TRIM / CUT / SPEED / OVERLAY",
+      "frame rate as requested",
+      "audio stream kept when the input(s) had one"
+    ],
+    "before_execution": [
+      "schema and typed parameters",
+      "path policy",
+      "graph",
+      "every source probed by ffmpeg-skill (video: stream + duration; image: decodes)",
+      "ranges against probed durations",
+      "media compatibility (operations.MEDIA)",
+      "engine tools and capabilities (ffmpeg-skill doctor)"
+    ],
+    "on_reuse": "the candidate is re-validated with the same checks (hash, size, probe); a stale record is discarded and the operation runs again",
+    "response": "every document is checked against the response shape before it is printed (self-check); a violation is INTERNAL_ERROR"
+  },
+  "version": "0.1.0",
+  "versioning": {
+    "also_pinned_by_agents": [
+      "request_shape",
+      "response_shape",
+      "engine",
+      "formats",
+      "capability_names",
+      "tools[].parameters"
+    ],
+    "next": {
+      "0.2.0": [
+        "RESIZE: `height` as the alternative to `width` (exactly one of the two)",
+        "request_shape: `outputs[].encoding` folded into the documented shape (accepted since 0.1.0 as an optional key)",
+        "CROP (pixel rectangle) once ffmpeg-skill provides a typed crop tool",
+        "IMAGE_INSERT (still -> timed clip) once ffmpeg-skill provides a typed tool",
+        "FREEZE / REVERSE / POSITION: not planned (see docs/decisions.md ADR-002)"
+      ]
+    },
+    "pinned_blocks": [
+      "schema",
+      "skill_id",
+      "version",
+      "operations",
+      "unsupported",
+      "errors",
+      "execution",
+      "capabilities",
+      "schemas"
+    ],
+    "rule": "a change inside a pinned block is breaking: bump the version (0.x: minor) and expect agents to re-pin; new keys outside them (top level or inside tools[]) are additive and allowed within the same version; the golden copy tests/contract/contract.json is regenerated deliberately in the same change, and `contract --check` classifies every difference as breaking or additive",
+    "version": "0.1.0"
+  }
+}

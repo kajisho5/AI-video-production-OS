@@ -133,6 +133,52 @@ def main():
         print(f"    resolve({cap_id!r}, explicit={explicit!r}, policy={policy!r})")
         print(f"    -> {result}")
 
+    # --- Round 2: does mapping-to-Capability-id get easier with no collision? ----
+    # Three MORE real, non-colliding Skills, to test the follow-up question from
+    # docs/POC_CAPABILITY_CONTRACT.md's "Recommendation" section: is the manual
+    # mapping step (Finding 3, above) specific to the qc-skill/media-analysis-skill
+    # collision case, or does every Skill need it regardless of collision?
+    print("\n\n=== Round 2: Capability-id extraction cost for three more real, "
+          "non-overlapping Skills ===")
+
+    ve = load("video-editing-skill.contract.json")
+    ap = load("audio-production-skill.contract.json")
+    ts = load("transcription-skill.contract.json")
+
+    print("\n--- video-editing-skill: ZERO manual mapping needed ---")
+    print("Its own contract's `operations` dict already carries a native")
+    print("`capability` field per operation, in exactly the dotted-namespace shape")
+    print("CAPABILITY_MODEL.md proposed (e.g. 'video.trim', not 'edit.trim' as this")
+    print("project's own worked example guessed — the real Skill's own naming wins):")
+    for name, spec in ve["operations"].items():
+        print(f"    {name:<10} -> capability={spec.get('capability')!r}  (extracted automatically, no human judgment required)")
+
+    print("\n--- audio-production-skill: manual mapping still needed ---")
+    print("Its `operations` list has a `type` (e.g. 'NORMALIZE') and a `tool`")
+    print("(e.g. 'ffmpeg-skill/loudness') but no native OS-level capability id field —")
+    print("structurally similar to qc-skill/media-analysis-skill's situation, even")
+    print("though audio-production-skill has no capability COLLISION with anyone:")
+    sample_ops = [op for op in ap["operations"] if op["type"] in ("NORMALIZE", "GAIN", "MIX")]
+    for op in sample_ops:
+        guessed_id = {"NORMALIZE": "audio.normalize.loudness", "GAIN": "audio.gain", "MIX": "audio.mix"}[op["type"]]
+        print(f"    type={op['type']:<10} tool={op['tool']!r:<28} -> a human would need to decide this is {guessed_id!r}")
+
+    print("\n--- transcription-skill: manual mapping needed, plus its own naming drift ---")
+    print(f"    id field used: 'id' = {ts.get('id')!r}  (NOT 'skill_id' — see Finding 5)")
+    print(f"    flat capabilities list (not per-operation): {ts.get('capabilities')}")
+    print("    -> 'speech_recognition' is the closest analog to an OS Capability id")
+    print("       (e.g. transcribe.audio) but it names a general ABILITY, not one")
+    print("       typed, invokable operation with its own input/output schema —")
+    print("       still requires a human decision, just a smaller one.")
+
+    print("\n=== Round 2 conclusion ===")
+    print("Mapping cost is NOT determined by whether a Capability collision exists.")
+    print("It is determined by whether a Skill's own contract generator already")
+    print("emits a per-operation capability-shaped id. video-editing-skill happens to")
+    print("(cost: ~zero). audio-production-skill, transcription-skill, qc-skill, and")
+    print("media-analysis-skill do not (cost: one human decision per operation/check,")
+    print("regardless of collision). See docs/POC_CAPABILITY_CONTRACT.md Finding 4.")
+
 
 if __name__ == "__main__":
     main()
