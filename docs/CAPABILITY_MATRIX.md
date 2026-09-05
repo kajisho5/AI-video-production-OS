@@ -1,0 +1,270 @@
+# Capability Matrix
+
+Status: **derived entirely from `REPOSITORY_MAP.md`'s evidence.** No capability listed
+below is speculative — each row cites the specific operation(s), analyzer(s), or tool
+script(s) `REPOSITORY_MAP.md` verified by reading source. Where `REPOSITORY_MAP.md` did
+not find a capability (e.g. AI-generated thumbnails, semantic scene understanding), it is
+listed under "Explicitly unsupported," never invented as a row.
+
+This is a snapshot, not a registry. No Capability Contract schema exists yet to make this
+table a queryable fact instead of a hand-built document — that is `ROADMAP.md` Phase 1.
+Capability ids below use the dotted namespace `SPEC.md` §1 proposes
+(`skill_id/tool` → `domain.action`); they are **PROPOSED identifiers**, not yet published
+by any Skill's contract.
+
+## How to read the lifecycle column
+
+Per `CAPABILITY_MODEL.md`'s 5-state model (`PROPOSED → EXPERIMENTAL → STABLE →
+DEPRECATED → RETIRED`), **every row in this table is `EXPERIMENTAL`**, with one
+qualification: the Capability *id* itself is technically still `PROPOSED` (no Skill
+publishes a `capabilities[].lifecycle` field today — the field doesn't exist yet, per
+`CAPABILITY_MODEL.md`'s own admission that Provider/lifecycle are `FUTURE` concepts). Once
+Phase 1/2 of `ROADMAP.md` land and Skills actually emit a `lifecycle` value, the honest
+default for nearly all of them is `EXPERIMENTAL`, because:
+
+- Every providing Skill repo is version `0.x` (pre-1.0), by its own `skill.version`.
+- 10 of 11 repos ship as a single squashed commit with no independent commit history —
+  "well-specified initial implementation," not "battle-tested" (`REPOSITORY_MAP.md`
+  finding 6).
+- `qc-skill`'s and `media-analysis-skill`'s test suites could not be independently run in
+  the audit sandbox (`pytest` unavailable) — static review only, not a passing-test
+  guarantee.
+- No Capability anywhere has graduated through a documented promotion process, because
+  that process (and the lifecycle field it promotes) does not exist yet.
+
+Nothing below is marked `STABLE`. That is not pessimism about code quality — several of
+these implementations (the ffmpeg-skill delegation pattern in particular, per
+`ARCHITECTURE.md` §9 lens 9) are well-designed — it is an honest statement that no
+promotion mechanism has ever run.
+
+---
+
+## 1. Editing capabilities — `video-editing-skill` → `ffmpeg-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `edit.trim` | video-editing-skill (`TRIM`) | video-editing-skill → ffmpeg-skill (`cut`) | EXPERIMENTAL | — |
+| `edit.cut` | video-editing-skill (`CUT`) | video-editing-skill → ffmpeg-skill (`cut`) | EXPERIMENTAL | — |
+| `edit.concat` | video-editing-skill (`CONCAT`, typed transitions) | video-editing-skill → ffmpeg-skill (`join`) | EXPERIMENTAL | — |
+| `edit.speed` | video-editing-skill (`SPEED`) | video-editing-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `edit.fit` | video-editing-skill (`FIT`) | video-editing-skill → ffmpeg-skill (`fit`) | EXPERIMENTAL | — |
+| `edit.fill` | video-editing-skill (`FILL`) | video-editing-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `edit.resize` | video-editing-skill (`RESIZE`) | video-editing-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `edit.overlay` | video-editing-skill (`OVERLAY`) | video-editing-skill → ffmpeg-skill (`overlay`) | EXPERIMENTAL | Naming note: this is an **editing-domain** overlay (video/PiP-shaped, per `video-editing-skill`'s typed op set). It is a *different* capability from `motion_graphics.overlay` below, which is a graphics/logo overlay owned by a different Skill. Both ultimately call ffmpeg-skill's overlay-family tools, but `REPOSITORY_MAP.md` gives no evidence they are the same capability under one id — do not collapse them without further audit. |
+
+**Explicitly unsupported (declared, not silently approximated) in this domain:**
+`CROP, FREEZE, REVERSE, IMAGE_INSERT, POSITION` — `video-editing-skill` raises/rejects
+these rather than approximating them (`REPOSITORY_MAP.md`, video-editing-skill section).
+
+---
+
+## 2. Audio capabilities — `audio-production-skill` → `ffmpeg-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `audio.gain` | audio-production-skill (`GAIN`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.trim` | audio-production-skill (`TRIM`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.cut` | audio-production-skill (`CUT`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.silence_remove` | audio-production-skill (`SILENCE_REMOVE`) | audio-production-skill → ffmpeg-skill (`silence`) | EXPERIMENTAL | Explicit ranges only — no silence *detection* built in; detection is a separate `measure.audio.silence` capability (§4), composed by the caller, not this Skill. |
+| `audio.fade` (in/out) | audio-production-skill (`FADE_IN`, `FADE_OUT`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.normalize` | audio-production-skill (`NORMALIZE`, EBU R128) | audio-production-skill → ffmpeg-skill (`loudness`) | EXPERIMENTAL | — |
+| `audio.mix` | audio-production-skill (`MIX`) | audio-production-skill → ffmpeg-skill (`audio`) | EXPERIMENTAL | — |
+| `audio.mono` | audio-production-skill (`MONO`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.stereo` | audio-production-skill (`STEREO`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.downmix` | audio-production-skill (`DOWNMIX`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.noise_reduction` | audio-production-skill (`NOISE_REDUCTION`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.dynamics` | audio-production-skill (`DYNAMICS`: gate→compressor→limiter chain) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.concat` | audio-production-skill (`CONCAT`) | audio-production-skill → ffmpeg-skill (`join`) | EXPERIMENTAL | — |
+
+**Explicitly unsupported (declared) in this domain:** `CHANNEL_MAP, RESAMPLE,
+FORMAT_CONVERT` — `audio-production-skill` refuses these rather than approximating them
+(`REPOSITORY_MAP.md`, audio-production-skill section).
+
+---
+
+## 3. Color capabilities — `color-grading-skill` → `ffmpeg-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `color.hdr_to_sdr` | color-grading-skill (`HDR_TO_SDR`, 7 tonemap curves) | color-grading-skill → ffmpeg-skill (`color`) | EXPERIMENTAL | — |
+| `color.lut_apply` | color-grading-skill (`LUT_APPLY`) | color-grading-skill → ffmpeg-skill (`color`) | EXPERIMENTAL | LUT files are validated against a *separate* path allowlist from input-media roots — a security detail, not a capability limit, but worth carrying into `SECURITY_MODEL.md`. |
+| `color.retag` | color-grading-skill (`RETAG`, colorspace tag only, no pixel rewrite) | color-grading-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `color.strip_dovi` | color-grading-skill (`STRIP_DOVI`) | color-grading-skill → ffmpeg-skill | EXPERIMENTAL | — |
+
+**Explicitly unsupported (declared, raises `UNSUPPORTED_OPERATION`, never approximated)
+in this domain:** `EXPOSURE, CONTRAST, SATURATION, TEMPERATURE, TINT, WHITE_BALANCE,
+GAMMA, LIFT, GAIN, LEVELS, CURVES` — i.e. `color-grading-skill` today does technical/
+delivery color operations only, honestly, not creative grading
+(`REPOSITORY_MAP.md`, color-grading-skill section).
+
+---
+
+## 4. Subtitle capabilities — `subtitle-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `subtitle.generate` | subtitle-skill (`generate`) | subtitle-skill → **[self]** (writes SRT/WebVTT directly from a typed `SubtitleDocument`; no video I/O, no ffmpeg call at all) | EXPERIMENTAL | Does not perform ASR. Consumes an already-built `SubtitleDocument`/`SubtitleCue`; transcription is a separate capability (`transcribe.audio`, §6) composed at the Plan/Agent level, not a Skill dependency (`REPOSITORY_MAP.md` explicitly confirms zero ASR code and zero `transcription-skill` dependency here). |
+| `subtitle.render` (burn-in) | subtitle-skill (`render`) | subtitle-skill → ffmpeg-skill (`caption`) | EXPERIMENTAL | SRT only; ASS/SSA burn-in not implemented. |
+
+**Explicitly unsupported / not implemented:** `convert`, standalone `validate`, `offset`,
+`merge`, ASS/SSA support.
+
+**Security note carried into this matrix (not a capability limit, a known gap):**
+`subtitle-skill`'s cue-text validation is structural only (control characters, line
+length, reading speed) — no defense exists against cue text later being fed into an LLM
+prompt unsanitized by a downstream Agent step. This is a live, present finding
+(`REPOSITORY_MAP.md`, subtitle-skill section; `ARCHITECTURE.md` §7), not hypothetical.
+
+---
+
+## 5. Motion graphics capabilities — `motion-graphics-skill` → `ffmpeg-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `motion_graphics.title_card` | motion-graphics-skill | motion-graphics-skill → ffmpeg-skill (`graphics`) | EXPERIMENTAL | — |
+| `motion_graphics.lower_third` | motion-graphics-skill (built-in fade/slide templates only) | motion-graphics-skill → ffmpeg-skill (`graphics`) | EXPERIMENTAL | Templates are fixed/built-in, not user-authorable animation. |
+| `motion_graphics.overlay` | motion-graphics-skill (free-form text, image/logo overlay) | motion-graphics-skill → ffmpeg-skill (`overlay`, `probe`) | EXPERIMENTAL | Image/logo overlay supports linear fade only — no scale/slide animation. See §1's naming note distinguishing this from `edit.overlay`. |
+
+Built entirely on ffmpeg-skill's `graphics`/`overlay`/`probe` tools — not Remotion, not
+Lottie, not After Effects (`REPOSITORY_MAP.md`). `motion-graphics-skill`'s own
+architecture doc explicitly lists MCP among things it deliberately does not do.
+
+---
+
+## 6. Thumbnail capabilities — `thumbnail-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `thumbnail.render` | thumbnail-skill (`render`) | thumbnail-skill → **[Pillow]** (raster compositing; "never touches ffmpeg" for this step) | EXPERIMENTAL | The only repo in the ecosystem with a real third-party pip dependency (`Pillow>=10.0`). |
+| `thumbnail.extract_frame` | thumbnail-skill (`extract_frame`) | thumbnail-skill → ffmpeg-skill (`look`, `probe`) | EXPERIMENTAL | Delegates only the one video-decoding step it needs. |
+
+**Explicitly unsupported (declared, refused by design):** no AI-generated thumbnails, no
+"best-frame" selection, no face detection.
+
+---
+
+## 7. Transcription capabilities — `transcription-skill`
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `transcribe.audio` | transcription-skill (`faster-whisper` engine, via internal `engines/registry.py`) | transcription-skill → **faster-whisper** (CTranslate2 Whisper; no other Skill dependency) | EXPERIMENTAL | No diarization (`speaker_id` always null). No cloud ASR path — `docs/decisions.md` ADR-002 states this was a deliberate choice, not an oversight (`REPOSITORY_MAP.md`). |
+
+Not in the task brief's original "9 skills" list, but a real, active ecosystem member —
+`subtitle-skill`'s README and `video-production-agent`'s integration CI both reference it.
+Direct evidence the ecosystem's skill count is not fixed.
+
+---
+
+## 8. Measurement capabilities — `qc-skill` and `media-analysis-skill`
+
+This is the section containing the ecosystem's one confirmed **Capability collision**
+(`CAPABILITY_MODEL.md` §"Capability Collision"; `REPOSITORY_MAP.md` finding 2).
+
+### 8a. Collision rows — both Skills independently implement the same measurement
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Note |
+|---|---|---|---|---|
+| `measure.audio.loudness` | **qc-skill** (`measurements/audio.py`, `ebur128` — LUFS/LRA/true-peak) **AND media-analysis-skill** (`analyzers/loudness.py`, also `ebur128`, independently parsed) | qc-skill; media-analysis-skill | EXPERIMENTAL | **⚠ COLLISION.** Two independent Providers of the same Capability id, with no shared library and no registry today to notice this is duplication rather than divergent design (`REPOSITORY_MAP.md` finding 2; `CAPABILITY_MODEL.md`'s motivating example). Under `CAPABILITY_MODEL.md`'s collision policy, both must register as explicit Providers; resolution is Plan-time explicit choice → default-provider policy → registry refusal (never silent first-match). |
+| `measure.audio.silence` | **qc-skill** (`silencedetect`) **AND media-analysis-skill** (`silence` analyzer) | qc-skill; media-analysis-skill | EXPERIMENTAL | **⚠ COLLISION**, same shape as above — independently implemented, no shared identity. |
+| `measure.audio.integrity` | **qc-skill** (decode-integrity check + `_decode_errors.py`) **AND media-analysis-skill** (`integrity`: full decode via `-f null`, decode-error/frame-count/timestamp checks) | qc-skill; media-analysis-skill | EXPERIMENTAL | **⚠ COLLISION**, same shape as above. |
+
+**Important asymmetry (per `REPOSITORY_MAP.md`):** awareness of the overlap is
+one-directional. `qc-skill`'s own docs explicitly reference and position against
+`media-analysis-skill`. `media-analysis-skill`'s docs and code contain **zero**
+references to `qc-skill`, despite acknowledging overlap with `ffmpeg-skill` by name and
+stating "which of the two a production system uses... is the agent's choice." This is not
+a strict superset/subset relationship either — see 8b.
+
+### 8b. qc-skill-only measurements (media-analysis-skill does not implement these)
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Note |
+|---|---|---|---|---|
+| `measure.video.freeze` | qc-skill (`freezedetect`-based check) | qc-skill only | EXPERIMENTAL | Confirmed absent in media-analysis-skill — not a second silent duplicate; the two Skills are **not** a strict superset/subset pair. |
+| `measure.video.black_frame` | qc-skill (`blackdetect`) | qc-skill only | EXPERIMENTAL | Same — confirmed absent elsewhere. media-analysis-skill's own scope statement explicitly excludes "freeze-frame detection, black-frame detection" by design. |
+| `measure.audio.clipping_and_dynamics` | qc-skill (LRA/true-peak via `ebur128`, clipping) | qc-skill only | EXPERIMENTAL | media-analysis-skill's loudness analyzer does not cover clipping/true-peak/LRA as a distinct check. |
+| `measure.audio.channel_layout` | qc-skill (channel layout/balance check) | qc-skill only | EXPERIMENTAL | — |
+| `measure.video.format` | qc-skill (resolution/fps/codec/pixel format/color metadata) | qc-skill only | EXPERIMENTAL | Overlaps in *spirit* with media-analysis-skill's `video_format`/`stream_layout` (8c) but is a QC pass/fail judgment against thresholds, not a raw probe — treat as a related-but-distinct capability, not the same id, pending further audit. |
+| `measure.subtitle.timing` | qc-skill (SRT/VTT/ASS timing only — no semantic/wording checks) | qc-skill only | EXPERIMENTAL | — |
+| `measure.delivery.integrity` | qc-skill (composition of the above + container/size/extension) | qc-skill only | EXPERIMENTAL | This is qc-skill's `QCReport` for the "delivery" check group — a composed judgment, not a new raw measurement. |
+
+### 8c. media-analysis-skill-only measurements (qc-skill does not implement these)
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Note |
+|---|---|---|---|---|
+| `measure.video.scene_detection` | media-analysis-skill (ffmpeg `scdet`) | media-analysis-skill only | EXPERIMENTAL | Explicitly **"not semantic scenes"** per its own README — a hard-cut/shot-boundary detector, not content understanding. No AI. |
+| `measure.video.timing` (A-V sync) | media-analysis-skill (`timing`: packet-gap/A-V sync) | media-analysis-skill only | EXPERIMENTAL | — |
+| `measure.video.probe` / `measure.*.format` / `measure.*.duration` | media-analysis-skill (`media_probe`, `stream_layout`, `video_format`, `audio_format`, `duration` — all ffprobe-only, purely observational) | media-analysis-skill only | EXPERIMENTAL | **Base-layer overlap note, not a Capability collision:** `ffmpeg-skill`'s own `probe.py` tool also performs raw ffprobe-based probing. This is a base-layer *tool* overlap (two different code paths both call ffprobe), not a duplicated *Capability* in the same sense as §8a — `media-analysis-skill` talks to `ffprobe` directly and does not depend on the `ffmpeg-skill` package, so there is no shared identity to collide under today. Flagged here because it is the kind of overlap that could become a real Capability collision if `media-analysis-skill`'s probing were ever registered under the same id as an `ffmpeg-skill`-provided `measure.*.probe` capability — not registered as such today. |
+
+**Explicitly out of scope for media-analysis-skill (by design, per its own docs):**
+freeze-frame detection, black-frame detection, semantic/content understanding, speaker
+detection, transcription, captions, thumbnails. "No AI." Confirmed no media-writing code
+path exists anywhere in its CLI or schemas — purely observational.
+
+---
+
+## 9. Base-layer capabilities — `ffmpeg-skill`'s 21 raw tools
+
+`ffmpeg-skill` is the ecosystem's foundational execution boundary (`REPOSITORY_MAP.md`).
+Its 21 typed, `argparse`-introspected CLI scripts are Capabilities **in their own right**,
+independent of the higher-level Skills that delegate to them — an Agent (or a human via
+CLI) may invoke any of these directly without going through `video-editing-skill` etc.
+
+| Tool (= base capability id `ffmpeg-skill.<tool>`) | Provider | Lifecycle | Note |
+|---|---|---|---|
+| `cut` | ffmpeg-skill | EXPERIMENTAL | Underlies `edit.trim`/`edit.cut`. |
+| `fit` | ffmpeg-skill | EXPERIMENTAL | Underlies `edit.fit`. |
+| `caption` | ffmpeg-skill | EXPERIMENTAL | Underlies `subtitle.render` (burn-in). |
+| `overlay` | ffmpeg-skill | EXPERIMENTAL | Underlies `edit.overlay` and `motion_graphics.overlay`. |
+| `graphics` | ffmpeg-skill | EXPERIMENTAL | Underlies `motion_graphics.title_card`/`lower_third`. |
+| `sync` | ffmpeg-skill | EXPERIMENTAL | No higher-level Skill confirmed consuming this by name in `REPOSITORY_MAP.md` — treat as available-but-unmapped. |
+| `multicam` | ffmpeg-skill | EXPERIMENTAL | `video-production-agent` registers a multicam/conference pipeline body but it is `implemented=False` there — the ffmpeg-skill tool itself is the only confirmed-real multicam capability today. |
+| `audio` | ffmpeg-skill | EXPERIMENTAL | Underlies `audio.mix` and related audio-production-skill ops. |
+| `loudness` | ffmpeg-skill | EXPERIMENTAL | Underlies `audio.normalize` (EBU R128). |
+| `silence` | ffmpeg-skill | EXPERIMENTAL | Underlies `audio.silence_remove` (explicit-range removal, not detection). |
+| `join` | ffmpeg-skill | EXPERIMENTAL | Underlies `edit.concat` and `audio.concat`. |
+| `color` | ffmpeg-skill | EXPERIMENTAL | Underlies all of §3's color capabilities. |
+| `export` | ffmpeg-skill | EXPERIMENTAL | Delivery/export packaging — no higher-level Skill confirmed as sole consumer. |
+| `check` | ffmpeg-skill | EXPERIMENTAL | Not confirmed identical to `qc-skill`'s checks — qc-skill talks to `ffmpeg`/`ffprobe` directly, not via this tool. |
+| `scenes` | ffmpeg-skill | EXPERIMENTAL | Not confirmed identical to media-analysis-skill's `scene_detection` — media-analysis-skill talks to `ffmpeg`/`ffprobe` directly, not via this tool. |
+| `look` | ffmpeg-skill | EXPERIMENTAL | Underlies `thumbnail.extract_frame`. |
+| `render` | ffmpeg-skill | EXPERIMENTAL | — |
+| `probe` | ffmpeg-skill | EXPERIMENTAL | Underlies `thumbnail.extract_frame`'s probing step; see §8c's base-layer-overlap note re: media-analysis-skill's independent ffprobe use. |
+| `batch` | ffmpeg-skill | EXPERIMENTAL | The **only** ffmpeg-skill tool with any caching (`idempotency_hint: "cached"`) — every other tool is uncached. |
+| `report` | ffmpeg-skill | EXPERIMENTAL | — |
+| `verify` | ffmpeg-skill | EXPERIMENTAL | The **only** ffmpeg-skill tool with a per-run timeout enforced — the other 20 main scripts have no per-encode timeout, an honest, present gap (`REPOSITORY_MAP.md`). |
+
+**Cross-cutting facts about this layer (from `REPOSITORY_MAP.md`, load-bearing for the
+matrix above):**
+
+- No filter string is ever accepted from a caller for any of these 21 tools — typed flags
+  are individually range-checked and converted into filter-graph fragments internally.
+- The manifest's `not_provided` field explicitly lists: `AI reasoning, decisions,
+  production plans, project IR, approvals, network access, transcription engine`.
+- `ffmpeg-skill` is the only repo in the ecosystem shipping an actual MCP server; its
+  `tools/list` is generated live from the same contract generator used by its CLI — no
+  hand-written schema to drift.
+- `mutates_input: false` is declared/enforced for every one of the 21 tools.
+- Two version axes exist per tool set: `skill.version` (0.9.1, changes every release) and
+  `contract_version` ("1.0", bumps only on breaking `ToolSpec` shape change).
+
+---
+
+## Summary count
+
+- **8 editing** capabilities (video-editing-skill → ffmpeg-skill)
+- **13 audio** capabilities (audio-production-skill → ffmpeg-skill)
+- **4 color** capabilities (color-grading-skill → ffmpeg-skill)
+- **2 subtitle** capabilities (subtitle-skill, one self-contained, one delegated)
+- **3 motion-graphics** capabilities (motion-graphics-skill → ffmpeg-skill)
+- **2 thumbnail** capabilities (thumbnail-skill, one self-contained via Pillow, one
+  delegated)
+- **1 transcription** capability (transcription-skill → faster-whisper)
+- **13 measurement** capabilities across qc-skill and media-analysis-skill, of which
+  **3 are confirmed collisions** (§8a), **7 are qc-skill-exclusive** (§8b), and
+  **3 are media-analysis-skill-exclusive** (§8c, one of which — probing — carries a
+  base-layer overlap note with `ffmpeg-skill`, not a Capability-level collision)
+- **21 base-layer** capabilities directly exposed by ffmpeg-skill's own tool scripts
+
+**Total distinct rows: 67**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
+`Provider` collisions resolved (the 3 in §8a are flagged, not yet resolved — that is
+`ROADMAP.md` Phase 3's job).
