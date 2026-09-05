@@ -14,10 +14,14 @@ every other Skill's `contract.py` output into one cross-ecosystem shape.
 
 ```
 CapabilityContract {
-  skill_id: string            // e.g. "ffmpeg-skill"      (existing: skill.id)
-  skill_version: string       // e.g. "0.9.1"              (existing: skill.version, every repo)
-  contract_version: string    // e.g. "1.0"                (existing: ffmpeg-skill only today; PROPOSED for all)
-  capabilities: [
+  skill_id: string            // e.g. "qc"                 (existing: every repo's own skill_id field)
+  version: string             // e.g. "0.1.0"              (existing: every repo's own version field — RENAMED
+                               //   from an earlier "skill_version" draft; see POC_CAPABILITY_CONTRACT.md
+                               //   Finding 1 — no real Skill uses "skill_version", they all just say "version")
+  contract_version: string | number   // e.g. "1.0" (ffmpeg-skill) or 1 (qc-skill)  (existing, inconsistently
+                               //   typed today; PROPOSED that every Skill publish one, in whatever scalar
+                               //   form it already uses — see POC_CAPABILITY_CONTRACT.md Finding 2)
+  provides: [
     {
       id: string               // e.g. "edit.trim"          (PROPOSED namespace; existing tool ids are close: "ffmpeg-skill/cut")
       lifecycle: PROPOSED | EXPERIMENTAL | STABLE | DEPRECATED | RETIRED   (PROPOSED field)
@@ -37,6 +41,20 @@ CapabilityContract {
   not_provided: [string]        // self-declared non-responsibilities (existing: ffmpeg-skill manifest)
 }
 ```
+
+**Note on the `provides` field name (amended after a proof-of-concept, see
+`POC_CAPABILITY_CONTRACT.md`):** an earlier draft called this field `capabilities`.
+Running the real `contract --json` output of `qc-skill` and `media-analysis-skill`
+through a validator for that draft showed both Skills already use `capabilities` for
+something else entirely — environment/binary feature detection (e.g. `{"required":
+["ffprobe"], "optional": ["filter:blackdetect", ...]}`), not an OS-level accomplishable
+unit of work. Reusing the word here would have created the same kind of naming
+collision `CORE_PRIMITIVES.md` §2 already found and fixed for "Skill." A Skill's
+existing environment-capability field is untouched and keeps its own name; this
+contract's list of OS-level Capability ids is called `provides` instead, precisely
+because a Skill *provides* Capabilities and separately *requires*/*detects* environment
+capabilities — two different things that happened to share a word before this was
+caught.
 
 `capability contract --json` / `<skill> contract --json` (already the exact CLI shape of
 every audited Skill) remains the discovery entrypoint. No new transport is introduced.

@@ -66,6 +66,17 @@ fixes a real, already-occurred bug class) and Rule 16 (composability over hard-c
 pipelines — the ordered-candidate-list pattern in `SkillRegistry` is exactly the
 hard-coding this replaces).
 
+**Validated, not just designed:** `docs/POC_CAPABILITY_CONTRACT.md` implements this
+exact three-tier policy in ~100 lines of Python and runs it against the real,
+unmodified `contract --json` output of `qc-skill` and `media-analysis-skill` — the
+actual collision case described above, not a synthetic one. All three tiers, plus the
+ambiguous-refusal and unregistered-provider-error cases, produced the expected result.
+The same PoC also found that neither Skill's real contract expresses the mapping from
+its own check/tool identifiers to an OS-level Capability id like
+`measure.audio.loudness` — that correspondence had to be written by hand, which is now
+tracked as explicit scope for each Skill's Phase 2 contract retrofit
+(`docs/ROADMAP.md`), not assumed to fall out for free.
+
 ## Granularity: what deserves to be a new Skill
 
 Criteria, derived from what already earned Skill-hood in the ecosystem vs. what stayed
