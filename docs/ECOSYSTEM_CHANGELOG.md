@@ -1,0 +1,101 @@
+# Ecosystem Changelog
+
+**Status: CURRENT / IMPLEMENTED** (this document itself; every entry in it records a
+real, already-pushed change — nothing here is planned or hypothetical work).
+
+This project spans 11+ separate GitHub repositories (`docs/REPOSITORY_MAP.md`). Anyone
+watching the ecosystem's evolution — a human, or an external agent such as ChatGPT — would
+otherwise have to separately track each repo's own commit history to see what changed and
+why. This file is the single place that happens instead: every externally-visible change
+made across the ecosystem *by an agent acting under this project's architecture* (not by
+the human maintainer directly, and not routine per-repo maintenance unrelated to this
+project) gets one entry here, at the time it is pushed, newest first.
+
+This is a log, not a spec. It records facts (what changed, in which repo, in which PR) and
+links to the real diff; it does not restate or duplicate the reasoning that belongs in each
+repo's own `docs/decisions.md` ADR, `docs/SPEC.md`, or this project's own `docs/adr/`.
+
+## Format
+
+Each entry:
+
+```
+### YYYY-MM-DD — <short title>
+
+- **Repo(s)**: `owner/repo` (+ others if a coordinated cross-repo change)
+- **PR(s)**: link(s)
+- **What changed**: one or two sentences, factual.
+- **Why**: one sentence, pointing at the relevant AI-video-production-OS doc/ADR or the
+  originating repo's own ADR, not restating it in full.
+- **Status**: draft (open, CI pending/running) / open (CI green, awaiting review) / merged
+  / closed (not merged — say why).
+```
+
+Status is a snapshot as of the entry's date; it is not updated retroactively when a PR
+later merges — check the PR link for current state. A later entry may note a status change
+explicitly (e.g. "merged" as its own line) if the merge itself is independently
+noteworthy.
+
+---
+
+### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 1)
+
+- **Repo(s)**: `kajisho5/video-editing-skill`, `kajisho5/subtitle-skill`,
+  `kajisho5/thumbnail-skill`, `kajisho5/audio-production-skill`,
+  `kajisho5/color-grading-skill`, `kajisho5/motion-graphics-skill`
+- **PR(s)**:
+  - https://github.com/kajisho5/video-editing-skill/pull/2
+  - https://github.com/kajisho5/subtitle-skill/pull/2
+  - https://github.com/kajisho5/thumbnail-skill/pull/2
+  - https://github.com/kajisho5/audio-production-skill/pull/3
+  - https://github.com/kajisho5/color-grading-skill/pull/4
+  - https://github.com/kajisho5/motion-graphics-skill/pull/2
+- **What changed**: each Skill's machine-readable contract (`contract --json` / `skill
+  --json`) gains a new, purely additive top-level `provides` field: a list of
+  `{id, lifecycle, tool_id}` (plus a repo-specific disambiguating field — `operation` or
+  `element_type` — where one tool covers several operations) naming the cross-repository
+  Capability ids that Skill can be asked to perform. No existing field changed meaning; no
+  pinned/golden contract fixture broke; each repo's own full test suite + lint/type
+  checks were confirmed byte-identical before/after.
+- **Why**: this is the first real (non-synthetic) validation of the Capability/Skill
+  model this project designed — see `docs/CAPABILITY_MODEL.md` and
+  `docs/POC_CAPABILITY_CONTRACT.md` (the proof-of-concept that established the `provides`
+  field name and shape against real `contract --json` output from all 10 audited Skills).
+  Capability ids match the pre-existing assignments in this repo's own
+  `docs/CAPABILITY_MATRIX.md` wherever one existed; where a Skill had no native
+  capability-shaped id (audio-production-skill, color-grading-skill,
+  motion-graphics-skill), the mapping was a documented naming decision, recorded as a new
+  ADR in that repo's own `docs/decisions.md` (ADR-006 video-editing-skill, ADR-10
+  audio-production-skill, ADR-15 color-grading-skill, ADR-10 motion-graphics-skill).
+- **Status**: draft (all six PRs open; CI pending/running as of this entry — see each
+  link for current state)
+
+**Still to come in this rollout** (same pattern, not yet pushed as of this entry):
+`qc-skill` + `media-analysis-skill` together (the ecosystem's real Capability-collision
+pair — both must publish identical ids for their three overlapping capabilities), then
+`transcription-skill`, then `ffmpeg-skill` last (structurally different contract shape,
+and the dependency of six other Skills).
+
+---
+
+### 2026-09-05 (earlier) — Architecture Phase 0: 24+ core documents, ADRs, roadmap
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: https://github.com/kajisho5/AI-video-production-OS/pull/1
+- **What changed**: this repository's initial architecture — `REPOSITORY_MAP.md` (real
+  audit of all 11 repos), `CAPABILITY_MODEL.md`, `CORE_PRIMITIVES.md`, `ARCHITECTURE.md`,
+  `SPEC.md`, `CAPABILITY_MATRIX.md`, `ROADMAP.md`, `GOVERNANCE.md`, `SECURITY_MODEL.md`,
+  and the rest of the documents listed in this directory, plus `docs/adr/ADR-001`
+  through `ADR-010` and the project README.
+- **Why**: the founding request for this project — audit the real ecosystem before
+  designing anything, and produce a rigorous, evidence-based Capability/Skill/
+  Provider/Runtime architecture that never invents functionality the ecosystem does not
+  actually have.
+- **Status**: open (see PR for current CI/review state)
+
+---
+
+*Earlier ecosystem history (each repo's own implementation, before this project existed)
+is not backfilled here — see each repo's own `docs/decisions.md` / README for that. This
+log starts from the point an agent acting under this project began making cross-repo
+changes.*

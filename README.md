@@ -302,6 +302,11 @@ Then: [`GLOSSARY.md`](docs/GLOSSARY.md) (every term, defined once) and
 [`ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md) (a scannable ADOPT /
 DEFER / REJECT table, if you want the conclusions before the reasoning).
 
+Watching the ecosystem from outside (this repo included) and don't want to track eleven
+separate repos' commit histories individually? [`ECOSYSTEM_CHANGELOG.md`](docs/ECOSYSTEM_CHANGELOG.md)
+is a single running log of every cross-repository change made under this project's
+architecture, newest first, with links to the real PR/diff for each one.
+
 ## License
 
 Not yet set for this repository (`UNKNOWN`). The individual Skill and Agent
