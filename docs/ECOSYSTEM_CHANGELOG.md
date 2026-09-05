@@ -38,6 +38,19 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — media-analysis-skill#4 merged (first merge in the `provides` rollout)
+
+- **Repo(s)**: `kajisho5/media-analysis-skill`
+- **PR(s)**: https://github.com/kajisho5/media-analysis-skill/pull/4 (merged)
+- **What changed**: nothing further — this entry records the merge event itself. The PR
+  (all ten analysis kinds published under `provides`, see the two entries below for the
+  content) was marked ready for review and merged by the repository owner.
+- **Why**: noteworthy on its own per this log's own format note — the first of the ten
+  `provides` PRs to land, validating the pattern used across the other nine.
+- **Status**: merged
+
+---
+
 ### 2026-09-05 — Resolve media-analysis-skill's remaining 5 Capability ids
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS`, `kajisho5/media-analysis-skill`
