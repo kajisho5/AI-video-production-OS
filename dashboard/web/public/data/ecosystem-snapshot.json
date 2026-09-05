@@ -1,0 +1,1448 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-05T22:00:00Z",
+  "generator": {
+    "name": "ecosystem-dashboard-aggregator (example fixture)",
+    "version": "0.1.0"
+  },
+  "authTokenPresent": true,
+  "rateLimit": {
+    "remaining": 4950,
+    "limit": 5000
+  },
+  "overview": {
+    "totalRepos": 12,
+    "reposByType": {
+      "OS": 1,
+      "Agent": 1,
+      "Skill": 10,
+      "Provider": 0,
+      "Extension": 0
+    },
+    "openPullRequestsTotal": 11,
+    "openIssuesTotal": 0,
+    "ciFailingCount": 0,
+    "maturityDistribution": {
+      "counts": [
+        0,
+        0,
+        4,
+        0,
+        5,
+        1,
+        0
+      ],
+      "totalRepos": 10
+    },
+    "recentlyChangedRepos": [
+      {
+        "slug": "kajisho5/motion-graphics-skill",
+        "lastUpdatedAt": "2026-09-05T21:40:51Z"
+      },
+      {
+        "slug": "kajisho5/video-editing-skill",
+        "lastUpdatedAt": "2026-09-05T21:37:34Z"
+      },
+      {
+        "slug": "kajisho5/AI-video-production-OS",
+        "lastUpdatedAt": "2026-09-05T21:37:14Z"
+      },
+      {
+        "slug": "kajisho5/qc-skill",
+        "lastUpdatedAt": "2026-09-05T21:24:41Z"
+      },
+      {
+        "slug": "kajisho5/color-grading-skill",
+        "lastUpdatedAt": "2026-09-05T21:23:20Z"
+      },
+      {
+        "slug": "kajisho5/transcription-skill",
+        "lastUpdatedAt": "2026-09-05T21:15:41Z"
+      },
+      {
+        "slug": "kajisho5/thumbnail-skill",
+        "lastUpdatedAt": "2026-09-05T21:12:27Z"
+      },
+      {
+        "slug": "kajisho5/media-analysis-skill",
+        "lastUpdatedAt": "2026-09-05T21:09:41Z"
+      },
+      {
+        "slug": "kajisho5/audio-production-skill",
+        "lastUpdatedAt": "2026-09-05T21:09:12Z"
+      },
+      {
+        "slug": "kajisho5/ffmpeg-skill",
+        "lastUpdatedAt": "2026-09-05T21:03:53Z"
+      }
+    ]
+  },
+  "repos": [
+    {
+      "slug": "kajisho5/AI-video-production-OS",
+      "name": "AI-video-production-OS",
+      "type": "OS",
+      "role": "Architecture, registry/ library, ecosystem state documents. Describes the others; nothing depends on it at runtime.",
+      "dependsOn": [],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "a8605cd",
+        "message": "registry/conformance: implement no_unsafe_shell_out, completing all 8 SKILL_SPEC checks",
+        "author": "kajisho5",
+        "date": "2026-09-05T21:45:00Z",
+        "url": "https://github.com/kajisho5/AI-video-production-OS/commit/a8605cd"
+      },
+      "lastUpdatedAt": "2026-09-05T21:37:14Z",
+      "openPullRequests": [
+        {
+          "number": 1,
+          "title": "Architecture + registry/ + ecosystem docs",
+          "url": "https://github.com/kajisho5/AI-video-production-OS/pull/1",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T21:37:14Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "UNKNOWN",
+        "workflowName": "UNKNOWN",
+        "runUrl": "UNKNOWN",
+        "updatedAt": "UNKNOWN"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": "UNKNOWN",
+        "source": "UNKNOWN",
+        "detail": "UNKNOWN"
+      },
+      "providesPublished": {
+        "value": "UNKNOWN",
+        "source": "UNKNOWN",
+        "detail": "UNKNOWN"
+      },
+      "osIntegration": {
+        "status": "UNKNOWN",
+        "detail": "UNKNOWN",
+        "source": "UNKNOWN"
+      },
+      "verifiedEndToEnd": {
+        "value": "UNKNOWN",
+        "source": "UNKNOWN",
+        "detail": "UNKNOWN"
+      },
+      "maturity": {
+        "level": 1,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": "UNKNOWN",
+            "detail": "MATURITY_MODEL.md's levels 2-6 are defined in terms of a Skill's own Capability Contract and the Agent's integration of it; not applicable to repo type \"OS\" itself.",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": [
+        "no workflow runs found on default branch (no CI configured, or none has run)"
+      ]
+    },
+    {
+      "slug": "kajisho5/video-production-agent",
+      "name": "video-production-agent",
+      "type": "Agent",
+      "role": "Orchestrator: Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance. Consumes all 10 Skills below.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill",
+        "kajisho5/video-editing-skill",
+        "kajisho5/audio-production-skill",
+        "kajisho5/color-grading-skill",
+        "kajisho5/subtitle-skill",
+        "kajisho5/motion-graphics-skill",
+        "kajisho5/thumbnail-skill",
+        "kajisho5/qc-skill",
+        "kajisho5/media-analysis-skill",
+        "kajisho5/transcription-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "d8a6c83",
+        "message": "ADR-034: revision review history",
+        "author": "kajisho5",
+        "date": "2026-09-05T17:43:00Z",
+        "url": "https://github.com/kajisho5/video-production-agent/commit/d8a6c83"
+      },
+      "lastUpdatedAt": "2026-09-05T17:43:11Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/video-production-agent/actions",
+        "updatedAt": "2026-09-05T17:43:11Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": "UNKNOWN",
+        "source": "UNKNOWN",
+        "detail": "UNKNOWN"
+      },
+      "providesPublished": {
+        "value": "UNKNOWN",
+        "source": "UNKNOWN",
+        "detail": "UNKNOWN"
+      },
+      "osIntegration": {
+        "status": "UNKNOWN",
+        "detail": "UNKNOWN",
+        "source": "UNKNOWN"
+      },
+      "verifiedEndToEnd": {
+        "value": true,
+        "source": "documented",
+        "detail": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance"
+      },
+      "maturity": {
+        "level": 1,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": "UNKNOWN",
+            "detail": "MATURITY_MODEL.md's levels 2-6 are defined in terms of a Skill's own Capability Contract and the Agent's integration of it; not applicable to repo type \"Agent\" itself.",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/ffmpeg-skill",
+      "name": "ffmpeg-skill",
+      "type": "Skill",
+      "role": "Execution foundation: 21 base tools wrapping FFmpeg/ffprobe directly. Every delegating Skill depends on it.",
+      "dependsOn": [],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "b51dc5e",
+        "message": "Merge: typed primary colour correction (0.9.2)",
+        "author": "kajisho5",
+        "date": "2026-09-05T20:56:04Z",
+        "url": "https://github.com/kajisho5/ffmpeg-skill/commit/b51dc5e"
+      },
+      "lastUpdatedAt": "2026-09-05T21:03:53Z",
+      "openPullRequests": [
+        {
+          "number": 24,
+          "title": "Add provides: publish Capability ids for cross-repository discovery",
+          "url": "https://github.com/kajisho5/ffmpeg-skill/pull/24",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T21:13:07Z",
+          "isStale": false
+        },
+        {
+          "number": 22,
+          "title": "Fix FFmpeg 8+ and Windows compatibility for caption and color",
+          "url": "https://github.com/kajisho5/ffmpeg-skill/pull/22",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T17:53:51Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "test",
+        "runUrl": "https://github.com/kajisho5/ffmpeg-skill/actions",
+        "updatedAt": "2026-09-05T21:03:53Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "npm",
+        "package": "ffmpeg-skill",
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": false,
+        "source": "documented",
+        "detail": "PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent depends on this Skill for all 9 other Skills' delegated execution; not a single named adapter, it is the shared execution substrate",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 2,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": false,
+            "detail": "PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/video-editing-skill",
+      "name": "video-editing-skill",
+      "type": "Skill",
+      "role": "Editing operations (trim, concat, ...), delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "e1f2a3b",
+        "message": "Merge pull request #2 from add-capability-provides-field",
+        "author": "kajisho5",
+        "date": "2026-09-05T20:00:00Z",
+        "url": "https://github.com/kajisho5/video-editing-skill/commit/e1f2a3b"
+      },
+      "lastUpdatedAt": "2026-09-05T21:37:34Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/video-editing-skill/actions",
+        "updatedAt": "2026-09-05T21:37:34Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #2 merged"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(), package id video-editing matches SKILL_ID exactly",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": true,
+        "source": "documented",
+        "detail": "video-production-agent README's real end-to-end pipeline command sequence includes an editing step"
+      },
+      "maturity": {
+        "level": 5,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #2 merged",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(), package id video-editing matches SKILL_ID exactly",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": true,
+            "detail": "video-production-agent README's real end-to-end pipeline command sequence includes an editing step",
+            "source": "documented"
+          },
+          {
+            "level": 6,
+            "met": "UNKNOWN",
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/audio-production-skill",
+      "name": "audio-production-skill",
+      "type": "Skill",
+      "role": "Audio processing, delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "c4d5e6f",
+        "message": "Merge pull request #3 from add-capability-provides-field",
+        "author": "kajisho5",
+        "date": "2026-09-05T19:30:00Z",
+        "url": "https://github.com/kajisho5/audio-production-skill/commit/c4d5e6f"
+      },
+      "lastUpdatedAt": "2026-09-05T21:09:12Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/audio-production-skill/actions",
+        "updatedAt": "2026-09-05T21:09:12Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #3 merged"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(), package id audio-production matches SKILL_ID exactly",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 4,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #3 merged",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(), package id audio-production matches SKILL_ID exactly",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": false,
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/color-grading-skill",
+      "name": "color-grading-skill",
+      "type": "Skill",
+      "role": "Colour operations (HDR to SDR, LUT apply, retag, strip Dolby Vision, primary correction), delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "2935322",
+        "message": "Add PRIMARY_CORRECTION: typed primary colour correction via ffmpeg-skill 0.9.2",
+        "author": "kajisho5",
+        "date": "2026-09-05T21:23:20Z",
+        "url": "https://github.com/kajisho5/color-grading-skill/commit/2935322"
+      },
+      "lastUpdatedAt": "2026-09-05T21:23:20Z",
+      "openPullRequests": [
+        {
+          "number": 4,
+          "title": "Add provides: publish Capability ids for cross-repository discovery",
+          "url": "https://github.com/kajisho5/color-grading-skill/pull/4",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T20:04:49Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/color-grading-skill/actions",
+        "updatedAt": "2026-09-05T21:23:20Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": false,
+        "source": "documented",
+        "detail": "PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending."
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(), package id color-grading matches SKILL_ID exactly",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 2,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": false,
+            "detail": "PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending.",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/subtitle-skill",
+      "name": "subtitle-skill",
+      "type": "Skill",
+      "role": "Subtitle generate/render (SRT/WebVTT); burn-in only delegates to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "56f4f8b",
+        "message": "Implement subtitle-skill: typed validation, SRT/WebVTT generation, burn-in delegation",
+        "author": "kajisho5",
+        "date": "2026-09-05T04:22:38Z",
+        "url": "https://github.com/kajisho5/subtitle-skill/commit/56f4f8b"
+      },
+      "lastUpdatedAt": "2026-09-05T19:47:46Z",
+      "openPullRequests": [
+        {
+          "number": 2,
+          "title": "Add provides: publish Capability ids for cross-repository discovery",
+          "url": "https://github.com/kajisho5/subtitle-skill/pull/2",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T19:47:46Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/subtitle-skill/actions",
+        "updatedAt": "2026-09-05T19:47:46Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": false,
+        "source": "documented",
+        "detail": "PR #2 open (draft) as of 2026-09-05 -- not yet on default branch"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'subtitle', deliberately different from this Skill's own SKILL_ID 'subtitle-skill' (commented in adapter.py) -- join by Capability id, never tool-id string, per WORK_QUEUE.md item 1's finding",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 2,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": false,
+            "detail": "PR #2 open (draft) as of 2026-09-05 -- not yet on default branch",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/motion-graphics-skill",
+      "name": "motion-graphics-skill",
+      "type": "Skill",
+      "role": "Titles, lower-thirds, overlays, corner bug/chapter elements. Delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "91618c6",
+        "message": "Refresh CLAUDE.md after merging PR #2/#3/#4",
+        "author": "kajisho5",
+        "date": "2026-09-05T21:33:43Z",
+        "url": "https://github.com/kajisho5/motion-graphics-skill/commit/91618c6"
+      },
+      "lastUpdatedAt": "2026-09-05T21:40:51Z",
+      "openPullRequests": [
+        {
+          "number": 6,
+          "title": "Implement chapter element type (corner chip)",
+          "url": "https://github.com/kajisho5/motion-graphics-skill/pull/6",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T21:40:51Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/motion-graphics-skill/actions",
+        "updatedAt": "2026-09-05T21:40:51Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #2 merged"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(), package id motion-graphics matches SKILL_ID exactly; agent's pinned MotionGraphicsAdapter.check_contract() re-verified against this Skill's live contract as of PR #4/#6",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 4,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #2 merged",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(), package id motion-graphics matches SKILL_ID exactly; agent's pinned MotionGraphicsAdapter.check_contract() re-verified against this Skill's live contract as of PR #4/#6",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": false,
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/thumbnail-skill",
+      "name": "thumbnail-skill",
+      "type": "Skill",
+      "role": "Thumbnail render/extract. Frame decode delegates to ffmpeg-skill; compositing is in-process (Pillow).",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "1f14403",
+        "message": "Add ADR log and an explicit ffmpeg-skill contract/gap doc",
+        "author": "kajisho5",
+        "date": "2026-09-05T21:11:56Z",
+        "url": "https://github.com/kajisho5/thumbnail-skill/commit/1f14403"
+      },
+      "lastUpdatedAt": "2026-09-05T21:12:27Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/thumbnail-skill/actions",
+        "updatedAt": "2026-09-05T21:12:27Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #2 merged"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'thumbnail', deliberately different from this Skill's own SKILL_ID 'thumbnail-skill' -- join by Capability id, never tool-id string",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 4,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #2 merged",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'thumbnail', deliberately different from this Skill's own SKILL_ID 'thumbnail-skill' -- join by Capability id, never tool-id string",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": false,
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/qc-skill",
+      "name": "qc-skill",
+      "type": "Skill",
+      "role": "Deterministic quality-control / delivery-gate checks. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "dependsOn": [],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "11a1c2e",
+        "message": "(main, unaffected by the stacked feature branches below)",
+        "author": "kajisho5",
+        "date": "2026-09-05T18:00:00Z",
+        "url": "https://github.com/kajisho5/qc-skill/commit/11a1c2e"
+      },
+      "lastUpdatedAt": "2026-09-05T21:24:41Z",
+      "openPullRequests": [
+        {
+          "number": 6,
+          "title": "Phase 4: Visual Defect Evidence (luminance-range excursions)",
+          "url": "https://github.com/kajisho5/qc-skill/pull/6",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T21:24:43Z",
+          "isStale": false
+        },
+        {
+          "number": 5,
+          "title": "Add provides: publish Capability ids for cross-repository discovery",
+          "url": "https://github.com/kajisho5/qc-skill/pull/5",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T20:15:51Z",
+          "isStale": false
+        },
+        {
+          "number": 4,
+          "title": "Phase 3: Timeline Integrity",
+          "url": "https://github.com/kajisho5/qc-skill/pull/4",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T21:00:20Z",
+          "isStale": false
+        },
+        {
+          "number": 3,
+          "title": "Phase 2: Cross-Artifact Validation",
+          "url": "https://github.com/kajisho5/qc-skill/pull/3",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T20:59:26Z",
+          "isStale": false
+        },
+        {
+          "number": 2,
+          "title": "Phase 1: Delivery Gate Foundation (kind=delivery_package)",
+          "url": "https://github.com/kajisho5/qc-skill/pull/2",
+          "draft": true,
+          "mergeableState": "clean",
+          "updatedAt": "2026-09-05T20:58:10Z",
+          "isStale": false
+        }
+      ],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/qc-skill/actions",
+        "updatedAt": "2026-09-05T21:24:41Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": false,
+        "source": "documented",
+        "detail": "PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill)."
+      },
+      "osIntegration": {
+        "status": "integrated_as_gate",
+        "detail": "video-production-agent ADR-032: qc-skill is connected as the final promotion gate, never as an alternative per-measurement Provider to media-analysis-skill -- confirmed deliberate, not a gap",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 2,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": false,
+            "detail": "PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/media-analysis-skill",
+      "name": "media-analysis-skill",
+      "type": "Skill",
+      "role": "Media measurement/observation. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "dependsOn": [],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "7a8b9c0",
+        "message": "Merge pull request #4 from add-capability-provides-field",
+        "author": "kajisho5",
+        "date": "2026-09-05T19:00:00Z",
+        "url": "https://github.com/kajisho5/media-analysis-skill/commit/7a8b9c0"
+      },
+      "lastUpdatedAt": "2026-09-05T21:09:41Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/media-analysis-skill/actions",
+        "updatedAt": "2026-09-05T21:09:41Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #4 merged, including a follow-up commit resolving all 10 analysis kinds' Capability ids"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(), package id media-analysis matches SKILL_ID exactly",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 4,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #4 merged, including a follow-up commit resolving all 10 analysis kinds' Capability ids",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(), package id media-analysis matches SKILL_ID exactly",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": false,
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    },
+    {
+      "slug": "kajisho5/transcription-skill",
+      "name": "transcription-skill",
+      "type": "Skill",
+      "role": "Speech-to-text via local ASR engines (faster-whisper etc.), not FFmpeg-based.",
+      "dependsOn": [],
+      "exists": true,
+      "defaultBranch": "main",
+      "latestCommit": {
+        "sha": "3d4e5f6",
+        "message": "Merge pull request #5 from add-capability-provides-field",
+        "author": "kajisho5",
+        "date": "2026-09-05T19:15:00Z",
+        "url": "https://github.com/kajisho5/transcription-skill/commit/3d4e5f6"
+      },
+      "lastUpdatedAt": "2026-09-05T21:15:41Z",
+      "openPullRequests": [],
+      "openIssues": [],
+      "ci": {
+        "conclusion": "success",
+        "workflowName": "tests",
+        "runUrl": "https://github.com/kajisho5/transcription-skill/actions",
+        "updatedAt": "2026-09-05T21:15:41Z"
+      },
+      "release": null,
+      "distribution": {
+        "kind": "UNKNOWN",
+        "package": null,
+        "latestVersion": "UNKNOWN"
+      },
+      "capabilityContractPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "as of 2026-09-05"
+      },
+      "providesPublished": {
+        "value": true,
+        "source": "documented",
+        "detail": "PR #5 merged"
+      },
+      "osIntegration": {
+        "status": "integrated",
+        "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'transcription', matches this Skill's tool id prefix by convention (commented in adapter.py) though SKILL_ID is 'transcription-skill' -- join by Capability id, never tool-id string",
+        "source": "documented"
+      },
+      "verifiedEndToEnd": {
+        "value": false,
+        "source": "documented",
+        "detail": "documented"
+      },
+      "maturity": {
+        "level": 4,
+        "evidence": [
+          {
+            "level": 0,
+            "met": true,
+            "detail": "Listed in docs/ecosystem/registry.json",
+            "source": "documented"
+          },
+          {
+            "level": 1,
+            "met": true,
+            "detail": "Repository exists on GitHub and is non-empty (size > 0 KB)",
+            "source": "github_api"
+          },
+          {
+            "level": 2,
+            "met": true,
+            "detail": "contract_published=true; CI conclusion on default branch=success",
+            "source": "documented"
+          },
+          {
+            "level": 3,
+            "met": true,
+            "detail": "PR #5 merged",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'transcription', matches this Skill's tool id prefix by convention (commented in adapter.py) though SKILL_ID is 'transcription-skill' -- join by Capability id, never tool-id string",
+            "source": "documented"
+          },
+          {
+            "level": 5,
+            "met": false,
+            "detail": "Not documented in capability-status.json",
+            "source": "documented"
+          }
+        ]
+      },
+      "fetchedAt": "2026-09-05T22:00:00Z",
+      "fetchErrors": []
+    }
+  ],
+  "agent": {
+    "slug": "kajisho5/video-production-agent",
+    "architecture": "documented",
+    "architectureEvidence": "34 ADRs (docs/decisions.md), real Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance pipeline",
+    "capabilityDiscovery": "static",
+    "capabilityDiscoveryEvidence": "SkillRegistry.select_tool() with declared-order candidate lists (src/video_agent/skills/registry.py, default_registry()), not this project's Capability-id-based provides/registry system -- the two are not yet connected (see WORK_QUEUE.md item 1)",
+    "skillIntegration": "integrated_all_10",
+    "skillIntegrationEvidence": "adapters for all 10 Skills confirmed by reading each adapter module in a live checkout, 2026-09-05",
+    "aiProvider": "not_wired",
+    "aiProviderEvidence": "video-production-agent's own docs/GAP_ANALYSIS_PHASE2.md section 2: only NullProvider exists, no real LLM reasoning connected -- the single biggest gap between current state and the ecosystem Mission",
+    "tests": {
+      "total": 187,
+      "passing": 184,
+      "note": "3 failures confirmed to be this session's own sandbox environment contamination (other repos pip-installed into the same Python environment), not real agent bugs -- do not 'fix' without reproducing in a clean checkout"
+    },
+    "verifiedEndToEnd": {
+      "value": true,
+      "source": "documented",
+      "detail": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance"
+    }
+  },
+  "bottlenecks": [
+    {
+      "kind": "capability_not_declared",
+      "repoSlug": "kajisho5/ffmpeg-skill",
+      "summary": "Capability Contract has no `provides` field yet (PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch)",
+      "evidenceUrl": "UNKNOWN",
+      "detectedAt": "2026-09-05T22:00:24.915Z"
+    },
+    {
+      "kind": "capability_not_declared",
+      "repoSlug": "kajisho5/color-grading-skill",
+      "summary": "Capability Contract has no `provides` field yet (PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending.)",
+      "evidenceUrl": "UNKNOWN",
+      "detectedAt": "2026-09-05T22:00:24.915Z"
+    },
+    {
+      "kind": "capability_not_declared",
+      "repoSlug": "kajisho5/subtitle-skill",
+      "summary": "Capability Contract has no `provides` field yet (PR #2 open (draft) as of 2026-09-05 -- not yet on default branch)",
+      "evidenceUrl": "UNKNOWN",
+      "detectedAt": "2026-09-05T22:00:24.915Z"
+    },
+    {
+      "kind": "capability_not_declared",
+      "repoSlug": "kajisho5/qc-skill",
+      "summary": "Capability Contract has no `provides` field yet (PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).)",
+      "evidenceUrl": "UNKNOWN",
+      "detectedAt": "2026-09-05T22:00:24.915Z"
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "slug": "kajisho5/AI-video-production-OS",
+        "type": "OS"
+      },
+      {
+        "slug": "kajisho5/video-production-agent",
+        "type": "Agent"
+      },
+      {
+        "slug": "kajisho5/ffmpeg-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/video-editing-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/audio-production-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/color-grading-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/subtitle-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/motion-graphics-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/thumbnail-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/qc-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/media-analysis-skill",
+        "type": "Skill"
+      },
+      {
+        "slug": "kajisho5/transcription-skill",
+        "type": "Skill"
+      }
+    ],
+    "edges": [
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/video-editing-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/audio-production-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/color-grading-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/subtitle-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/motion-graphics-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/thumbnail-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/qc-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/media-analysis-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-production-agent",
+        "to": "kajisho5/transcription-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/video-editing-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/audio-production-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/color-grading-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/subtitle-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/motion-graphics-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      },
+      {
+        "from": "kajisho5/thumbnail-skill",
+        "to": "kajisho5/ffmpeg-skill",
+        "kind": "depends_on"
+      }
+    ]
+  },
+  "unreachableRepos": []
+}

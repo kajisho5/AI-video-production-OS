@@ -290,7 +290,7 @@ whatever sustains the person building it — not the reverse.
 ## Documentation
 
 The full architecture is documented across [`docs/`](docs/) (~50 files) and
-[`docs/adr/`](docs/adr/) (10 decision records). Start with these five, in order:
+[`docs/adr/`](docs/adr/) (11 decision records). Start with these five, in order:
 
 1. [`REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md) — the evidence base
 2. [`CORE_PRIMITIVES.md`](docs/CORE_PRIMITIVES.md) — what everything is
@@ -311,6 +311,11 @@ Picking this project back up (a new session, or a human returning after a break)
 [`docs/ecosystem/HANDOFF.md`](docs/ecosystem/HANDOFF.md) is the one page to read first —
 current state, what's in flight, and where the rest of the operational documentation
 (`CURRENT_STATE.md`, `CROSS_REPO_STATUS.md`, `WORK_QUEUE.md`, `DECISION_LOG.md`) lives.
+
+Want to *see* the ecosystem's status rather than read about it? [`dashboard/`](dashboard/)
+is a read-only, mobile-first web dashboard over the ecosystem's real GitHub state — see
+[`dashboard/README.md`](dashboard/README.md) and
+[`docs/adr/ADR-011-ecosystem-dashboard.md`](docs/adr/ADR-011-ecosystem-dashboard.md).
 
 Want the actual code, not just the design? [`registry/`](registry/) is a small, tested,
 dependency-free Python library — Phase 1 of `ROADMAP.md` — that loads real

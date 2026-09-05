@@ -1,0 +1,405 @@
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* iPhone Safari safe-area support for notch/home-indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  /* Defense-in-depth: the page itself must never scroll horizontally (task
+   * requirement). Any content genuinely wider than the viewport (the desktop repo
+   * table) scrolls inside its own .table-scroll container instead. */
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  margin: 0 0 var(--space-2) 0;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--status-neutral);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.app-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .app-shell {
+    padding: var(--space-6);
+  }
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.panel-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+/* Mobile-first card grid: single column by default, more columns as space allows.
+ * Desktop gets a denser multi-column layout; mobile never needs horizontal scroll. */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 640px) {
+  .stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-top: var(--space-2);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-chip.ok {
+  background: var(--status-ok-bg);
+  color: var(--status-ok);
+}
+.status-chip.warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn);
+}
+.status-chip.bad {
+  background: var(--status-bad-bg);
+  color: var(--status-bad);
+}
+.status-chip.unknown {
+  background: var(--status-unknown-bg);
+  color: var(--status-unknown);
+  border: 1px dashed var(--status-unknown);
+}
+.status-chip.neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral);
+}
+
+/* Collapsible section, used heavily on mobile to keep the most important information
+ * reachable without endless scrolling, per the task's mobile-UX requirements. */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) 0;
+  text-align: left;
+}
+
+.section-header h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.section-chevron {
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.section-chevron.open {
+  transform: rotate(90deg);
+}
+
+.repo-card {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+
+.repo-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.repo-card-header > * {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.repo-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.repo-name a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.repo-name a:hover {
+  text-decoration: underline;
+}
+
+.repo-role {
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  margin: var(--space-1) 0 var(--space-2) 0;
+}
+
+.repo-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.desktop-only {
+  display: none;
+}
+
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 900px) {
+  .desktop-only {
+    display: block;
+  }
+  .mobile-only {
+    display: none;
+  }
+}
+
+table.repo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.repo-table th {
+  text-align: left;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+
+table.repo-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.type-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.bottleneck-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.bottleneck-row:last-child {
+  border-bottom: none;
+}
+
+/* Flex items default to min-width:auto, which lets long unbroken content (a mono repo
+ * slug, a long word in a summary) force the container wider than the viewport instead
+ * of wrapping -- this is what caused real horizontal overflow on a 390px viewport
+ * during mobile verification. min-width:0 lets the item shrink to wrap normally. */
+.bottleneck-row > * {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.footer-note {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  padding: var(--space-5) 0 var(--space-3) 0;
+}
+
+.error-banner {
+  background: var(--status-bad-bg);
+  color: var(--status-bad);
+  border: 1px solid var(--status-bad);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.loading-state {
+  color: var(--text-secondary);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.maturity-bar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  margin: var(--space-2) 0;
+}
+
+.maturity-bar-segment {
+  flex: 1;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.maturity-bar-segment.filled {
+  background: var(--status-neutral);
+}
+
+.maturity-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+.graph-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.graph-tier {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.graph-tier-label {
+  width: 100%;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-2);
+}
+
+.graph-node {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  background: var(--bg-panel-raised);
+}
+
+.graph-arrow {
+  color: var(--text-muted);
+}

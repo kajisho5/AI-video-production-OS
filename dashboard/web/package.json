@@ -1,0 +1,30 @@
+{
+  "name": "@ecosystem-dashboard/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Ecosystem Dashboard UI: a read-only, mobile-first, PWA-ready static view over one aggregator-generated EcosystemSnapshot JSON. Never calls GitHub directly, never holds a token (docs/adr/ADR-011-ecosystem-dashboard.md).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.3",
+    "vite": "^8.2.2",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.0"
+  }
+}

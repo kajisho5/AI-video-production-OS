@@ -128,6 +128,36 @@ actual CI job in any Skill's own repository — each is a real, callable functio
 not yet an automated gate anywhere. That would be a per-Skill PR (adding a conformance
 CI step), a different and separate piece of work from building the checks themselves.
 
+## 7. Ecosystem Dashboard (`dashboard/`) — IMPLEMENTED 2026-09-05, one manual step remaining
+
+Built per an explicit user request: a read-only, mobile-first, PWA-ready web dashboard
+over the ecosystem's real GitHub state. See `dashboard/README.md` and
+`docs/adr/ADR-011-ecosystem-dashboard.md` for the architecture, `docs/ecosystem/
+MATURITY_MODEL.md` for the maturity ladder it renders. 50 tests, all passing, no network
+access required by any of them.
+
+**Remaining, human-only step**: enable GitHub Pages for this repository (Settings →
+Pages → Source: "GitHub Actions") — outside this project's write access. Until that's
+done, `.github/workflows/dashboard.yml` will build and test successfully but the deploy
+step will fail. Not a code gap.
+
+**Real gaps worth revisiting, in rough priority order**:
+- The committed `dashboard/web/public/data/ecosystem-snapshot.json` was produced by
+  running the real aggregator pipeline against real-as-of-2026-09-05 fixture facts (this
+  development sandbox's own GitHub access is MCP-tool-only; raw `api.github.com` calls
+  are blocked by its egress policy — see `dashboard/README.md`'s "Known gaps"). The
+  workflow's first real scheduled/dispatched run will overwrite it with genuinely live
+  data — worth confirming this actually happens once Pages is enabled, rather than
+  assuming it silently.
+- No live npm/PyPI version lookup yet (`MATURITY_MODEL.md` level 6 relies entirely on
+  `capability-status.json`'s documented `distribution` field).
+- No snapshot history/trend view (deliberately deferred, per `MATURITY_MODEL.md`'s own
+  "deliberately not part of this model" section).
+- `capability-status.json`'s documented (non-automatic) fields will drift from reality
+  over time unless updated in the same commit as the prose docs they mirror — this is
+  the accepted, explicit limitation ADR-011/MATURITY_MODEL.md already name, not a new
+  finding, but worth remembering the next time `CROSS_REPO_STATUS.md` changes.
+
 ## 4. A standalone JSON Schema file for the CapabilityContract's `provides` shape
 
 `registry/` validates `provides` entries in Python; `docs/ROADMAP.md` Phase 1 item 1 also

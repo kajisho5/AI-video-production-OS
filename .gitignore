@@ -1,2 +1,8 @@
 __pycache__/
 *.pyc
+
+# dashboard/ (Node/TypeScript)
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/

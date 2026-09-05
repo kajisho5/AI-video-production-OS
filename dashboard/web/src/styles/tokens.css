@@ -1,0 +1,45 @@
+/* Design tokens for the Ecosystem Dashboard -- the first real UI this ecosystem has
+ * ever had (docs/DESIGN_SYSTEM.md section 7 explicitly deferred this to "if and when
+ * a UI is actually built"; docs/adr/ADR-011-ecosystem-dashboard.md is that decision).
+ * Deliberately restrained: a technical control/observation surface, not a marketing
+ * SaaS dashboard -- few colors, all load-bearing (each one means one specific status),
+ * high information density, no decorative gradients/shadows/illustration. */
+:root {
+  --bg-canvas: #0a0d12;
+  --bg-panel: #12161d;
+  --bg-panel-raised: #171c24;
+  --border: #232933;
+  --border-strong: #333c4a;
+
+  --text-primary: #e6e9ee;
+  --text-secondary: #9aa4b2;
+  --text-muted: #626c7a;
+
+  --status-ok: #38e0a6;
+  --status-ok-bg: #0f2b23;
+  --status-warn: #e0b038;
+  --status-warn-bg: #2b2410;
+  --status-bad: #e05a4f;
+  --status-bad-bg: #2b1512;
+  --status-unknown: #6b7482;
+  --status-unknown-bg: #1a1e26;
+  --status-neutral: #5b8ce0;
+  --status-neutral-bg: #10192b;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --touch-target-min: 44px;
+
+  color-scheme: dark;
+}

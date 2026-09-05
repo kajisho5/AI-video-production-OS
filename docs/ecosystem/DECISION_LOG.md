@@ -140,3 +140,30 @@ trusting a check's first design, and fix the check's *design* rather than specia
 away an inconvenient real finding. Verified: all 9 real Python Skills now correctly PASS
 (`registry/tests/test_no_unsafe_shell_out.py` also carries both false positives as
 permanent regression tests).
+
+## D7 — The Ecosystem Dashboard's data flow is aggregate-in-CI, serve-static, never live-fetch-from-browser
+
+**Context**: a user request to build a web dashboard over the ecosystem's GitHub state
+explicitly required (a) never exposing a GitHub token to a browser, and (b) never
+creating a second competing source of truth. Two architectures were possible: a live
+backend service the browser calls per-request (needs a always-on server, and a
+server-side proxy to hide the token), or a scheduled batch job that pre-computes one
+static JSON file the browser fetches directly.
+
+**Decision**: batch aggregation in CI (`dashboard/aggregator/`, run only by
+`.github/workflows/dashboard.yml`), producing one static JSON snapshot
+(`dashboard/web/public/data/ecosystem-snapshot.json`) that the static frontend
+(`dashboard/web/`) fetches with a plain same-origin `GET` — no live backend service, no
+token ever reachable from client code. Two new structured files
+(`docs/ecosystem/registry.json`, `docs/ecosystem/capability-status.json`) restate facts
+already required to exist in this project's prose docs, rather than inventing an
+independent tracking database.
+
+**Why**: this is the smallest architecture that satisfies both hard constraints at once
+— no server to operate, patch, or scale (GitHub Actions + GitHub Pages are both already
+free at this project's scale), and the token literally never exists in any code path a
+browser executes, which is a stronger guarantee than "the server hides it from the
+client" (there is no server to compromise). The tradeoff — data is only as fresh as the
+last aggregation run (hourly, or on-demand via `workflow_dispatch`) — is an explicit,
+accepted, documented cost (`dashboard/README.md`'s "Known gaps"), not a hidden one. See
+`docs/adr/ADR-011-ecosystem-dashboard.md` for the full decision record.

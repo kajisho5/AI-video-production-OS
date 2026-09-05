@@ -1,0 +1,21 @@
+{
+  "name": "@ecosystem-dashboard/aggregator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Server-side (CI-only) data aggregator: fetches GitHub state for the AI Video Production OS ecosystem and produces one normalized EcosystemSnapshot JSON file. Never run in a browser; the only place in this project that touches a GitHub token.",
+  "scripts": {
+    "generate": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0"
+  }
+}

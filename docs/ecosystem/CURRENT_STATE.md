@@ -23,6 +23,18 @@ question right now (see `WORK_QUEUE.md` item 1).
 
 ## CURRENT / IMPLEMENTED (real, verified, working code)
 
+- **`dashboard/`** (this repo): a read-only, mobile-first, PWA-ready web dashboard
+  showing the ecosystem's real GitHub state — see `dashboard/README.md` and
+  `docs/adr/ADR-011-ecosystem-dashboard.md`. A Node/TypeScript aggregator
+  (`dashboard/aggregator/`) fetches live GitHub state and combines it with two new
+  structured, version-controlled files (`docs/ecosystem/registry.json`,
+  `docs/ecosystem/capability-status.json` — structured mirrors of facts already
+  recorded in this document set, not a new source of truth) into one normalized
+  snapshot; a static React app (`dashboard/web/`) renders it. 50 tests (38 aggregator +
+  12 UI), all passing, none requiring network access. Deployed via
+  `.github/workflows/dashboard.yml` (hourly + on-demand) to GitHub Pages once that is
+  manually enabled (Settings → Pages → Source: GitHub Actions — not yet done as of this
+  entry). See `docs/ecosystem/MATURITY_MODEL.md` for the maturity ladder it renders.
 - **`ffmpeg-skill`**: 21 base-layer tools, real code, real tests, published to npm. The
   ecosystem's execution foundation; every other Skill delegates media processing to it.
 - **9 delegating/self-contained Skills** (`video-editing-skill`, `audio-production-skill`,

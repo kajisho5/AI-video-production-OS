@@ -1,0 +1,102 @@
+{
+  "$schema_note": "Structured mirror of CROSS_REPO_STATUS.md's repository roster (see docs/adr/ADR-011-ecosystem-dashboard.md). This file is the Dashboard's extensibility point: add a repo here, the Dashboard picks it up on the next aggregation run, no Dashboard code change required. Not a source of truth in itself -- it restates facts already recorded in prose docs and must be kept in sync with them by whoever edits either.",
+  "schema_version": 1,
+  "updated_at": "2026-09-05",
+  "repos": [
+    {
+      "slug": "kajisho5/AI-video-production-OS",
+      "name": "AI-video-production-OS",
+      "type": "OS",
+      "role": "Architecture, registry/ library, ecosystem state documents. Describes the others; nothing depends on it at runtime.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/video-production-agent",
+      "name": "video-production-agent",
+      "type": "Agent",
+      "role": "Orchestrator: Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance. Consumes all 10 Skills below.",
+      "depends_on": [
+        "kajisho5/ffmpeg-skill",
+        "kajisho5/video-editing-skill",
+        "kajisho5/audio-production-skill",
+        "kajisho5/color-grading-skill",
+        "kajisho5/subtitle-skill",
+        "kajisho5/motion-graphics-skill",
+        "kajisho5/thumbnail-skill",
+        "kajisho5/qc-skill",
+        "kajisho5/media-analysis-skill",
+        "kajisho5/transcription-skill"
+      ]
+    },
+    {
+      "slug": "kajisho5/ffmpeg-skill",
+      "name": "ffmpeg-skill",
+      "type": "Skill",
+      "role": "Execution foundation: 21 base tools wrapping FFmpeg/ffprobe directly. Every delegating Skill depends on it.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/video-editing-skill",
+      "name": "video-editing-skill",
+      "type": "Skill",
+      "role": "Editing operations (trim, concat, ...), delegates execution to ffmpeg-skill.",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/audio-production-skill",
+      "name": "audio-production-skill",
+      "type": "Skill",
+      "role": "Audio processing, delegates execution to ffmpeg-skill.",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/color-grading-skill",
+      "name": "color-grading-skill",
+      "type": "Skill",
+      "role": "Colour operations (HDR to SDR, LUT apply, retag, strip Dolby Vision, primary correction), delegates execution to ffmpeg-skill.",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/subtitle-skill",
+      "name": "subtitle-skill",
+      "type": "Skill",
+      "role": "Subtitle generate/render (SRT/WebVTT); burn-in only delegates to ffmpeg-skill.",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/motion-graphics-skill",
+      "name": "motion-graphics-skill",
+      "type": "Skill",
+      "role": "Titles, lower-thirds, overlays, corner bug/chapter elements. Delegates execution to ffmpeg-skill.",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/thumbnail-skill",
+      "name": "thumbnail-skill",
+      "type": "Skill",
+      "role": "Thumbnail render/extract. Frame decode delegates to ffmpeg-skill; compositing is in-process (Pillow).",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
+      "slug": "kajisho5/qc-skill",
+      "name": "qc-skill",
+      "type": "Skill",
+      "role": "Deterministic quality-control / delivery-gate checks. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/media-analysis-skill",
+      "name": "media-analysis-skill",
+      "type": "Skill",
+      "role": "Media measurement/observation. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/transcription-skill",
+      "name": "transcription-skill",
+      "type": "Skill",
+      "role": "Speech-to-text via local ASR engines (faster-whisper etc.), not FFmpeg-based.",
+      "depends_on": []
+    }
+  ]
+}

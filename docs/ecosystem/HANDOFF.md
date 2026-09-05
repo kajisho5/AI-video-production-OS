@@ -40,6 +40,13 @@ Phase 4 is "still to build from scratch" — read `CURRENT_STATE.md` and `WORK_Q
   drive each to green, respond to review comments, don't stop watching until merged/closed.
 - No PR is open against `video-production-agent` from this project. None is planned until
   `WORK_QUEUE.md` item 1's investigation concludes something concrete and additive.
+- **`dashboard/`** (Ecosystem Dashboard, built 2026-09-05): read-only, mobile-first, PWA
+  web dashboard over the ecosystem's real GitHub state. Code, tests (50, all passing),
+  and `.github/workflows/dashboard.yml` are done. **One human-only step remains**:
+  enable GitHub Pages (Settings → Pages → Source: "GitHub Actions") — outside this
+  project's write access, so the deploy step will fail until then. See
+  `dashboard/README.md`, `docs/adr/ADR-011-ecosystem-dashboard.md`,
+  `docs/ecosystem/MATURITY_MODEL.md`, and `WORK_QUEUE.md` item 7.
 
 ## Standing behavioral context (from the user, applies across sessions)
 

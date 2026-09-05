@@ -1,0 +1,104 @@
+name: Ecosystem Dashboard
+
+# Builds and deploys the read-only Ecosystem Dashboard (dashboard/) to GitHub Pages.
+# See docs/adr/ADR-011-ecosystem-dashboard.md for the full architecture.
+#
+# This is the ONLY job in this project that touches a GitHub token capable of reading
+# other repositories in the ecosystem, and it runs entirely server-side in Actions --
+# the built static site the browser receives contains no token, and dashboard/web's own
+# code never calls the GitHub API (verified in dashboard/README.md's security section).
+#
+# One-time manual setup required (cannot be done from this workflow):
+#   Settings -> Pages -> Source: "GitHub Actions"
+# Optional: add a repository secret ECOSYSTEM_GITHUB_TOKEN (a fine-grained PAT, read-only,
+# scoped to this project's repositories) for higher rate limits or if any ecosystem repo
+# becomes private. Without it, the workflow's own ambient GITHUB_TOKEN is used, which is
+# sufficient for reading public repository data.
+
+on:
+  schedule:
+    - cron: "0 * * * *" # hourly -- the ecosystem's own repos change independently of this repo
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - "docs/ecosystem/registry.json"
+      - "docs/ecosystem/capability-status.json"
+      - ".github/workflows/dashboard.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install aggregator dependencies
+        working-directory: dashboard/aggregator
+        run: npm ci
+
+      - name: Typecheck aggregator
+        working-directory: dashboard/aggregator
+        run: npm run typecheck
+
+      - name: Test aggregator
+        working-directory: dashboard/aggregator
+        run: npm test
+
+      - name: Generate ecosystem snapshot
+        working-directory: dashboard/aggregator
+        env:
+          GITHUB_TOKEN: ${{ secrets.ECOSYSTEM_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npm run generate
+
+      - name: Install web dependencies
+        working-directory: dashboard/web
+        run: npm ci
+
+      - name: Typecheck web
+        working-directory: dashboard/web
+        run: npm run typecheck
+
+      - name: Test web
+        working-directory: dashboard/web
+        run: npm test
+
+      - name: Verify no secret leaked into the built bundle
+        working-directory: dashboard/web
+        run: npm run build
+        # A real token never appears literally in aggregator output (it is only ever
+        # used as an Authorization header value, never echoed into snapshot data), so
+        # this check guards against a future regression rather than a known risk today.
+
+      - name: Fail if a GitHub token literal ended up in the client bundle
+        run: |
+          if grep -rE "gh[ps]_[A-Za-z0-9]{20,}" dashboard/web/dist/ ; then
+            echo "::error::A GitHub token literal was found in the built client bundle."
+            exit 1
+          fi
+          echo "Clean: no token pattern found in dashboard/web/dist/"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/web/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

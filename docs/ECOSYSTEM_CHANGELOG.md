@@ -38,6 +38,38 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — Add the Ecosystem Dashboard (`dashboard/`)
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: (pushed to `claude/ai-video-production-os-arch-fck6fy`)
+- **What changed**: a new read-only, mobile-first, PWA-ready web dashboard built per
+  explicit user request. `docs/adr/ADR-011-ecosystem-dashboard.md` records the
+  architecture decision (view, not source of truth; static-JSON + CI-aggregation;
+  token never reaches a browser); `docs/ecosystem/MATURITY_MODEL.md` defines a new
+  7-level maturity ladder with named, checkable evidence per level, so the Dashboard
+  never computes an invented progress percentage. Two new structured files
+  (`docs/ecosystem/registry.json`, `docs/ecosystem/capability-status.json`) restate
+  facts already recorded in this project's prose docs, kept in sync with them rather
+  than tracked independently. `dashboard/aggregator/` (Node/TypeScript + Octokit) fetches
+  live GitHub state and normalizes it into one `EcosystemSnapshot` JSON; `dashboard/web/`
+  (Vite + React + TypeScript) renders it as a static SPA. `.github/workflows/
+  dashboard.yml` runs the pipeline hourly and on demand, deploying to GitHub Pages (not
+  yet enabled — a one-time manual repository-settings step outside this project's write
+  access). 50 tests (38 aggregator, 12 UI), all passing, none requiring network access.
+  Verified with real Playwright screenshots at desktop (1400px) and iPhone (390px) sizes
+  during implementation — a real mobile horizontal-overflow bug (an unconstrained flex
+  child) was found and fixed this way, not assumed absent. Verified the built client
+  bundle contains no GitHub token, no Octokit reference, and no `api.github.com` call.
+- **Why**: explicit user request — see `dashboard/README.md` for the full design
+  rationale and known gaps (including that this development sandbox's own GitHub access
+  is MCP-tool-only, so the committed example snapshot was produced by running the real
+  aggregator pipeline against real-as-of-2026-09-05 fixture facts rather than a live
+  network call; the deployed workflow's first real run will overwrite it).
+- **Status**: pushed directly to the branch; GitHub Pages deployment blocked on the
+  manual settings step noted above.
+
+---
+
 ### 2026-09-05 — `registry/` conformance harness complete: all 8 `SKILL_SPEC.md` §8 checks now real
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS`
