@@ -38,6 +38,33 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — Phase 1: real Capability registry library (`registry/`)
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS` (no other repo involved — pure OS-side
+  library work, no Skill repo changes)
+- **PR(s)**: none yet — pushed directly to this repo's own open PR branch
+  (`claude/ai-video-production-os-arch-fck6fy`, PR #1)
+- **What changed**: added `registry/`, a small, dependency-free, tested Python package —
+  `docs/ROADMAP.md` Phase 1's schema/registry library, which did not exist as real code
+  before this (only a disposable proof-of-concept script and prose in `docs/SPEC.md`).
+  It loads a real `CapabilityContract` document, resolves a Skill's identity across the
+  three real shapes the ecosystem actually uses, registers `provides` entries, answers
+  "who provides Capability X", detects real collisions, and applies
+  `docs/CAPABILITY_MODEL.md`'s 3-tier collision policy (`explicit choice > default
+  provider > registry refusal`) in code. 21 tests run against real captured `provides`
+  data from five Skills, including the ecosystem's one documented Capability collision.
+  Also implements 3 of `docs/SKILL_SPEC.md` section 8's 8 conformance checks for real;
+  the other 5 (which need a live Skill process) are documented `NotImplementedError`
+  stubs, never an unearned pass.
+- **Why**: the roadmap's own dependency ordering states nothing later can be honestly
+  built without this — Phase 2's Skill retrofit (the `provides` rollout, above) proceeded
+  on the strength of the proof-of-concept and `docs/SPEC.md`'s already-validated shape,
+  but the actual reusable registry code a future Agent or CLI would import never existed
+  until now. This closes that gap with real, tested code rather than only documentation.
+- **Status**: pushed (part of the still-open architecture PR #1; not yet merged)
+
+---
+
 ### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 4 — ffmpeg-skill, rollout complete)
 
 - **Repo(s)**: `kajisho5/ffmpeg-skill`
