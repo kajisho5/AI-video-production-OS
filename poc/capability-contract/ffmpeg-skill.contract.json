@@ -1,0 +1,5556 @@
+{
+  "capabilities": {
+    "available": [],
+    "detected_by": "doctor",
+    "detection": {
+      "bsfs": {
+        "count": 0,
+        "detail": "ffmpeg not on PATH",
+        "status": "missing"
+      },
+      "encoders": {
+        "count": 0,
+        "detail": "ffmpeg not on PATH",
+        "status": "missing"
+      },
+      "filters": {
+        "count": 0,
+        "detail": "ffmpeg not on PATH",
+        "status": "missing"
+      }
+    },
+    "missing": [
+      "encoder:aac",
+      "encoder:libx264",
+      "ffmpeg",
+      "ffprobe",
+      "filter:acrossfade",
+      "filter:drawtext",
+      "filter:loudnorm",
+      "filter:scdet",
+      "filter:silencedetect",
+      "filter:subtitles",
+      "filter:tile",
+      "filter:xfade"
+    ],
+    "missing_optional": [
+      "bsf:filter_units",
+      "encoder:flac",
+      "encoder:gif",
+      "encoder:libmp3lame",
+      "encoder:libopus",
+      "encoder:libvorbis",
+      "encoder:libx265",
+      "encoder:prores_ks",
+      "external:whisper",
+      "filter:acompressor",
+      "filter:afftdn",
+      "filter:agate",
+      "filter:alimiter",
+      "filter:ass",
+      "filter:lut3d",
+      "filter:minterpolate",
+      "filter:palettegen",
+      "filter:sidechaincompress",
+      "filter:signalstats",
+      "filter:tonemap",
+      "filter:zscale"
+    ],
+    "naming": "ffmpeg | ffprobe | encoder:<name> | filter:<name> | bsf:<name> | external:whisper",
+    "optional": [
+      "bsf:filter_units",
+      "encoder:flac",
+      "encoder:gif",
+      "encoder:libmp3lame",
+      "encoder:libopus",
+      "encoder:libvorbis",
+      "encoder:libx265",
+      "encoder:prores_ks",
+      "external:whisper",
+      "filter:acompressor",
+      "filter:afftdn",
+      "filter:agate",
+      "filter:alimiter",
+      "filter:ass",
+      "filter:lut3d",
+      "filter:minterpolate",
+      "filter:palettegen",
+      "filter:sidechaincompress",
+      "filter:signalstats",
+      "filter:tonemap",
+      "filter:zscale"
+    ],
+    "required": [
+      "encoder:aac",
+      "encoder:libx264",
+      "ffmpeg",
+      "ffprobe",
+      "filter:acrossfade",
+      "filter:drawtext",
+      "filter:loudnorm",
+      "filter:scdet",
+      "filter:silencedetect",
+      "filter:subtitles",
+      "filter:tile",
+      "filter:xfade"
+    ],
+    "unknown": []
+  },
+  "contract_version": "1.0",
+  "execution": {
+    "arbitrary_executables": false,
+    "input_mutation": false,
+    "network": false,
+    "shell": false,
+    "subprocess": "argv list only: [python3, scripts/<tool>.py, ...] and [ffmpeg|ffprobe, ...] resolved from PATH"
+  },
+  "idempotency_hints": {
+    "bit_exact": "same inputs and flags give byte-identical output",
+    "cached": "re-runs skip inputs whose content hash and recipe are unchanged",
+    "content_equivalent": "same inputs and flags give the same media content; bytes may differ between encoder builds",
+    "environment_dependent": "output includes timings or machine state and differs between runs"
+  },
+  "invocation": {
+    "raw_argv": {
+      "canonical": false,
+      "note": "MCP tools also accept {\"argv\": [...]} for CLI compatibility; it is still bound to the named script, never a shell",
+      "transports": [
+        "mcp"
+      ]
+    },
+    "structured": {
+      "argument_mapping": {
+        "exceptions": "per tool in mcp.argument_exceptions (key -> flag), e.g. output -> -o, loudness.lufs -> -I, graphics.count_from -> --from",
+        "json": "--json is appended for every tool except look and probe (probe prints JSON by default)",
+        "options": "key -> --key with '_' replaced by '-'; booleans are flags; arrays repeat the flag; input_schema.properties[key].cli lists the accepted spellings",
+        "positional": "listed in input_schema.positional, in order; array values expand to several arguments"
+      },
+      "canonical": true,
+      "transports": [
+        "cli",
+        "mcp"
+      ]
+    }
+  },
+  "json_output": {
+    "error_kinds": {
+      "ffmpeg": "ffmpeg/ffprobe returned an error",
+      "input": "missing or unsuitable input, bad arguments",
+      "missing_tool": "ffmpeg or ffprobe not on PATH"
+    },
+    "failure": {
+      "exit_code": "non-zero (127 when ffmpeg/ffprobe is missing)",
+      "status": "failed",
+      "stderr": "human-readable message",
+      "stdout": "{\"status\": \"failed\", \"error\": {\"kind\": ..., \"message\": ...}} when --json was given"
+    },
+    "success": {
+      "exit_code": 0,
+      "status": "completed",
+      "stdout": "one JSON document (output_schema)"
+    }
+  },
+  "requirements": {
+    "ffmpeg": ">=5.0",
+    "ffprobe": ">=5.0",
+    "node": ">=16 (npx installer only)",
+    "python": ">=3.9 (standard library only)"
+  },
+  "roles": {
+    "analysis": "reads media and reports measurements; writes no media",
+    "analysis_and_execution": "measures by default or with a flag, and can also write a transformed artifact",
+    "execution": "writes a new media artifact from the input(s); the input is never modified",
+    "verification": "checks or shows an artifact (probe numbers, compliance rows, contact sheets); writes no media"
+  },
+  "skill": {
+    "description": "Edit video and audio with local FFmpeg from natural-language requests: cut, trim, join, resize/reframe (9:16, 1:1), speed change, captions and subtitles (SRT/ASS, animated, karaoke), logos and text overlays, lower-thirds and titles, silence removal, multicam and external-mic sync, loudness normalisation, HDR/Dolby Vision to SDR, LUTs, background music with ducking, platform exports (YouTube, Reels, TikTok, X), compliance checks, scene detection and highlight reels, contact sheets to inspect results, and whole-edit project files. Use this skill whenever the user mentions a video or audio file (mp4, mov, mkv, wav, m4a), footage, a clip, captions, subtitles, a reel or short, YouTube/Instagram/TikTok delivery, LUFS, sync, transcoding, ffmpeg, or asks to make something \"60 seconds\", \"vertical\", \"louder\", \"captioned\" \u2014 even when they do not say \"edit\". Python 3.9 standard library only, no cloud, no API keys.",
+    "entrypoints": {
+      "cli": "python3 scripts/<tool>.py [args] [--json] [--dry-run]",
+      "contract": "python3 scripts/_contract.py --json  |  ffmpeg-skill contract --json",
+      "doctor": "python3 scripts/_contract.py doctor --json  |  ffmpeg-skill doctor --json",
+      "mcp": "python3 mcp/server.py (stdio JSON-RPC; tools/list == this tool list)"
+    },
+    "execution_mode": "local",
+    "id": "ffmpeg-skill",
+    "kind": "execution",
+    "not_provided": [
+      "AI reasoning",
+      "decisions",
+      "production plans",
+      "project IR",
+      "approvals",
+      "network access",
+      "transcription engine"
+    ],
+    "version": "0.9.1"
+  },
+  "tools": [
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "filter:afftdn",
+            "when": "--denoise / --voice"
+          },
+          {
+            "capability": "filter:sidechaincompress",
+            "when": "--duck"
+          },
+          {
+            "capability": "filter:acompressor",
+            "when": "--compress / --voice"
+          },
+          {
+            "capability": "filter:alimiter",
+            "when": "--limit"
+          },
+          {
+            "capability": "filter:agate",
+            "when": "--gate"
+          },
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:aac"
+        ]
+      },
+      "description": "Audio post: denoise, voice clean-up, typed dynamics (compressor, limiter,",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/audio.py",
+      "id": "ffmpeg-skill/audio",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "audio_stream": {
+            "cli": [
+              "--audio-stream"
+            ],
+            "description": "which audio stream of the input to process, 0-based in file order (probe lists them under audio_streams)",
+            "type": "integer"
+          },
+          "bitrate": {
+            "cli": [
+              "--bitrate"
+            ],
+            "default": "192k",
+            "type": "string"
+          },
+          "comp_attack": {
+            "cli": [
+              "--comp-attack"
+            ],
+            "description": "ms 0.01..2000 (default 20)",
+            "type": "number"
+          },
+          "comp_knee": {
+            "cli": [
+              "--comp-knee"
+            ],
+            "description": "knee dB 1..8 (default 2.83)",
+            "type": "number"
+          },
+          "comp_makeup": {
+            "cli": [
+              "--comp-makeup"
+            ],
+            "description": "make-up gain dB 0..36 (default 0)",
+            "type": "number"
+          },
+          "comp_ratio": {
+            "cli": [
+              "--comp-ratio"
+            ],
+            "description": "ratio 1..20 (default 2)",
+            "type": "number"
+          },
+          "comp_release": {
+            "cli": [
+              "--comp-release"
+            ],
+            "description": "ms 0.01..9000 (default 250)",
+            "type": "number"
+          },
+          "comp_threshold": {
+            "cli": [
+              "--comp-threshold"
+            ],
+            "description": "dBFS above which gain is reduced, -60..0 (ffmpeg default -12.4)",
+            "type": "number"
+          },
+          "compress": {
+            "cli": [
+              "--compress"
+            ],
+            "description": "compressor (acompressor); order: gate -> compressor -> limiter",
+            "type": "boolean"
+          },
+          "denoise": {
+            "cli": [
+              "--denoise"
+            ],
+            "description": "FFT noise reduction (afftdn, adaptive)",
+            "type": "boolean"
+          },
+          "denoise_strength": {
+            "cli": [
+              "--denoise-strength"
+            ],
+            "default": 25.0,
+            "description": "noise floor in dB to remove, 10..60 (default 25)",
+            "type": "number"
+          },
+          "downmix": {
+            "cli": [
+              "--downmix"
+            ],
+            "description": "downmix 5.1/7.1 to stereo using standard weights",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "duck": {
+            "cli": [
+              "--duck"
+            ],
+            "description": "auto-duck the music when the main track has speech (sidechain compressor)",
+            "type": "boolean"
+          },
+          "duck_amount": {
+            "cli": [
+              "--duck-amount"
+            ],
+            "default": 12.0,
+            "description": "how many dB to duck (default 12)",
+            "type": "number"
+          },
+          "fade_in": {
+            "cli": [
+              "--fade-in"
+            ],
+            "description": "seconds",
+            "type": "number"
+          },
+          "fade_out": {
+            "cli": [
+              "--fade-out"
+            ],
+            "description": "seconds; fades the whole final mix (voice included)",
+            "type": "number"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "gain": {
+            "cli": [
+              "--gain"
+            ],
+            "description": "gain in dB applied to the main track",
+            "type": "number"
+          },
+          "gate": {
+            "cli": [
+              "--gate"
+            ],
+            "description": "noise gate (agate)",
+            "type": "boolean"
+          },
+          "gate_attack": {
+            "cli": [
+              "--gate-attack"
+            ],
+            "description": "ms 0.01..9000 (default 20)",
+            "type": "number"
+          },
+          "gate_knee": {
+            "cli": [
+              "--gate-knee"
+            ],
+            "description": "knee dB 1..8 (default 2.83)",
+            "type": "number"
+          },
+          "gate_range": {
+            "cli": [
+              "--gate-range"
+            ],
+            "description": "attenuation when closed, dB -90..0 (default -6.1)",
+            "type": "number"
+          },
+          "gate_ratio": {
+            "cli": [
+              "--gate-ratio"
+            ],
+            "description": "ratio 1..9000 (default 2)",
+            "type": "number"
+          },
+          "gate_release": {
+            "cli": [
+              "--gate-release"
+            ],
+            "description": "ms 0.01..9000 (default 250)",
+            "type": "number"
+          },
+          "gate_threshold": {
+            "cli": [
+              "--gate-threshold"
+            ],
+            "description": "dBFS below which the gate closes, -60..0 (default -18.1)",
+            "type": "number"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "limit": {
+            "cli": [
+              "--limit"
+            ],
+            "description": "look-ahead limiter (alimiter), level left as is",
+            "type": "boolean"
+          },
+          "limit_attack": {
+            "cli": [
+              "--limit-attack"
+            ],
+            "description": "ms 0.1..80 (default 5)",
+            "type": "number"
+          },
+          "limit_ceiling": {
+            "cli": [
+              "--limit-ceiling"
+            ],
+            "description": "ceiling dBFS -24..0 (default 0)",
+            "type": "number"
+          },
+          "limit_release": {
+            "cli": [
+              "--limit-release"
+            ],
+            "description": "ms 1..8000 (default 50)",
+            "type": "number"
+          },
+          "mono": {
+            "cli": [
+              "--mono"
+            ],
+            "description": "force 1-channel output",
+            "type": "boolean"
+          },
+          "music": {
+            "cli": [
+              "--music"
+            ],
+            "description": "music file to mix underneath",
+            "type": "string"
+          },
+          "music_fade_out": {
+            "cli": [
+              "--music-fade-out"
+            ],
+            "description": "seconds; fades only the music bed at the end, voice untouched",
+            "type": "number"
+          },
+          "music_loop": {
+            "cli": [
+              "--music-loop"
+            ],
+            "description": "loop the music if shorter than the video",
+            "type": "boolean"
+          },
+          "music_volume": {
+            "cli": [
+              "--music-volume"
+            ],
+            "default": -14.0,
+            "description": "music level in dB relative to full scale (default -14)",
+            "type": "number"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_audio.<ext>)",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "replace": {
+            "cli": [
+              "--replace"
+            ],
+            "description": "replace the audio with this file (trimmed/padded to the video)",
+            "type": "string"
+          },
+          "stereo": {
+            "cli": [
+              "--stereo"
+            ],
+            "description": "force 2-channel output (mono is duplicated to both sides)",
+            "type": "boolean"
+          },
+          "voice": {
+            "cli": [
+              "--voice"
+            ],
+            "description": "speech preset: highpass 80 Hz, de-esser, denoise, gentle compression",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video or audio asset",
+        "music bed (--music) or replacement track (--replace)"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "audio"
+      },
+      "mutates_input": false,
+      "name": "audio",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "audio_stream": {
+            "description": "which input audio stream was processed (--audio-stream)",
+            "type": "integer"
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "dynamics": {
+            "description": "typed dynamics filters applied, in graph order",
+            "items": {
+              "enum": [
+                "agate",
+                "acompressor",
+                "alimiter"
+              ]
+            },
+            "type": "array"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          },
+          "video": {
+            "description": "true when the input's video stream was copied; false for an audio output extension (extraction)",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "artifact with the processed audio (video stream-copied, or dropped when -o has an audio extension)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "delegated",
+            "when": "each recipe step runs the named script with its capabilities"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Apply the same recipe to every file in a folder, with a content-hash cache",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/batch.py",
+      "id": "ffmpeg-skill/batch",
+      "idempotency_hint": "cached",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "folder"
+        ],
+        "properties": {
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "folder": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "force": {
+            "cli": [
+              "--force"
+            ],
+            "description": "ignore the cache and redo everything",
+            "type": "boolean"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "recipe": {
+            "cli": [
+              "--recipe"
+            ],
+            "description": "batch.json",
+            "type": "string"
+          },
+          "watch": {
+            "cli": [
+              "--watch"
+            ],
+            "description": "keep polling the folder every N seconds",
+            "type": "number"
+          },
+          "work": {
+            "cli": [
+              "--work"
+            ],
+            "description": "work directory for intermediates (default: <output_dir>/.work)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "folder",
+          "recipe"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "folder of media",
+        "batch.json recipe (steps or a render project)"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "folder"
+        ],
+        "tool": "batch"
+      },
+      "mutates_input": false,
+      "name": "batch",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "processed": {
+            "type": "integer"
+          },
+          "results": {
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "one artifact per input file in the recipe's output_dir",
+        "content-hash cache"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "filter:ass",
+            "when": "--animate / --karaoke"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          },
+          {
+            "capability": "external:whisper",
+            "when": "--transcribe"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac",
+          "filter:subtitles"
+        ]
+      },
+      "description": "Burn SRT/ASS subtitles into a video, or generate an SRT from plain text.",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/caption.py",
+      "id": "ffmpeg-skill/caption",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "animate": {
+            "cli": [
+              "--animate"
+            ],
+            "description": "per-cue entrance animation (default none, or brand caption.animate)",
+            "enum": [
+              "none",
+              "fade",
+              "pop",
+              "slide"
+            ],
+            "type": "string"
+          },
+          "ass": {
+            "cli": [
+              "--ass"
+            ],
+            "description": "ASS file to burn (styles inside the file are used)",
+            "type": "string"
+          },
+          "auto_seconds": {
+            "cli": [
+              "--auto-seconds"
+            ],
+            "default": 3.0,
+            "description": "duration for cues without timing (default 3)",
+            "type": "number"
+          },
+          "bold": {
+            "cli": [
+              "--bold"
+            ],
+            "type": "boolean"
+          },
+          "box": {
+            "cli": [
+              "--box"
+            ],
+            "description": "draw an opaque box behind text instead of an outline",
+            "type": "boolean"
+          },
+          "brand": {
+            "cli": [
+              "--brand"
+            ],
+            "description": "brand.json: font, colours, caption size/position/animation defaults",
+            "type": "string"
+          },
+          "color": {
+            "cli": [
+              "--color"
+            ],
+            "description": "text colour RRGGBB (default FFFFFF or brand text colour)",
+            "type": "string"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "font": {
+            "cli": [
+              "--font"
+            ],
+            "description": "font family, e.g. 'Noto Sans CJK JP' for Japanese (default DejaVu Sans or brand font)",
+            "type": "string"
+          },
+          "fonts_dir": {
+            "cli": [
+              "--fonts-dir"
+            ],
+            "description": "directory with extra .ttf/.otf files",
+            "type": "string"
+          },
+          "gap": {
+            "cli": [
+              "--gap"
+            ],
+            "description": "gap after auto-timed cues in seconds",
+            "type": "number"
+          },
+          "highlight_color": {
+            "cli": [
+              "--highlight-color"
+            ],
+            "description": "karaoke fill colour RRGGBB (default FFD200 or brand primary)",
+            "type": "string"
+          },
+          "input": {
+            "cli": "positional",
+            "description": "video to burn captions into (omit with --write-srt to only generate)",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "karaoke": {
+            "cli": [
+              "--karaoke"
+            ],
+            "description": "word-by-word highlight (fills from --color to --highlight-color across each cue)",
+            "type": "boolean"
+          },
+          "karaoke_timing": {
+            "cli": [
+              "--karaoke-timing"
+            ],
+            "default": "energy",
+            "description": "how words are timed inside a cue: 'energy' follows the speech loudness in the audio (default), 'even' splits time equally",
+            "enum": [
+              "even",
+              "energy"
+            ],
+            "type": "string"
+          },
+          "language": {
+            "cli": [
+              "--language"
+            ],
+            "description": "language code for --transcribe (e.g. en, ja); default auto",
+            "type": "string"
+          },
+          "margin": {
+            "cli": [
+              "--margin"
+            ],
+            "default": 30,
+            "description": "vertical margin from the edge (default 30)",
+            "type": "integer"
+          },
+          "model": {
+            "cli": [
+              "--model"
+            ],
+            "default": "base",
+            "description": "whisper model name/path for --transcribe (default base)",
+            "type": "string"
+          },
+          "outline": {
+            "cli": [
+              "--outline"
+            ],
+            "description": "outline width (default 2)",
+            "type": "number"
+          },
+          "outline_color": {
+            "cli": [
+              "--outline-color"
+            ],
+            "description": "outline colour RRGGBB",
+            "type": "string"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output video (default: <name>_captioned.<ext>)",
+            "type": "string"
+          },
+          "position": {
+            "cli": [
+              "--position"
+            ],
+            "description": "on-screen placement (default bottom)",
+            "enum": [
+              "bottom",
+              "bottom-left",
+              "bottom-right",
+              "center",
+              "top",
+              "top-left",
+              "top-right"
+            ],
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "shadow": {
+            "cli": [
+              "--shadow"
+            ],
+            "description": "shadow depth (default 0)",
+            "type": "number"
+          },
+          "size": {
+            "cli": [
+              "--size"
+            ],
+            "description": "font size in ASS points (relative to a 288p script height, scales automatically)",
+            "type": "integer"
+          },
+          "srt": {
+            "cli": [
+              "--srt"
+            ],
+            "description": "SRT file to burn",
+            "type": "string"
+          },
+          "text": {
+            "cli": [
+              "--text"
+            ],
+            "description": "plain text cue file to convert into SRT (see format above)",
+            "type": "string"
+          },
+          "transcribe": {
+            "cli": [
+              "--transcribe"
+            ],
+            "description": "generate the SRT from the audio with a local speech-to-text engine if one is installed (whisper-cli / whisper / faster-whisper); never required",
+            "type": "boolean"
+          },
+          "write_ass": {
+            "cli": [
+              "--write-ass"
+            ],
+            "description": "where to save the generated ASS (default: next to the output)",
+            "type": "string"
+          },
+          "write_srt": {
+            "cli": [
+              "--write-srt"
+            ],
+            "description": "where to save the generated SRT (default: <text>.srt)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset",
+        "SRT/ASS file or timed text (--text)"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "caption"
+      },
+      "mutates_input": false,
+      "name": "caption",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "video artifact with burnt-in captions",
+        "generated .srt / .ass sidecar"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "ffmpeg",
+            "when": "loudness rows (default)"
+          },
+          {
+            "capability": "filter:loudnorm",
+            "when": "loudness rows (default)"
+          }
+        ],
+        "required": [
+          "ffprobe"
+        ]
+      },
+      "description": "Pre-delivery compliance check: does this file meet the platform's spec?",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "note": "read-only tool; --dry-run skips the ffmpeg loudness measurement, so loudness rows are absent",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/check.py",
+      "id": "ffmpeg-skill/check",
+      "idempotency_hint": "bit_exact",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "aspect": {
+            "cli": [
+              "--aspect"
+            ],
+            "description": "override allowed aspect (e.g. 9:16 or 16:9,1:1)",
+            "type": "string"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "lufs": {
+            "cli": [
+              "--lufs"
+            ],
+            "description": "override loudness target",
+            "type": "number"
+          },
+          "max_duration": {
+            "cli": [
+              "--max-duration"
+            ],
+            "description": "override max duration in seconds",
+            "type": "number"
+          },
+          "max_mb": {
+            "cli": [
+              "--max-mb"
+            ],
+            "description": "override max file size in MB",
+            "type": "number"
+          },
+          "no_loudness": {
+            "cli": [
+              "--no-loudness"
+            ],
+            "description": "skip the loudness measurement (faster)",
+            "type": "boolean"
+          },
+          "platform": {
+            "cli": [
+              "--platform"
+            ],
+            "default": "youtube",
+            "enum": [
+              "broadcast",
+              "custom",
+              "linkedin",
+              "podcast",
+              "reels",
+              "shorts",
+              "tiktok",
+              "x",
+              "youtube"
+            ],
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "tp": {
+            "cli": [
+              "--tp"
+            ],
+            "description": "override true-peak ceiling",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "media artifact"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "input"
+        ],
+        "tool": "check"
+      },
+      "mutates_input": false,
+      "name": "check",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "checks": {
+            "items": {
+              "properties": {
+                "check": {
+                  "type": "string"
+                },
+                "expected": {},
+                "fix": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "format",
+                    "judgement"
+                  ]
+                },
+                "status": {
+                  "enum": [
+                    "PASS",
+                    "WARN",
+                    "FAIL"
+                  ]
+                },
+                "value": {}
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "platform": {
+            "type": "string"
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          },
+          "warnings": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "compliance rows JSON on stdout (no file)"
+      ],
+      "produces_artifact": false,
+      "requires_visual_verification": false,
+      "role": "verification",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx264",
+            "when": "--to-sdr / --lut"
+          },
+          {
+            "capability": "filter:zscale",
+            "when": "--to-sdr"
+          },
+          {
+            "capability": "filter:tonemap",
+            "when": "--to-sdr"
+          },
+          {
+            "capability": "filter:lut3d",
+            "when": "--lut"
+          },
+          {
+            "capability": "bsf:filter_units",
+            "when": "--strip-dovi"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "--lut on an HDR source"
+          },
+          {
+            "capability": "encoder:aac",
+            "when": "re-encode"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Colour management: convert HDR (HDR10/PQ, HLG, BT.2020) to SDR BT.709 with",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/color.py",
+      "id": "ffmpeg-skill/color",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "mutually_exclusive": [
+          [
+            "to_sdr",
+            "lut",
+            "retag",
+            "strip_dovi"
+          ]
+        ],
+        "one_of_required": [
+          [
+            "to_sdr",
+            "lut",
+            "retag",
+            "strip_dovi"
+          ]
+        ],
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "desat": {
+            "cli": [
+              "--desat"
+            ],
+            "description": "tonemap desaturation strength (default 0)",
+            "type": "number"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "force": {
+            "cli": [
+              "--force"
+            ],
+            "description": "run --to-sdr even if the file is not tagged as HDR (treat as PQ)",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "lut": {
+            "cli": [
+              "--lut"
+            ],
+            "description": ".cube LUT to apply (3D)",
+            "type": "string"
+          },
+          "lut_strength": {
+            "cli": [
+              "--lut-strength"
+            ],
+            "default": 1.0,
+            "description": "blend LUT result with the original, 0..1 (default 1)",
+            "type": "number"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_sdr / _lut / _retag)",
+            "type": "string"
+          },
+          "peak": {
+            "cli": [
+              "--peak"
+            ],
+            "default": 1000.0,
+            "description": "source peak brightness in nits used for PQ (default 1000)",
+            "type": "number"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "retag": {
+            "cli": [
+              "--retag"
+            ],
+            "description": "rewrite colour tags only (no re-encode)",
+            "enum": [
+              "bt709",
+              "bt2020-pq",
+              "bt2020-hlg",
+              "bt601"
+            ],
+            "type": "string"
+          },
+          "strip_dovi": {
+            "cli": [
+              "--strip-dovi"
+            ],
+            "description": "remove the Dolby Vision RPU (profile 8.4 iPhone clips) so players use the plain HLG/HDR10 base layer; stream copy",
+            "type": "boolean"
+          },
+          "to_sdr": {
+            "cli": [
+              "--to-sdr"
+            ],
+            "description": "tone-map HDR (PQ/HLG/BT.2020) to SDR BT.709",
+            "type": "boolean"
+          },
+          "tonemap": {
+            "cli": [
+              "--tonemap"
+            ],
+            "default": "hable",
+            "description": "tone-mapping curve (default hable)",
+            "enum": [
+              "hable",
+              "mobius",
+              "reinhard",
+              "bt2390",
+              "clip",
+              "linear",
+              "gamma"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset",
+        ".cube LUT (--lut)"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "color"
+      },
+      "mutates_input": false,
+      "name": "color",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "video artifact with converted colour"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx264",
+            "when": "re-encode: --accurate, VFR source, or a keyframe farther than --tolerance"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          },
+          {
+            "capability": "encoder:aac",
+            "when": "re-encode of a video container"
+          },
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Cut a clip or several segments out of a video and (optionally) join them.",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/cut.py",
+      "id": "ffmpeg-skill/cut",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "accurate": {
+            "cli": [
+              "--accurate"
+            ],
+            "description": "always re-encode for frame-accurate (video) / sample-accurate (audio) cuts (default: lossless -c copy, re-encoding only when the keyframe snap exceeds --tolerance)",
+            "type": "boolean"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "description": "x264 CRF when re-encoding (default 18)",
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "duration": {
+            "cli": [
+              "--duration"
+            ],
+            "description": "duration instead of --end",
+            "type": "string"
+          },
+          "end": {
+            "cli": [
+              "--end"
+            ],
+            "description": "end time",
+            "type": "string"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_cut.<ext>)",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "description": "x264 preset when re-encoding",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "segments": {
+            "cli": [
+              "--segments"
+            ],
+            "description": "comma separated START-END list, e.g. '0:05-0:12,1:00-1:20' (joined in order)",
+            "type": "string"
+          },
+          "start": {
+            "cli": [
+              "--start"
+            ],
+            "default": "0",
+            "description": "start time (seconds, mm:ss or hh:mm:ss.ms). default 0",
+            "type": "string"
+          },
+          "tolerance": {
+            "cli": [
+              "--tolerance"
+            ],
+            "default": 0.5,
+            "description": "max seconds a lossless cut may deviate before re-encoding kicks in (default 0.5, -1 = never)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video or audio asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "cut"
+      },
+      "mutates_input": false,
+      "name": "cut",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "duration_error_ms": {
+            "description": "written minus requested, measured by ffprobe (null under --dry-run)",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "expected_duration": {
+            "description": "seconds requested",
+            "type": "number"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "precision": {
+            "description": "packet: stream copy on a packet/keyframe boundary; sample: decoded audio trimmed to the sample, lossless output; codec_frame: sample-trimmed then framed by a lossy encoder (priming delay adds to the length); frame: re-encoded video",
+            "enum": [
+              "packet",
+              "sample",
+              "codec_frame",
+              "frame"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "reencoded": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "cut video/audio artifact (same container family, or audio extracted when -o has an audio extension)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx264",
+            "when": "preset youtube / youtube4k / reels / x"
+          },
+          {
+            "capability": "encoder:aac",
+            "when": "any preset except gif"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "preset h265"
+          },
+          {
+            "capability": "encoder:prores_ks",
+            "when": "preset prores"
+          },
+          {
+            "capability": "filter:palettegen",
+            "when": "preset gif"
+          },
+          {
+            "capability": "encoder:gif",
+            "when": "preset gif"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Export with delivery presets. Scales/pads to the preset's frame (keeping",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/export.py",
+      "id": "ffmpeg-skill/export",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "allow_long": {
+            "cli": [
+              "--allow-long"
+            ],
+            "description": "do not trim to the platform's max duration",
+            "type": "boolean"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "description": "override CRF",
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "fit": {
+            "cli": [
+              "--fit"
+            ],
+            "default": "pad",
+            "description": "how to reach the preset frame when aspect differs (default pad)",
+            "enum": [
+              "pad",
+              "crop"
+            ],
+            "type": "string"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "list": {
+            "cli": [
+              "--list"
+            ],
+            "description": "list presets and exit",
+            "type": "boolean"
+          },
+          "no_scale": {
+            "cli": [
+              "--no-scale"
+            ],
+            "description": "keep source resolution even for platform presets",
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_<preset>.<ext>)",
+            "type": "string"
+          },
+          "pad_color": {
+            "cli": [
+              "--pad-color"
+            ],
+            "default": "black",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "description": "delivery preset",
+            "enum": [
+              "gif",
+              "h265",
+              "prores",
+              "reels",
+              "x",
+              "youtube",
+              "youtube4k"
+            ],
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "export"
+      },
+      "mutates_input": false,
+      "name": "export",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "delivery artifact in the preset's format"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/check"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          },
+          {
+            "capability": "filter:minterpolate",
+            "when": "--smooth interpolate"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac"
+        ]
+      },
+      "description": "Fit a video to a target duration and/or aspect ratio.",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/fit.py",
+      "id": "ffmpeg-skill/fit",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "aspect": {
+            "cli": [
+              "--aspect"
+            ],
+            "description": "target aspect ratio, e.g. 16:9, 9:16, 1:1, 4:5",
+            "type": "string"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "duration": {
+            "cli": [
+              "--duration"
+            ],
+            "description": "target duration (seconds or mm:ss)",
+            "type": "string"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "fit": {
+            "cli": [
+              "--fit"
+            ],
+            "default": "pad",
+            "description": "pad (letterbox) or crop to reach the aspect (default pad)",
+            "enum": [
+              "pad",
+              "crop"
+            ],
+            "type": "string"
+          },
+          "fps": {
+            "cli": [
+              "--fps"
+            ],
+            "description": "force a constant output frame rate (recommended for VFR sources)",
+            "type": "number"
+          },
+          "from_center": {
+            "cli": [
+              "--from-center"
+            ],
+            "description": "with --method trim, keep the middle instead of the start",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "max_speed": {
+            "cli": [
+              "--max-speed"
+            ],
+            "default": 4.0,
+            "description": "refuse speed factors above this (default 4x)",
+            "type": "number"
+          },
+          "method": {
+            "cli": [
+              "--method"
+            ],
+            "default": "speed",
+            "description": "how to reach the duration (default speed)",
+            "enum": [
+              "speed",
+              "trim"
+            ],
+            "type": "string"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_fit.<ext>)",
+            "type": "string"
+          },
+          "pad_color": {
+            "cli": [
+              "--pad-color"
+            ],
+            "default": "black",
+            "description": "pad colour, e.g. black, white, 0x101010 (default black)",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "smooth": {
+            "cli": [
+              "--smooth"
+            ],
+            "default": "none",
+            "description": "slow-motion quality: blend (frame blending) or interpolate (motion-compensated, slow but fluid). default none = duplicate frames",
+            "enum": [
+              "none",
+              "blend",
+              "interpolate"
+            ],
+            "type": "string"
+          },
+          "width": {
+            "cli": [
+              "--width"
+            ],
+            "description": "output width in px (default: keep source width or the width implied by the aspect)",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "fit"
+      },
+      "mutates_input": false,
+      "name": "fit",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "video artifact at the requested duration / aspect / fps"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac",
+          "filter:drawtext"
+        ]
+      },
+      "description": "Motion-graphics templates rendered with drawbox/drawtext expressions \u2014",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/graphics.py",
+      "id": "ffmpeg-skill/graphics",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "brand": {
+            "cli": [
+              "--brand"
+            ],
+            "description": "brand.json for colours, font, safe margin",
+            "type": "string"
+          },
+          "count_from": {
+            "cli": [
+              "--from"
+            ],
+            "default": 5,
+            "description": "countdown start number (default 5)",
+            "type": "integer"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "end": {
+            "cli": [
+              "--end"
+            ],
+            "description": "hide after (default end of clip)",
+            "type": "string"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "font": {
+            "cli": [
+              "--font"
+            ],
+            "type": "string"
+          },
+          "font_file": {
+            "cli": [
+              "--font-file"
+            ],
+            "type": "string"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "name": {
+            "cli": [
+              "--name"
+            ],
+            "description": "lower-third: name line",
+            "type": "string"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_gfx.<ext>)",
+            "type": "string"
+          },
+          "position": {
+            "cli": [
+              "--position"
+            ],
+            "description": "corner for chapter/bug (default bottom-left / top-right)",
+            "enum": [
+              "top-left",
+              "top-right",
+              "bottom-left",
+              "bottom-right"
+            ],
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "primary": {
+            "cli": [
+              "--primary"
+            ],
+            "description": "override brand primary colour RRGGBB",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "scale": {
+            "cli": [
+              "--scale"
+            ],
+            "default": 1.0,
+            "description": "size multiplier (default 1)",
+            "type": "number"
+          },
+          "start": {
+            "cli": [
+              "--start"
+            ],
+            "description": "show from (default 0)",
+            "type": "string"
+          },
+          "subtitle": {
+            "cli": [
+              "--subtitle"
+            ],
+            "description": "title: smaller second line",
+            "type": "string"
+          },
+          "template": {
+            "cli": [
+              "--template"
+            ],
+            "enum": [
+              "lower-third",
+              "title",
+              "chapter",
+              "progress",
+              "countdown",
+              "bug"
+            ],
+            "type": "string"
+          },
+          "text_color": {
+            "cli": [
+              "--text-color"
+            ],
+            "description": "override text colour RRGGBB",
+            "type": "string"
+          },
+          "title": {
+            "cli": [
+              "--title"
+            ],
+            "description": "title / chapter / bug text, or lower-third second line",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input",
+          "template"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "count_from": "--from",
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "graphics"
+      },
+      "mutates_input": false,
+      "name": "graphics",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "video artifact with the drawn template"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          },
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac",
+          "filter:xfade",
+          "filter:acrossfade"
+        ]
+      },
+      "description": "Join clips with transitions, normalising resolution, frame rate and audio",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/join.py",
+      "id": "ffmpeg-skill/join",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "inputs"
+        ],
+        "properties": {
+          "channels": {
+            "cli": [
+              "--channels"
+            ],
+            "description": "output channel count (default: the widest clip)",
+            "enum": [
+              1,
+              2,
+              6,
+              8
+            ],
+            "type": "integer"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "duration": {
+            "cli": [
+              "--duration"
+            ],
+            "default": 0.5,
+            "description": "transition length in seconds (default 0.5)",
+            "type": "number"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "fit": {
+            "cli": [
+              "--fit"
+            ],
+            "default": "pad",
+            "description": "how clips of another aspect reach the frame (default pad)",
+            "enum": [
+              "pad",
+              "crop"
+            ],
+            "type": "string"
+          },
+          "fps": {
+            "cli": [
+              "--fps"
+            ],
+            "description": "output frame rate (default: first clip)",
+            "type": "number"
+          },
+          "height": {
+            "cli": [
+              "--height"
+            ],
+            "description": "output height (default: first clip)",
+            "type": "integer"
+          },
+          "inputs": {
+            "cli": "positional",
+            "description": "two or more clips in order",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <first>_joined.mp4)",
+            "type": "string"
+          },
+          "pad_color": {
+            "cli": [
+              "--pad-color"
+            ],
+            "default": "black",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "cli": [
+              "--sample-rate"
+            ],
+            "description": "output sample rate in Hz (default: first clip's)",
+            "type": "integer"
+          },
+          "transition": {
+            "cli": [
+              "--transition"
+            ],
+            "default": "fade",
+            "description": "transition between clips (default fade)",
+            "enum": [
+              "fade",
+              "dissolve",
+              "wipeleft",
+              "wiperight",
+              "wipeup",
+              "wipedown",
+              "slideleft",
+              "slideright",
+              "circleopen",
+              "circleclose",
+              "fadeblack",
+              "fadewhite",
+              "smoothleft",
+              "smoothright",
+              "radial",
+              "none"
+            ],
+            "type": "string"
+          },
+          "width": {
+            "cli": [
+              "--width"
+            ],
+            "description": "output width (default: first clip)",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "two or more video assets, or two or more audio-only assets"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "inputs"
+        ],
+        "tool": "join"
+      },
+      "mutates_input": false,
+      "name": "join",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "channels": {
+            "description": "audio mode only",
+            "type": "integer"
+          },
+          "clips": {
+            "type": "integer"
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "expected_duration": {
+            "type": "number"
+          },
+          "mode": {
+            "enum": [
+              "video",
+              "audio"
+            ]
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "sample_rate": {
+            "description": "audio mode only",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          },
+          "transition": {
+            "type": "string"
+          },
+          "video": {
+            "description": "false in audio mode: the output has no video stream",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "concatenated video artifact",
+        "concatenated audio artifact (audio-only inputs, audio output extension)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "filter:drawtext",
+            "when": "timecode stamps (default; --no-timecode to skip)"
+          },
+          {
+            "capability": "filter:zscale",
+            "when": "HDR source"
+          },
+          {
+            "capability": "filter:tonemap",
+            "when": "HDR source"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "filter:tile"
+        ]
+      },
+      "description": "Give the agent eyes: pull frames or a contact sheet out of a video as PNG so",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/look.py",
+      "id": "ffmpeg-skill/look",
+      "idempotency_hint": "bit_exact",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "at": {
+            "cli": [
+              "--at"
+            ],
+            "description": "time of a frame to extract (repeatable)",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "compare": {
+            "cli": [
+              "--compare"
+            ],
+            "description": "second video: place its frame next to the first (needs --at)",
+            "type": "string"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "no_timecode": {
+            "cli": [
+              "--no-timecode"
+            ],
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output PNG (contact sheet / compare) or basename for --at frames",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "tiles": {
+            "cli": [
+              "--tiles"
+            ],
+            "default": "4x3",
+            "description": "contact sheet grid COLSxROWS (default 4x3)",
+            "type": "string"
+          },
+          "width": {
+            "cli": [
+              "--width"
+            ],
+            "default": 1280,
+            "description": "total width of the sheet / compare image (default 1280)",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video artifact"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "look"
+      },
+      "mutates_input": false,
+      "name": "look",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "outputs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "PNG contact sheet / frames / side-by-side"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "verification",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "filter:loudnorm",
+          "encoder:aac"
+        ]
+      },
+      "description": "Two-pass EBU R128 loudness normalisation (ffmpeg loudnorm).",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/loudness.py",
+      "id": "ffmpeg-skill/loudness",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "audio_bitrate": {
+            "cli": [
+              "--audio-bitrate"
+            ],
+            "default": "192k",
+            "description": "AAC bitrate when the container is video (default 192k)",
+            "type": "string"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "lra": {
+            "cli": [
+              "--lra"
+            ],
+            "default": 11.0,
+            "description": "loudness range target in LU (default 11)",
+            "type": "number"
+          },
+          "lufs": {
+            "cli": [
+              "-I",
+              "--lufs"
+            ],
+            "default": -14.0,
+            "description": "integrated loudness target in LUFS (default -14)",
+            "type": "number"
+          },
+          "measure_only": {
+            "cli": [
+              "--measure-only"
+            ],
+            "description": "print the measured stats as JSON and exit",
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_loudnorm.<ext>)",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "sample_rate": {
+            "cli": [
+              "--sample-rate"
+            ],
+            "description": "output sample rate (default: 48000; loudnorm upsamples internally to 192k)",
+            "type": "integer"
+          },
+          "tp": {
+            "cli": [
+              "--tp"
+            ],
+            "default": -1.0,
+            "description": "true peak ceiling in dBTP (default -1)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video or audio asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "lufs": "-I",
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "loudness"
+      },
+      "mutates_input": false,
+      "name": "loudness",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "measured": {
+            "description": "--measure-only prints the loudnorm measurement instead (input_i, input_tp, input_lra, input_thresh, target_offset)",
+            "type": "object"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "loudness measurement JSON (--measure-only)",
+        "normalised artifact (video stream-copied)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "analysis_and_execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/check"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac"
+        ]
+      },
+      "description": "Multicam: align two or more cameras (and an optional external recorder) by",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "analysis_only",
+        "note": "audio is decoded to align the cameras; the switched output is not written",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/multicam.py",
+      "id": "ffmpeg-skill/multicam",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "inputs"
+        ],
+        "properties": {
+          "analyze_seconds": {
+            "cli": [
+              "--analyze-seconds"
+            ],
+            "default": 120.0,
+            "type": "number"
+          },
+          "audio": {
+            "cli": [
+              "--audio"
+            ],
+            "description": "input index to take audio from (default 0 = reference)",
+            "type": "integer"
+          },
+          "auto": {
+            "cli": [
+              "--auto"
+            ],
+            "description": "no switch list: alternate through the cameras every N seconds",
+            "type": "number"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "fix_drift": {
+            "cli": [
+              "--fix-drift"
+            ],
+            "description": "also correct clock drift of each source (long recordings)",
+            "type": "boolean"
+          },
+          "fps": {
+            "cli": [
+              "--fps"
+            ],
+            "description": "output fps (default: reference)",
+            "type": "number"
+          },
+          "height": {
+            "cli": [
+              "--height"
+            ],
+            "description": "output height (default: reference)",
+            "type": "integer"
+          },
+          "inputs": {
+            "cli": "positional",
+            "description": "reference camera first, then other cameras / recorders",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "max_offset": {
+            "cli": [
+              "--max-offset"
+            ],
+            "default": 30.0,
+            "type": "number"
+          },
+          "offsets_only": {
+            "cli": [
+              "--offsets-only"
+            ],
+            "description": "print the measured offsets and exit",
+            "type": "boolean"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <reference>_multicam.mp4)",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "switch": {
+            "cli": [
+              "--switch"
+            ],
+            "description": "switch list START-END:CAM,... on the reference timeline",
+            "type": "string"
+          },
+          "width": {
+            "cli": [
+              "--width"
+            ],
+            "description": "output width (default: reference)",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "reference camera",
+        "other cameras / recorders"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "inputs"
+        ],
+        "tool": "multicam"
+      },
+      "mutates_input": false,
+      "name": "multicam",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "switched multicam video artifact"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "filter:drawtext",
+            "when": "--text"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "encoder:libx264",
+          "encoder:aac"
+        ]
+      },
+      "description": "Composite a logo/image or a text title onto a video with position, timing,",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/overlay.py",
+      "id": "ffmpeg-skill/overlay",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "mutually_exclusive": [
+          [
+            "image",
+            "text",
+            "logo"
+          ]
+        ],
+        "one_of_required": [],
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "border": {
+            "cli": [
+              "--border"
+            ],
+            "default": 2,
+            "description": "text outline width (default 2)",
+            "type": "integer"
+          },
+          "border_color": {
+            "cli": [
+              "--border-color"
+            ],
+            "default": "black",
+            "type": "string"
+          },
+          "box": {
+            "cli": [
+              "--box"
+            ],
+            "description": "draw a translucent box behind the text",
+            "type": "boolean"
+          },
+          "box_color": {
+            "cli": [
+              "--box-color"
+            ],
+            "default": "black@0.5",
+            "type": "string"
+          },
+          "brand": {
+            "cli": [
+              "--brand"
+            ],
+            "description": "brand.json (logo, font, colours, safe margin)",
+            "type": "string"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "end": {
+            "cli": [
+              "--end"
+            ],
+            "description": "hide after this time",
+            "type": "string"
+          },
+          "fade": {
+            "cli": [
+              "--fade"
+            ],
+            "description": "fade in/out duration in seconds",
+            "type": "number"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "font": {
+            "cli": [
+              "--font"
+            ],
+            "default": "DejaVu Sans",
+            "description": "fontconfig font name",
+            "type": "string"
+          },
+          "font_color": {
+            "cli": [
+              "--font-color"
+            ],
+            "default": "white",
+            "type": "string"
+          },
+          "font_file": {
+            "cli": [
+              "--font-file"
+            ],
+            "description": "explicit .ttf/.otf/.ttc path (use this for CJK fonts)",
+            "type": "string"
+          },
+          "font_size": {
+            "cli": [
+              "--font-size"
+            ],
+            "default": 42,
+            "type": "integer"
+          },
+          "image": {
+            "cli": [
+              "--image"
+            ],
+            "description": "PNG/JPG (alpha respected) to composite",
+            "type": "string"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "logo": {
+            "cli": [
+              "--logo"
+            ],
+            "description": "composite the brand logo from --brand (position/scale/opacity from brand.json)",
+            "type": "boolean"
+          },
+          "margin": {
+            "cli": [
+              "--margin"
+            ],
+            "default": 24,
+            "description": "margin from the edges in px (default 24)",
+            "type": "integer"
+          },
+          "opacity": {
+            "cli": [
+              "--opacity"
+            ],
+            "default": 1.0,
+            "description": "0..1 (default 1)",
+            "type": "number"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_overlay.<ext>)",
+            "type": "string"
+          },
+          "position": {
+            "cli": [
+              "--position"
+            ],
+            "default": "top-right",
+            "description": "named position or X,Y (default top-right)",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "scale": {
+            "cli": [
+              "--scale"
+            ],
+            "description": "scale the image to this width in px (keeps aspect)",
+            "type": "integer"
+          },
+          "scale_percent": {
+            "cli": [
+              "--scale-percent"
+            ],
+            "description": "scale the image to this %% of the video width",
+            "type": "number"
+          },
+          "start": {
+            "cli": [
+              "--start"
+            ],
+            "description": "show from this time (default: whole video)",
+            "type": "string"
+          },
+          "text": {
+            "cli": [
+              "--text"
+            ],
+            "description": "text to draw (drawtext)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset",
+        "image (--image / --logo) or text (--text)"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "overlay"
+      },
+      "mutates_input": false,
+      "name": "overlay",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "video artifact with the overlay composited"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "ffmpeg",
+            "when": "--analyze"
+          },
+          {
+            "capability": "filter:signalstats",
+            "when": "--analyze"
+          }
+        ],
+        "required": [
+          "ffprobe"
+        ]
+      },
+      "description": "Inspect a media file and print a compact JSON summary.",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "note": "read-only tool; --dry-run changes nothing (ffprobe still runs)",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/probe.py",
+      "id": "ffmpeg-skill/probe",
+      "idempotency_hint": "bit_exact",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "inputs"
+        ],
+        "properties": {
+          "analyze": {
+            "cli": [
+              "--analyze"
+            ],
+            "description": "also sample picture levels (first 20 s) and flag Log-looking footage",
+            "type": "boolean"
+          },
+          "compact": {
+            "cli": [
+              "--compact"
+            ],
+            "description": "one human-readable line per file instead of JSON",
+            "type": "boolean"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "field": {
+            "cli": [
+              "--field"
+            ],
+            "description": "print only this top-level field (e.g. duration) or dotted path (video.fps)",
+            "type": "string"
+          },
+          "inputs": {
+            "cli": "positional",
+            "description": "media file(s) to inspect",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "media (video or audio, any container ffprobe reads)"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "inputs"
+        ],
+        "tool": "probe"
+      },
+      "mutates_input": false,
+      "name": "probe",
+      "output_schema": {
+        "additionalProperties": true,
+        "description": "one probe document, or an array of them for several inputs",
+        "properties": {
+          "audio": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "duration": {
+            "type": "number"
+          },
+          "file": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer"
+          },
+          "video": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "outputs": [
+        "measurement JSON on stdout (no file)"
+      ],
+      "produces_artifact": false,
+      "requires_visual_verification": false,
+      "role": "analysis",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "delegated",
+            "when": "each stage runs cut / join / fit / caption / overlay / audio / loudness / export / check with their capabilities"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Declarative edits: describe the whole edit in one project.json and render it",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/render.py",
+      "id": "ffmpeg-skill/render",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "project"
+        ],
+        "properties": {
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "init": {
+            "cli": [
+              "--init"
+            ],
+            "description": "write a starter project file and exit",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "keep": {
+            "cli": [
+              "--keep"
+            ],
+            "description": "keep intermediates (default: kept only when --work is given)",
+            "type": "boolean"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "project": {
+            "cli": "positional",
+            "description": "project.json",
+            "type": "string"
+          },
+          "stop_after": {
+            "cli": [
+              "--stop-after"
+            ],
+            "description": "stop after this stage (for iterating)",
+            "enum": [
+              "clips",
+              "join",
+              "silence",
+              "fit",
+              "captions",
+              "graphics",
+              "overlays",
+              "audio",
+              "loudness",
+              "export"
+            ],
+            "type": "string"
+          },
+          "work": {
+            "cli": [
+              "--work"
+            ],
+            "description": "work directory for intermediates (default: <output>_work)",
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "inputs": [
+        "project.json (clips, transitions, captions, overlays, audio, loudness, export, check)"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "project"
+        ],
+        "tool": "render"
+      },
+      "mutates_input": false,
+      "name": "render",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "check": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "final video artifact",
+        "work directory of stage outputs (--keep / --work)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": true,
+      "role": "execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe",
+          "ffmpeg-skill/check",
+          "ffmpeg-skill/look"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "delegated",
+            "when": "runs look (sheets) and check (--platform)"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "filter:loudnorm"
+        ]
+      },
+      "description": "Build a single-file HTML delivery report: what went in, what came out,",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "analysis_only",
+        "note": "probe, loudness and contact-sheet measurements run; the HTML is not written",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/report.py",
+      "id": "ffmpeg-skill/report",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [],
+        "properties": {
+          "after": {
+            "cli": [
+              "--after"
+            ],
+            "description": "the deliverable",
+            "type": "string"
+          },
+          "before": {
+            "cli": [
+              "--before"
+            ],
+            "description": "the source (optional)",
+            "type": "string"
+          },
+          "commands": {
+            "cli": [
+              "--commands"
+            ],
+            "description": "text file with the commands that were run (one per line)",
+            "type": "string"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "no_sheets": {
+            "cli": [
+              "--no-sheets"
+            ],
+            "description": "skip contact sheets (faster, smaller)",
+            "type": "boolean"
+          },
+          "notes": {
+            "cli": [
+              "--notes"
+            ],
+            "description": "text/markdown file with notes to include verbatim",
+            "type": "string"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "report path (default: <after>_report.html)",
+            "type": "string"
+          },
+          "platform": {
+            "cli": [
+              "--platform"
+            ],
+            "description": "run check.py for this platform and include the table",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "title": {
+            "cli": [
+              "--title"
+            ],
+            "description": "report title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "after"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "deliverable (--after)",
+        "source (--before)",
+        "commands / notes text"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [],
+        "tool": "report"
+      },
+      "mutates_input": false,
+      "name": "report",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "check": {
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "report": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "single-file HTML delivery report"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "verification",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": false,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "filter:drawtext",
+            "when": "--sheet"
+          },
+          {
+            "capability": "filter:tile",
+            "when": "--sheet"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "filter:scdet"
+        ]
+      },
+      "description": "Find scene changes and loud moments, and propose highlight candidates so the",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "analysis_only",
+        "note": "scene and audio-peak measurement runs; --sheet and --edl are not written",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/scenes.py",
+      "id": "ffmpeg-skill/scenes",
+      "idempotency_hint": "bit_exact",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "edl": {
+            "cli": [
+              "--edl"
+            ],
+            "description": "write highlight ranges as START-END lines (cut.py --segments format)",
+            "type": "string"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "highlights": {
+            "cli": [
+              "--highlights"
+            ],
+            "description": "number of highlight ranges to propose",
+            "type": "integer"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "max_scene": {
+            "cli": [
+              "--max-scene"
+            ],
+            "default": 15.0,
+            "description": "cap a highlight range at this many seconds (default 15)",
+            "type": "number"
+          },
+          "min_scene": {
+            "cli": [
+              "--min-scene"
+            ],
+            "default": 1.0,
+            "description": "ignore cuts closer than this in seconds (default 1)",
+            "type": "number"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "ratio": {
+            "cli": [
+              "--ratio"
+            ],
+            "default": 3.0,
+            "description": "a cut must exceed this multiple of the neighbouring frames' median score (default 3; lower = more cuts)",
+            "type": "number"
+          },
+          "sheet": {
+            "cli": [
+              "--sheet"
+            ],
+            "description": "write a contact sheet PNG with the first frame of every scene",
+            "type": "string"
+          },
+          "target": {
+            "cli": [
+              "--target"
+            ],
+            "description": "with --highlights: total seconds the picks should add up to (trims long scenes)",
+            "type": "number"
+          },
+          "threshold": {
+            "cli": [
+              "--threshold"
+            ],
+            "default": 8.0,
+            "description": "minimum scdet score for a cut, 0-100 (default 8)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "input"
+        ],
+        "tool": "scenes"
+      },
+      "mutates_input": false,
+      "name": "scenes",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "audio_peaks": {
+            "type": "array"
+          },
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "file": {
+            "type": "string"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "scene_count": {
+            "type": "integer"
+          },
+          "scenes": {
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "scene / audio-peak / highlight JSON on stdout",
+        "EDL text (--edl)",
+        "per-scene contact sheet PNG (--sheet)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "analysis",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": true
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:libx264",
+            "when": "removing silences from a video"
+          },
+          {
+            "capability": "encoder:libx265",
+            "when": "the source is HDR (kept as HEVC Main10)"
+          },
+          {
+            "capability": "encoder:aac",
+            "when": "removing silences from a video"
+          },
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe",
+          "filter:silencedetect"
+        ]
+      },
+      "description": "Remove silences / dead air (jump-cut editing) or just list them.",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "none",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/silence.py",
+      "id": "ffmpeg-skill/silence",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "input"
+        ],
+        "properties": {
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "edl": {
+            "cli": [
+              "--edl"
+            ],
+            "description": "write the kept ranges to this file, one START-END per line",
+            "type": "string"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "input": {
+            "cli": "positional",
+            "type": "string"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "list": {
+            "cli": [
+              "--list"
+            ],
+            "description": "only print silences and the kept ranges",
+            "type": "boolean"
+          },
+          "margin": {
+            "cli": [
+              "--margin"
+            ],
+            "default": 0.15,
+            "description": "seconds of silence to keep on each side of speech (default 0.15)",
+            "type": "number"
+          },
+          "min_keep": {
+            "cli": [
+              "--min-keep"
+            ],
+            "default": 0.2,
+            "description": "drop kept pieces shorter than this (default 0.2)",
+            "type": "number"
+          },
+          "min_silence": {
+            "cli": [
+              "--min-silence"
+            ],
+            "default": 0.6,
+            "description": "only remove gaps at least this long in seconds (default 0.6)",
+            "type": "number"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file (default: <name>_tight.<ext>)",
+            "type": "string"
+          },
+          "preset": {
+            "cli": [
+              "--preset"
+            ],
+            "default": "medium",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "threshold": {
+            "cli": [
+              "--threshold"
+            ],
+            "default": -35.0,
+            "description": "silence level in dBFS (default -35; use -40..-45 for quiet rooms)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "input"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "video or audio asset"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "input"
+        ],
+        "tool": "silence"
+      },
+      "mutates_input": false,
+      "name": "silence",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "input_duration": {
+            "type": "number"
+          },
+          "keep": {
+            "type": "array"
+          },
+          "kept_duration": {
+            "type": "number"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "removed_seconds": {
+            "type": "number"
+          },
+          "silences": {
+            "type": "array"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "silence list JSON (--list)",
+        "artifact with silences removed",
+        "EDL text (--edl)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "analysis_and_execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "encoder:aac",
+            "when": "writing a video container"
+          },
+          {
+            "capability": "encoder:libmp3lame",
+            "when": "output extension is .mp3"
+          },
+          {
+            "capability": "encoder:libopus",
+            "when": "output extension is .opus"
+          },
+          {
+            "capability": "encoder:libvorbis",
+            "when": "output extension is .ogg"
+          },
+          {
+            "capability": "encoder:flac",
+            "when": "output extension is .flac"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Detect the time offset between two recordings by audio cross-correlation",
+      "deterministic_inputs": true,
+      "dry_run": {
+        "ffmpeg_execution": "analysis_only",
+        "note": "audio is decoded to find the offset; the aligned output is not written",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": true
+      },
+      "executable": "scripts/sync.py",
+      "id": "ffmpeg-skill/sync",
+      "idempotency_hint": "content_equivalent",
+      "input_schema": {
+        "additionalProperties": false,
+        "mutually_exclusive": [
+          [
+            "replace_audio",
+            "trim_second"
+          ]
+        ],
+        "one_of_required": [],
+        "positional": [
+          "reference",
+          "second"
+        ],
+        "properties": {
+          "analyze_seconds": {
+            "cli": [
+              "--analyze-seconds"
+            ],
+            "default": 120.0,
+            "description": "how much audio to analyse from each file (default 120)",
+            "type": "number"
+          },
+          "crf": {
+            "cli": [
+              "--crf"
+            ],
+            "default": 18,
+            "type": "integer"
+          },
+          "drift_window": {
+            "cli": [
+              "--drift-window"
+            ],
+            "default": 60.0,
+            "description": "seconds of audio analysed at each end for drift (default 60)",
+            "type": "number"
+          },
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "fine_ms": {
+            "cli": [
+              "--fine-ms"
+            ],
+            "default": 1.0,
+            "description": "fine resolution in ms for the refinement pass, 0 to skip (default 1)",
+            "type": "number"
+          },
+          "fix_drift": {
+            "cli": [
+              "--fix-drift"
+            ],
+            "description": "also measure the offset near the END and correct clock drift by resampling the second file",
+            "type": "boolean"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "max_offset": {
+            "cli": [
+              "--max-offset"
+            ],
+            "default": 30.0,
+            "description": "largest offset to search in seconds (default 30)",
+            "type": "number"
+          },
+          "output": {
+            "cli": [
+              "-o",
+              "--output"
+            ],
+            "description": "output file when writing a synced result",
+            "type": "string"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "reference": {
+            "cli": "positional",
+            "description": "reference recording (usually the camera video)",
+            "type": "string"
+          },
+          "replace_audio": {
+            "cli": [
+              "--replace-audio"
+            ],
+            "description": "write reference video with the second file's audio, aligned",
+            "type": "boolean"
+          },
+          "second": {
+            "cli": "positional",
+            "description": "recording to align (external audio or second camera)",
+            "type": "string"
+          },
+          "step_ms": {
+            "cli": [
+              "--step-ms"
+            ],
+            "default": 20.0,
+            "description": "coarse envelope resolution in ms for the FFT search (default 20)",
+            "type": "number"
+          },
+          "trim_second": {
+            "cli": [
+              "--trim-second"
+            ],
+            "description": "write the second file shifted so it lines up with the reference",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reference",
+          "second"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "reference recording (video or audio)",
+        "second recording (video or audio)"
+      ],
+      "mcp": {
+        "argument_exceptions": {
+          "output": "-o"
+        },
+        "positional": [
+          "reference",
+          "second"
+        ],
+        "tool": "sync"
+      },
+      "mutates_input": false,
+      "name": "sync",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "drift": {
+            "type": "object"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "offset_seconds": {
+            "type": "number"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "second": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "offset / drift JSON on stdout",
+        "aligned artifact with --replace-audio / --trim-second / --fix-drift -o"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "analysis_and_execution",
+      "supports_dry_run": true,
+      "supports_json": true,
+      "verification": {
+        "required": true,
+        "tools": [
+          "ffmpeg-skill/probe"
+        ]
+      },
+      "version": "0.9.1",
+      "video_required": false
+    },
+    {
+      "audio_only": true,
+      "capabilities": {
+        "optional": [
+          {
+            "capability": "delegated",
+            "when": "runs cut / fit / caption / export / loudness / color on each file"
+          }
+        ],
+        "required": [
+          "ffmpeg",
+          "ffprobe"
+        ]
+      },
+      "description": "Real-footage verification kit: run the whole toolchain against your own",
+      "deterministic_inputs": false,
+      "dry_run": {
+        "ffmpeg_execution": "full",
+        "note": "not supported: the flag is accepted but the steps run and outputs are written",
+        "semantics": "prints the ffmpeg command lines that would run; no output file is written",
+        "supported": false
+      },
+      "executable": "scripts/verify.py",
+      "id": "ffmpeg-skill/verify",
+      "idempotency_hint": "environment_dependent",
+      "input_schema": {
+        "additionalProperties": false,
+        "positional": [
+          "paths"
+        ],
+        "properties": {
+          "dry_run": {
+            "cli": [
+              "--dry-run"
+            ],
+            "common": true,
+            "description": "print the ffmpeg commands that would run, run nothing",
+            "type": "boolean"
+          },
+          "fast": {
+            "cli": [
+              "--fast"
+            ],
+            "common": true,
+            "description": "preview quality: x264 preset veryfast (overrides --preset) for quick iterations",
+            "type": "boolean"
+          },
+          "json": {
+            "cli": [
+              "--json"
+            ],
+            "common": true,
+            "description": "print a JSON result (output, probe, commands) on stdout instead of the path",
+            "type": "boolean"
+          },
+          "keep": {
+            "cli": [
+              "--keep"
+            ],
+            "description": "keep the outputs",
+            "type": "boolean"
+          },
+          "out": {
+            "cli": [
+              "--out"
+            ],
+            "description": "directory for outputs (default: temp dir, deleted unless --keep)",
+            "type": "string"
+          },
+          "paths": {
+            "cli": "positional",
+            "description": "media files and/or folders",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "progress": {
+            "cli": [
+              "--progress"
+            ],
+            "common": true,
+            "description": "show percent / ETA on stderr while ffmpeg encodes",
+            "type": "boolean"
+          },
+          "quick": {
+            "cli": [
+              "--quick"
+            ],
+            "description": "probe, copy cut, fit, caption, export only",
+            "type": "boolean"
+          },
+          "report": {
+            "cli": [
+              "--report"
+            ],
+            "description": "write a Markdown report here",
+            "type": "string"
+          },
+          "seconds": {
+            "cli": [
+              "--seconds"
+            ],
+            "default": 6.0,
+            "description": "length of the test cut taken from each file (default 6)",
+            "type": "number"
+          },
+          "timeout": {
+            "cli": [
+              "--timeout"
+            ],
+            "default": 600.0,
+            "description": "per-step timeout in seconds",
+            "type": "number"
+          }
+        },
+        "required": [
+          "paths"
+        ],
+        "type": "object"
+      },
+      "inputs": [
+        "media files and/or folders"
+      ],
+      "mcp": {
+        "argument_exceptions": {},
+        "positional": [
+          "paths"
+        ],
+        "tool": "verify"
+      },
+      "mutates_input": false,
+      "name": "verify",
+      "output_schema": {
+        "additionalProperties": true,
+        "properties": {
+          "commands": {
+            "description": "every ffmpeg command line planned or run",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "failed": {
+            "type": "integer"
+          },
+          "files": {
+            "type": "array"
+          },
+          "output": {
+            "description": "path written, or null",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "probe": {
+            "description": "probe of the output when a file was written",
+            "type": "object"
+          },
+          "report": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "completed"
+            ]
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "output",
+          "dry_run",
+          "commands"
+        ],
+        "type": "object"
+      },
+      "outputs": [
+        "PASS/FAIL JSON per step",
+        "Markdown report (--report)",
+        "step outputs (--out / --keep)"
+      ],
+      "produces_artifact": true,
+      "requires_visual_verification": false,
+      "role": "verification",
+      "supports_dry_run": false,
+      "supports_json": true,
+      "verification": {
+        "required": false,
+        "tools": []
+      },
+      "version": "0.9.1",
+      "video_required": false
+    }
+  ],
+  "verification_policy": {
+    "audio_only": "audio-only inputs and audio-only tools never need ffmpeg-skill/look",
+    "check_rows": "ffmpeg-skill/check rows carry kind=format (fix) or kind=judgement (decide with the user)",
+    "probe_first": "run ffmpeg-skill/probe on every input before planning",
+    "verify_last": "run the tools named in each ToolSpec.verification after it wrote an artifact",
+    "visual": "when requires_visual_verification is true, run ffmpeg-skill/look on the output and inspect the PNG"
+  }
+}

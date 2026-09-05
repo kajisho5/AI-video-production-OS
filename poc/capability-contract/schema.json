@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-video-production-os/schema/capability-contract-v1.json",
+  "title": "CapabilityContract",
+  "description": "The proposed OS-level Capability Contract shape from docs/SPEC.md section 1, transcribed verbatim as a real, checkable JSON Schema for the purpose of validating it against the real, already-published contract output of qc-skill and media-analysis-skill.",
+  "type": "object",
+  "required": ["skill_id", "skill_version", "contract_version", "capabilities"],
+  "properties": {
+    "skill_id": { "type": "string" },
+    "skill_version": { "type": "string" },
+    "contract_version": { "type": "string" },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "lifecycle": {
+            "enum": ["PROPOSED", "EXPERIMENTAL", "STABLE", "DEPRECATED", "RETIRED"]
+          },
+          "input_schema": { "type": "object" },
+          "output_schema": { "type": "object" },
+          "input_artifact_types": { "type": "array", "items": { "type": "string" } },
+          "output_artifact_types": { "type": "array", "items": { "type": "string" } },
+          "mutates_input": { "type": "boolean" },
+          "deterministic_inputs": { "type": "boolean" },
+          "idempotency_hint": { "type": "string" },
+          "verification": {
+            "type": "object",
+            "properties": {
+              "required": { "type": "boolean" },
+              "tools": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "security": {
+            "type": "object",
+            "properties": {
+              "forbidden_keys": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["skill_id", "version_range"],
+        "properties": {
+          "skill_id": { "type": "string" },
+          "version_range": { "type": "string" }
+        }
+      }
+    },
+    "not_provided": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

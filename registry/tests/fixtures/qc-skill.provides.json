@@ -1,0 +1,110 @@
+{
+  "skill_id": "qc",
+  "provides": [
+    {
+      "id": "measure.audio.channel_layout",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "audio.channel_balance_within_tolerance",
+        "audio.channel_layout_matches_expected",
+        "audio.channels_match_expected"
+      ]
+    },
+    {
+      "id": "measure.audio.clipping_and_dynamics",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "audio.loudness_range_within_tolerance",
+        "audio.no_clipping",
+        "audio.true_peak_within_tolerance"
+      ]
+    },
+    {
+      "id": "measure.audio.integrity",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "audio.decodes_without_errors",
+        "audio.stream_present_matches_expected",
+        "video.decodes_without_errors",
+        "video.stream_present"
+      ]
+    },
+    {
+      "id": "measure.audio.loudness",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "audio.integrated_loudness_within_tolerance"
+      ]
+    },
+    {
+      "id": "measure.audio.silence",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "audio.internal_silence_within_tolerance",
+        "audio.leading_silence_within_tolerance",
+        "audio.trailing_silence_within_tolerance"
+      ]
+    },
+    {
+      "id": "measure.delivery.integrity",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "delivery.container_matches_expected",
+        "delivery.extension_matches_expected",
+        "delivery.file_size_within_limit"
+      ]
+    },
+    {
+      "id": "measure.subtitle.timing",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "subtitle.coverage_within_limit",
+        "subtitle.cue_duration_within_limit",
+        "subtitle.duration_matches_video",
+        "subtitle.gaps_within_limit",
+        "subtitle.line_length_within_limit",
+        "subtitle.no_control_characters",
+        "subtitle.no_duplicate_ids",
+        "subtitle.no_empty_cues",
+        "subtitle.no_overlapping_cues",
+        "subtitle.presence_matches_expected",
+        "subtitle.timestamps_valid"
+      ]
+    },
+    {
+      "id": "measure.video.black_frame",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "video.black_frames_within_tolerance"
+      ]
+    },
+    {
+      "id": "measure.video.format",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "video.aspect_ratio_matches_expected",
+        "video.codec_matches_expected",
+        "video.frame_rate_matches_expected",
+        "video.pixel_format_matches_expected",
+        "video.resolution_matches_expected"
+      ]
+    },
+    {
+      "id": "measure.video.freeze",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "qc/run",
+      "checks": [
+        "video.freeze_frames_within_tolerance"
+      ]
+    }
+  ]
+}

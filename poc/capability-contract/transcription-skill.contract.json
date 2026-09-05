@@ -1,0 +1,141 @@
+{
+  "capabilities": [
+    "speech_recognition",
+    "word_timestamps",
+    "language_detection",
+    "speech_intervals",
+    "transcript_validation",
+    "transcript_export:json",
+    "transcript_export:srt",
+    "transcript_export:vtt",
+    "deterministic_cache",
+    "offline_mode",
+    "engine_registry",
+    "input_path_policy"
+  ],
+  "description": "Speech recognition: audio/video in, structured Transcript (segments, optional word timestamps, language, provenance) and SpeechEvent candidates out. Not an agent, not a subtitle renderer, not a media analyzer.",
+  "engine_contract": {
+    "capabilities": [
+      "local_execution",
+      "remote_execution",
+      "network_required",
+      "local_model",
+      "model_download",
+      "word_timestamps",
+      "language_detection"
+    ],
+    "execution_modes": [
+      "local",
+      "remote"
+    ],
+    "offline": false,
+    "schema": "transcription-skill/engine-spec/0.1"
+  },
+  "engines": [
+    {
+      "available": false,
+      "capabilities": [
+        "local_execution"
+      ],
+      "default_model": "base",
+      "description": "Whisper via CTranslate2, running locally on CPU/GPU. Reference local engine.",
+      "deterministic": true,
+      "execution_mode": "local",
+      "id": "faster_whisper",
+      "models": [],
+      "requires_network": false,
+      "supported_languages": [],
+      "supported_models": [],
+      "unavailable_reason": "faster-whisper is not installed: pip install \"transcription-skill[faster-whisper]\"",
+      "version": null
+    }
+  ],
+  "id": "transcription-skill",
+  "name": "Transcription Skill",
+  "schemas": {
+    "engine_spec": "transcription-skill/engine-spec/0.1",
+    "speech_event": "transcription-skill/speech-event/0.1",
+    "transcript": "transcription-skill/transcript/0.1"
+  },
+  "tools": [
+    {
+      "description": "Transcribe an audio or video file into a validated Transcript.",
+      "deterministic": true,
+      "input": {
+        "allowed_input_roots": "list[dir] | null",
+        "asset_id": "str | null",
+        "beam_size": "1..10",
+        "budget": {
+          "max_audio_seconds": "seconds",
+          "timeout": "seconds"
+        },
+        "cache": "bool",
+        "dry_run": "bool",
+        "engine": "engine id",
+        "initial_prompt": "str | null",
+        "input": "path",
+        "language": "iso639-1 | null",
+        "model": "model name",
+        "offline": "bool",
+        "temperature": "0..1",
+        "word_timestamps": "bool",
+        "workspace": "path | null"
+      },
+      "name": "transcription/transcribe",
+      "output": {
+        "cache_hit": "bool",
+        "cache_key": "sha256 hex",
+        "transcript": "Transcript",
+        "warnings": "list[str]"
+      },
+      "side_effects": [
+        "writes cache under workspace"
+      ]
+    },
+    {
+      "description": "Derive SpeechEvent-compatible candidates from a Transcript (one per segment, optional gap merge).",
+      "deterministic": true,
+      "input": {
+        "merge_gap": "seconds >= 0",
+        "transcript": "Transcript | path"
+      },
+      "name": "transcription/segments",
+      "output": {
+        "events": "list[SpeechEvent]"
+      },
+      "side_effects": []
+    },
+    {
+      "description": "Render a Transcript as json, srt or vtt (plain timed text, no styling).",
+      "deterministic": true,
+      "input": {
+        "format": "json|srt|vtt",
+        "output": "path",
+        "transcript": "Transcript | path"
+      },
+      "name": "transcription/export",
+      "output": {
+        "format": "str",
+        "output": "path"
+      },
+      "side_effects": [
+        "writes output file"
+      ]
+    },
+    {
+      "description": "Validate a Transcript document against the contract.",
+      "deterministic": true,
+      "input": {
+        "transcript": "Transcript | path"
+      },
+      "name": "transcription/check",
+      "output": {
+        "errors": "list[str]",
+        "ok": "bool",
+        "warnings": "list[str]"
+      },
+      "side_effects": []
+    }
+  ],
+  "version": "0.2.0"
+}
