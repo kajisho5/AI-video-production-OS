@@ -223,3 +223,113 @@ open question for `ROADMAP.md`, not answered.
 - Whether `ProductionReceipt.warnings`/`failures` should reference `QCFinding` ids
   directly rather than free-text strings — the `SPEC.md` shape currently proposes
   `[string]`; a more structured shape is a candidate refinement, not a blocking gap.
+
+## 7. Provenance vs. Memory vs. Knowledge vs. Evidence vs. Observation — five distinct concepts that must not be merged
+
+This section does not introduce a new mechanism into the two the OS actually owns
+(Provenance, §1–§4 above, and Evidence, `CORE_PRIMITIVES.md` §5) — it draws the boundary
+between them and two concepts that sound adjacent but are not OS primitives at all,
+specifically so a future contributor does not accidentally treat "let's add project
+memory" as "let's extend provenance," or "let's teach the OS some domain knowledge" as a
+provenance or evidence concern. The five terms answer five different questions, and none
+of the five is a synonym for another:
+
+| Concept | Question it answers | OS-core scope? |
+|---|---|---|
+| Observation | What did a tool measure? | Yes — `CORE_PRIMITIVES.md` §5 |
+| Evidence | Which specific facts does a Decision cite? | Yes — `CORE_PRIMITIVES.md` §5 |
+| Provenance | How did this Artifact come to exist? | Yes — this document, §1–§4 |
+| Memory | What has this Production/user preferred before? | **No — out of OS-core scope** |
+| Knowledge | What is generally true about the domain, independent of any one Production? | **No — out of OS-core scope** |
+
+### 7.1 Worked example, distinguishing all five
+
+Take a single shot under evaluation for use as an opening shot:
+
+- **Observation** — `shot_012 has 4.2 seconds of usable footage; motion score: low`. This
+  is exactly what `qc-skill`/`media-analysis-skill` already produce today: a measured
+  fact, `provenance="OBSERVED"`, no interpretation attached (`CORE_PRIMITIVES.md` §5).
+- **Decision** — `shot_012 is suitable for the opening`. An Agent Decision
+  (`CORE_PRIMITIVES.md` §5): `subject=shot_012`, `type=KEEP`, with its own `risk`,
+  `approval`, and `basis`.
+- **Evidence** — `{ duration_s: 4.2, motion: "low" }`. The specific, minimal set of facts
+  the Decision above cites to justify itself — **not** a dump of every Observation ever
+  made about `shot_012` or the Project. Evidence is deliberately narrow and targeted: it
+  is whatever a Decision's `basis` actually points to, not an audit trail of everything
+  that happened to be measured along the way. (Contrast with Provenance below, which *is*
+  comprehensive by design — the two serve opposite goals.)
+- **Provenance** — a separate concern entirely: the `Artifact -> Operation -> Skill ->
+  Runtime -> Input` chain (§1–§4 above) that answers "what produced the frame data in
+  `shot_012`'s file, with which Skill version, which tool versions, which effective
+  parameters." Provenance does not care whether the shot was judged suitable for
+  anything; it cares how the bytes came to exist and whether that could be reproduced.
+- **Memory** — `this user has rejected fast cuts three times before`. **Does not exist
+  anywhere in the audited ecosystem today**, and is explicitly out of OS-core scope
+  (§7.2).
+- **Knowledge** — `documentaries typically pace differently than commercials`. Also
+  **does not exist anywhere in the audited ecosystem today**, and is also explicitly out
+  of OS-core scope (§7.3).
+
+The load-bearing distinction is that Observation, Evidence, and Provenance are all
+**traceable to a specific measurement or a specific Artifact's history** — they can be
+cited, hashed, and reproduced. Memory and Knowledge are **generalizations across
+Productions or across the domain** — by construction, they cannot be pinned to one
+Artifact's provenance chain or one Decision's evidence list, because their entire value
+lies in applying beyond the single case that produced them. Mixing the two kinds is the
+exact error this section exists to prevent: provenance answers "how did *this* happen,"
+never "what has the OS learned that *this* should inform."
+
+### 7.2 Memory — out of OS-core scope
+
+**Memory** would be what a past Production learned about a specific user's or project's
+preferences — e.g. "this user has rejected fast cuts three times before," carried forward
+to influence a future Decision. **No evidence anywhere in the 11 audited repos shows any
+such mechanism, storage, or even a stated intention to build one** (`REPOSITORY_MAP.md`).
+`video-production-agent` has no database (confirmed absent), no cross-Project preference
+store, and no field anywhere in `ProjectIR` that persists a preference beyond the Project
+it belongs to.
+
+This document explicitly marks Memory **out of OS-core scope**. If pursued at all, it
+belongs at the Agent or ecosystem layer, not as an OS primitive, for the same reason
+`ARCHITECTURE.md` §10 gives for not designing a scheduler: **no evidence anywhere in the
+audit shows a need for cross-Production memory**, and inventing storage/retrieval
+infrastructure for it now — a preference store, a similarity search over past Decisions, a
+ranking model over rejected options — would be exactly the kind of speculative complexity
+this project's principles reject (`ARCHITECTURE.md` §9, lens 5, and §10's "not solved for
+because it is not yet a real problem"). An Agent is free to build its own memory of its
+own choosing on top of OS-owned Provenance and Evidence records — those records are, after
+all, retrievable and real — but the OS itself does not define a Memory type, a Memory
+store, or a Memory query contract.
+
+### 7.3 Knowledge — out of OS-core scope
+
+**Knowledge** would be general, non-Production-specific domain understanding — e.g.
+"documentaries typically pace differently than commercials." Unlike Memory, this is not
+even project- or user-specific; it is a general claim about the domain that would hold
+across every Production the OS ever touches. Nothing in the audited ecosystem encodes
+anything like this: no repo ships a rules file, model, or lookup table describing
+genre-level editorial conventions.
+
+This document also marks Knowledge **out of OS-core scope**, for a different reason than
+Memory: this kind of generalization is either (a) baked into an Agent's own reasoning or
+training — a Claude, GPT, or other model's general competence already carries exactly
+this sort of domain knowledge, with no OS involvement needed or possible — or (b) a
+future Recipe/Skill-level concern, not an OS primitive. The closest existing analog in the
+ecosystem today is `video-production-agent`'s `profiles/` directory (`generic`, `youtube`,
+`conference` — `CORE_PRIMITIVES.md` §11), which is exactly a named, reusable Plan *shape*
+for a given production context, not a general knowledge store the OS reasons over. A
+future genre-aware pacing profile would extend that pattern — a Recipe/profile a Plan can
+be built from — rather than requiring the OS to own a "Knowledge" primitive of its own.
+
+### 7.4 Why this distinction is being drawn now, before anyone needs it
+
+Provenance and Evidence are the two OS-core concepts here, and both are already
+well-specified — Provenance in this document and §1–§4 above, Evidence in
+`CORE_PRIMITIVES.md` §5. Memory and Knowledge are named in this document specifically as
+**boundary markers**, not as designs-in-waiting: so that a future contributor proposing
+"let's add project memory" recognizes it as a different problem from "let's extend
+provenance to remember more," and a future contributor proposing "let's have the OS learn
+pacing conventions" recognizes that as Agent-reasoning or Recipe-authoring territory, not
+a provenance or evidence extension. They are different problems, with different (and, for
+now, largely unaddressed) solutions — and the fastest way to keep them from being silently
+conflated later is to say so once, here, before either has a design.

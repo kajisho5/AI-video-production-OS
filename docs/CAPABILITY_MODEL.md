@@ -129,6 +129,72 @@ parameter models, independent security reviews, and independently useful release
 cadences in the current ecosystem (5 separate repos, all delegating to the *same*
 `ffmpeg-skill`, which is the correct place for the shared substrate to live).
 
+## Provider Fallback on Runtime Failure — extending the Collision Policy (PROPOSED)
+
+This section extends, rather than replaces, the three-mechanism **Capability collision
+policy** above (Plan-time explicit choice / default-provider policy / registry refusal)
+to cover a case that policy does not yet address: what happens when a chosen Provider is
+selected correctly, at Plan-compile time, by one of those three mechanisms — and then
+**fails or is unavailable at runtime**. `FAILURE_RECOVERY.md` §4 already states the
+ecosystem's current, correct baseline for this case explicitly: **"No automatic
+cross-Provider failover."** An Operation whose chosen Provider exhausts its retry budget
+surfaces as a failed Operation for a human or Agent to replan against explicitly — it is
+never silently substituted. This section does not weaken that rule. It specifies the
+constraints that would have to hold before *any* substitution for a failed Provider —
+whether an explicit Agent-authorized replan today, or a narrower OS-permitted case a
+future revision of `FAILURE_RECOVERY.md` might carve out — could be considered acceptable
+at all.
+
+**The rule: a fallback Provider is only eligible if it does not violate Intent,
+Permission, or Policy.**
+
+1. **Hard Constraints that name quality/method requirements, implicitly or explicitly.**
+   If a Plan step (or the Intent it was compiled from) requires "high-quality ASR," a
+   fallback must not silently substitute a lower-quality `transcribe.audio` Provider just
+   because it happens to be `AVAILABLE`. A Provider that satisfies the Capability id but
+   not the quality/method requirement the original selection was actually made to satisfy
+   is not a valid fallback — it is a different, unauthorized choice wearing the same
+   Capability id.
+2. **Permission boundaries.** A "local-only" constraint must not silently fall back to a
+   hypothetical future cloud Provider of the same Capability. **Today, no Provider
+   anywhere in the ecosystem is cloud-based** (`REPOSITORY_MAP.md` confirms every Skill
+   runs local subprocesses against local binaries) — so this constraint is entirely
+   forward-looking, a safeguard against a substitution class that cannot yet occur, not a
+   fix for a live problem. It is stated now precisely because the collision policy and
+   Provider concept are both already designed to admit a future cloud Provider
+   (`ARCHITECTURE.md` §4's "media-engine-agnostic" caveat), and permission boundaries need
+   to exist before that first cloud Provider does, not be retrofitted afterward.
+3. **Explicit Policy rules.** Any Workspace- or OS-level policy (the same
+   default-provider policy file the collision policy's mechanism 2 already establishes)
+   that names a required or excluded Provider for a Capability governs fallback exactly
+   as it governs initial selection — a policy that pins `measure.audio.loudness` to
+   `qc-skill` rules out a silent fallback to `media-analysis-skill`'s Provider of the same
+   Capability just as firmly as it rules out selecting it in the first place.
+
+**Fallback-on-failure is the registry-refusal mechanism's runtime twin.** Mechanism 3 of
+the collision policy already refuses to pick a Provider silently at Plan-compile time
+when the choice is ambiguous; this section applies the identical discipline to the
+runtime case — refuse silent *substitution* exactly as mechanism 3 already refuses silent
+*selection*. A fallback that would satisfy the Capability id but violate any of the three
+constraints above is not a fallback at all under this model; it is exactly the kind of
+unprovenanced substitution `FAILURE_RECOVERY.md` §4 already rules out, restated here as a
+general principle rather than a single case.
+
+**Recording.** Every fallback that does pass all three constraints must be recorded in
+provenance exactly like an initial Provider choice would be (`PROVENANCE.md` §2:
+Capability id + Provider id is part of the minimum information required for
+reproducibility) — a fallback is a Provider selection like any other, just one made in
+response to a runtime failure rather than at initial Plan-compile time, and it earns no
+exemption from being recorded because of when it happened.
+
+**Failure classification.** A parallel amendment to `FAILURE_RECOVERY.md` introduces a
+`DEGRADED` failure category. This document does not redefine that category — it names it
+as the classification a permitted, Intent-respecting fallback (one that passed all three
+constraints above) should be recorded under: the Plan completed, but not with the
+originally-selected Provider, which is a materially different — and less silent —
+outcome than either an ordinary `success` or the `FAIL`/`failed` categories
+`FAILURE_RECOVERY.md` §2 already defines.
+
 ## Capability lifecycle
 
 Independent of a Skill's own release version (see `VERSIONING.md`), each Capability
