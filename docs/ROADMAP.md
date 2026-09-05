@@ -102,6 +102,41 @@ ecosystem) is the easiest and lowest-risk retrofit; the repos with only an in-co
 new work per repo, but none require new capabilities to be built — only new fields on
 capabilities that already exist and already run.
 
+**Per-Skill effort, grounded in real contract data, not estimated from source reading**
+(`docs/POC_CAPABILITY_CONTRACT.md` ran all 10 Skills' actual `contract`/`skill` CLI
+output through the proposed schema — this replaces guesswork with fact):
+
+- **Near-zero-cost:** `video-editing-skill` already publishes a native, dotted
+  `capability` field per operation (`video.trim`, `video.concat`, ...) in exactly the
+  target shape — its retrofit is close to "add `provides: [...]` derived mechanically
+  from a field that already exists," not a design decision (PoC Finding 4).
+- **One bounded decision per operation:** `audio-production-skill`, `color-grading-skill`
+  need a human (or reviewed-AI) decision mapping each existing `type`-tagged operation
+  (`NORMALIZE`, `HDR_TO_SDR`, ...) to a Capability id — real work, but small and
+  well-defined per operation (PoC Finding 4, 8).
+- **Same decision, plus exposing nested operations as addressable at all:**
+  `motion-graphics-skill` shares the pattern above; it and `audio-production-skill` /
+  `color-grading-skill` currently expose only one generic `<skill>/run` tool at the top
+  level, with real operations one level deeper in a separate `operations` list (PoC
+  Finding 8) — the retrofit should decide whether each operation becomes independently
+  addressable or stays reached only through `run`, since the Capability registry
+  ultimately needs *something* invocable per Capability id.
+- **A few decisions, not per-operation:** `subtitle-skill` (2 operations),
+  `thumbnail-skill` (3, and already has real per-operation Tool ids to map from) — small
+  by virtue of being small Skills.
+- **Manual mapping against skill-internal names:** `qc-skill` (36 checks),
+  `media-analysis-skill` (9 tools) — the known collision case; mapping is real work but
+  fully worked out already for 5 of their Capabilities in the PoC.
+- **Structurally different, not yet scoped in this depth:** `transcription-skill`'s flat,
+  skill-wide `capabilities` list and `ffmpeg-skill`'s own nested `skill: {...}` shape
+  (PoC Finding 7) each need their own small design decision, not a mechanical retrofit.
+- **Add `contract_version` from scratch:** 7 of 10 Skills don't publish this field at
+  all today, not just inconsistently (PoC Finding 6) — this is a real, if small, task
+  for most of the ecosystem, not a rename.
+
+This is not one uniform task repeated ten times — treat each Skill's Phase 2 entry as
+its own estimate, checked against its real contract, rather than assuming parity.
+
 **Depends on: Phase 1** (there is no target shape to retrofit toward until the schema and
 validator exist — a Skill author cannot conform to a contract that hasn't been written
 down yet).
@@ -119,9 +154,14 @@ harder; and any Skill whose retrofit surfaces a genuine schema gap should feed t
 into Phase 1's schema rather than freelancing an extension, to avoid re-diverging the
 exact inconsistency Phase 1 exists to fix.)
 
-**Risk/uncertainty: low.** This is described accurately in the task brief as "mostly
-additive" — every Skill already has the underlying mechanism; this only extends its
-output format. The main risk is a Skill author treating this as a chance to also change
+**Risk/uncertainty: low overall, uneven per Skill.** This is still accurately described
+as "mostly additive" in aggregate — every Skill already has the underlying mechanism,
+and none needs new capabilities built. But the per-Skill breakdown above shows the real
+variance is bigger than "low" alone implies: `video-editing-skill` is near-zero-effort,
+while `audio-production-skill` / `color-grading-skill` / `motion-graphics-skill` include
+a real design decision (whether nested operations become independently addressable).
+Treat each Skill's Phase 2 entry as its own risk estimate. The main risk that *is*
+uniform across all 10 is a Skill author treating this as a chance to also change
 *behavior* rather than only *contract output* — worth calling out as a discipline point,
 not a technical risk.
 
