@@ -38,6 +38,36 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 2 — the collision pair)
+
+- **Repo(s)**: `kajisho5/qc-skill`, `kajisho5/media-analysis-skill`
+- **PR(s)**:
+  - https://github.com/kajisho5/qc-skill/pull/5
+  - https://github.com/kajisho5/media-analysis-skill/pull/4
+- **What changed**: `qc-skill`'s contract gains `provides`, grouping its 35 checks into ten
+  Capability ids (`measure.video.freeze`, `measure.video.black_frame`, `measure.video.format`,
+  `measure.audio.integrity`, `measure.audio.clipping_and_dynamics`, `measure.audio.channel_layout`,
+  `measure.audio.silence`, `measure.audio.loudness`, `measure.subtitle.timing`,
+  `measure.delivery.integrity`) — one check (`audio.sample_rate_matches_expected`) is
+  intentionally left ungrouped rather than forced into a group it doesn't belong to.
+  `media-analysis-skill`'s contract gains `provides` for five of its nine analysis kinds
+  (`silence`, `loudness`, `integrity`, `scene_detection`, `timing`) — the other four
+  (`media_probe`, `stream_layout`, `video_format`, `audio_format`, `duration`) are
+  intentionally left unassigned because `CAPABILITY_MATRIX.md` itself has not settled a
+  single id for them yet (guessing here risked publishing a false collision the matrix had
+  already ruled out — see each repo's own ADR for the full reasoning).
+- **Why**: this is the ecosystem's **one documented Capability collision**, made real. Three
+  ids — `measure.audio.loudness`, `measure.audio.silence`, `measure.audio.integrity` — are
+  now published *identically* by both Skills, which independently implement the same three
+  measurements with no shared code (`docs/CAPABILITY_MODEL.md`'s original motivating
+  example). A registry can now see this as one Capability with two Providers instead of two
+  unrelated things that happen to share a name — the first real (non-synthetic) validation
+  that the collision-resolution model in `CAPABILITY_MODEL.md` actually applies to the real
+  ecosystem, not just a designed scenario.
+- **Status**: draft (both PRs open; CI pending/running as of this entry)
+
+---
+
 ### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 1)
 
 - **Repo(s)**: `kajisho5/video-editing-skill`, `kajisho5/subtitle-skill`,
