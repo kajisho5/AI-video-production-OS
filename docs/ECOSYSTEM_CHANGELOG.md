@@ -49,7 +49,10 @@ noteworthy.
   (2026-09-05T20:57Z), `transcription-skill#5` (2026-09-05T20:58Z), `video-editing-skill#2`
   (2026-09-05T20:59Z)
 - **Still open**: `subtitle-skill#2`, `thumbnail-skill#2`, `color-grading-skill#4`,
-  `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24`
+  `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24` (had a merge conflict with
+  `main` after ffmpeg-skill#23 landed — a `main` merge resolved it, `CHANGELOG.md` was
+  the only manual resolution needed; verified `provides` and #23's new colour-correction
+  capabilities both intact after the merge)
 - **Status**: in progress
 
 ---
