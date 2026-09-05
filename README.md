@@ -307,6 +307,11 @@ separate repos' commit histories individually? [`ECOSYSTEM_CHANGELOG.md`](docs/E
 is a single running log of every cross-repository change made under this project's
 architecture, newest first, with links to the real PR/diff for each one.
 
+Picking this project back up (a new session, or a human returning after a break)?
+[`docs/ecosystem/HANDOFF.md`](docs/ecosystem/HANDOFF.md) is the one page to read first —
+current state, what's in flight, and where the rest of the operational documentation
+(`CURRENT_STATE.md`, `CROSS_REPO_STATUS.md`, `WORK_QUEUE.md`, `DECISION_LOG.md`) lives.
+
 Want the actual code, not just the design? [`registry/`](registry/) is a small, tested,
 dependency-free Python library — Phase 1 of `ROADMAP.md` — that loads real
 `CapabilityContract` documents, answers "who provides Capability X", and detects the
