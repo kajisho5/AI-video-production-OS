@@ -333,3 +333,102 @@ pacing conventions" recognizes that as Agent-reasoning or Recipe-authoring terri
 a provenance or evidence extension. They are different problems, with different (and, for
 now, largely unaddressed) solutions — and the fastest way to keep them from being silently
 conflated later is to say so once, here, before either has a design.
+
+## 8. Rights Provenance and Citation Provenance — two more distinct concepts in the same family
+
+§7 drew a boundary between five concepts (Observation, Evidence, Provenance, Memory,
+Knowledge) so that none of them gets silently folded into another. This section adds two
+more terms to that same family, found while extending this document rather than in the
+original audit — **neither exists in any audited repo today, and neither is designed in
+depth here.** They are named now, as boundary markers, for the same reason Memory and
+Knowledge were: so a future contributor does not reach for "extend Provenance's
+content-hash/operation-lineage tracking" when the actual question is a different kind of
+question entirely.
+
+| Concept | Question it answers | OS-core scope? |
+|---|---|---|
+| Provenance (§1–§4) | How was this Artifact technically produced? | Yes — this document |
+| Rights | Is this Artifact legally usable, and under what terms? | **FUTURE — optional metadata slot only, not a subsystem** |
+| Citation | Where did this factual claim come from? | **FUTURE — placeholder for a capability domain that does not exist yet** |
+
+Both answer questions Provenance's existing `identity`/`produced_by`/`plan_hash`/
+`ir_hash` machinery (§1–§4) was never designed to answer and should not be stretched to
+answer. "What Operation, Skill version, and effective parameters produced these bytes" is
+a reproducibility question. "Am I allowed to use these bytes commercially" and "is this
+sentence a fabrication or does it trace to a real source" are not reproducibility
+questions at all — they don't get better or worse as `skill_version` changes, and hashing
+inputs/configuration (§1) says nothing about either of them. Keeping them as named, separate
+concepts — rather than adding a `license` key onto the existing `provenance` dict because
+it happens to be nearby — is the same discipline §7 applies to Memory and Knowledge.
+
+### 8.1 Rights / license provenance (FUTURE, PROPOSED as one optional field only)
+
+**Motivation.** Every Artifact type this OS defines today (`ARTIFACT_MODEL.md` §2) is
+produced from inputs the ecosystem currently assumes the operator already has the right to
+use — no audited repo ingests stock footage, licensed music, third-party user uploads, or
+AI-generated assets carrying their own usage terms. As this ecosystem grows to ingest
+third-party media, an Artifact's provenance record should be **extensible** to carry
+rights/license metadata distinct from its technical production lineage — e.g. "this source
+clip is licensed under a Creative Commons Attribution license, usage restricted to
+non-commercial contexts" travelling with the Artifact the same way `produced_by` and
+`stage` already do.
+
+**What this is not.** This is explicitly **not a legal-advice system**, and the OS does
+not enforce, verify, or interpret licenses — no audited repo has any license-checking,
+rights-clearance, or usage-restriction-enforcement logic today, and this document does not
+invent one. Per `PRINCIPLES.md` §10 ("simple now, extensible later — no abstraction
+without concrete evidence"), the entire proposal is **one optional, unpopulated-by-default
+field**, not a rights-management subsystem, a licensing database, or a compliance engine:
+
+```
+Artifact.rights: {              // PROPOSED, optional, absent/null by default
+  license: string,              // free-form or SPDX-style identifier, e.g. "CC-BY-4.0"
+  attribution_required: bool,
+  restrictions: [string],       // free-form, e.g. "non-commercial-use-only"
+  source: string                // where the rights claim comes from, e.g. a stock-footage vendor name
+}
+```
+
+Nothing reads, validates, or acts on this field anywhere in this OS's kernel (§8 of
+`ARCHITECTURE.md`) — it is a data slot an Agent or a human operator may populate and later
+consult, exactly as unenforced as a comment. **Mark this entirely FUTURE/PROPOSED:** no
+repo in the 11-repo audit (`REPOSITORY_MAP.md`) has any rights-tracking pattern today, so
+unlike every other primitive in this document there is no existing implementation to
+generalize from — this is a genuinely new, speculative-but-cheap addition (one optional
+field costs nothing to leave unpopulated), not infrastructure this document is proposing be
+built.
+
+### 8.2 External research / citation provenance (FUTURE, placeholder only)
+
+**Motivation.** If an Agent or Skill ever incorporates externally-researched factual
+claims — a hypothetical future script-writing capability citing a web source, or a
+metadata-enrichment step pulling facts from an external database — the claim's source
+(URL, retrieval date) should be trackable as its own provenance type, separate from Artifact
+production provenance. "Where did this fact come from" (a factual claim's trustworthiness
+question) is different in kind from "what Operation produced this file" (a media artifact's
+production question) — the first is about epistemic sourcing of a piece of text, the
+second is about the reproducibility of a byte stream, and §1's identity scheme has no
+notion of "sourcing" at all, only "reproducing."
+
+**Why this is marked entirely FUTURE, not merely optional like §8.1.** No repo in the
+ecosystem does any external research today, and — unlike rights metadata, where third-party
+media ingestion is at least a plausible near-term direction — this document has no evidence
+of even a planned capability that would populate a citation record: `SECURITY_MODEL.md`'s
+header states no repository in this ecosystem talks to a network service today, confirmed
+across all 11 repos, and `INTENT_MODEL.md` §6 independently confirms there is "nothing to
+permission" for network access because no audited repo has a network-access code path to
+gate at all. A citation-provenance type would only ever be populated by a Skill or
+Agent capability that does not exist in this ecosystem in any form — not experimentally, not
+as a stub, not as a declared-but-unimplemented interface.
+
+This document therefore does not propose a field shape (unlike §8.1's concrete `rights`
+sketch) — doing so would be designing a schema for a capability domain that has no present
+member to validate the design against, which is exactly the "solving a problem that does
+not yet exist" failure mode `PRINCIPLES.md` §10 names. What this section does establish is
+narrower and load-bearing for later: **when** a future research-Skill or Agent-side
+web-search capability is built, its factual claims should carry a Citation record (source
+URL, retrieval date, at minimum) that is tracked as its own concept — never merged into
+Artifact `produced_by`/`provenance` (§1–§4), and never treated as Evidence
+(`CORE_PRIMITIVES.md` §5, which cites Observations/Events, not external web sources). This
+is a placeholder concept for a capability domain, not a capability being designed in depth
+now.
