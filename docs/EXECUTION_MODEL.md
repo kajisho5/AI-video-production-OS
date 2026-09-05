@@ -444,3 +444,70 @@ one of its own inputs has nothing to re-run, and one that does, does. This is th
 pipeline framing (`ARCHITECTURE.md` §6) paying for itself a second time — first for
 dependency-correct execution order (§2.2 above), now for knowing what a change actually
 invalidates, with the same representation and no additional concept.
+
+## 11. Cost/resource governance as explicit Operation metadata
+
+**PROPOSED/FUTURE — an entirely new, optional pair of `CapabilityContract` fields; these
+fields do not exist in any repo's contract today.** `ARCHITECTURE.md` §10 already
+establishes a deliberately minimal Resource model — "no CPU/GPU/concurrency scheduling
+exists in any audited repo. The OS does not invent one." — and the only Resource-shaped
+facts it names as worth standardizing are the coarse hints already implicit in
+`ffmpeg-skill`'s `ToolSpec` (`requires_visual_verification`, `audio_only`,
+`video_required`, `SPEC.md` §1). This section extends that minimal model by exactly two
+more optional, declarative hints — it does not widen the scope `ARCHITECTURE.md` §10 and
+`CORE_PRIMITIVES.md` §11 already drew, and it builds no scheduler.
+
+**The two fields, both optional, on a `CapabilityContract`'s per-capability entry
+(`SPEC.md` §1):**
+
+- **`estimated_relative_cost: low | medium | high`** — a coarse ordinal, not a real
+  currency estimate. No audited repo tracks money cost anywhere, and none should be
+  invented here: this is a relative signal ("this Provider is cheaper to run than that
+  one"), never a budget figure, a dollar amount, or a token/compute unit count.
+- **`requires_network: bool`** — ties directly to `INTENT_MODEL.md` §6's Permission
+  concept (a Runtime-boundary-scoped authorization such as "network upload
+  allowed/forbidden"), which that document already establishes as **FUTURE, a named
+  placeholder with no current use case**. This field defaults to `false` everywhere
+  today because, per `SPEC.md` §7 and `REPOSITORY_MAP.md`, **no Skill in the ecosystem
+  uses network access** — every audited Provider is a local subprocess. Declaring this
+  field now costs nothing and gives the Intent model's future Permission enforcement
+  something concrete to read once a networked Provider exists; it enforces nothing by
+  itself.
+
+**What these fields are for — and the entire scope of their use.** Both are optional,
+declarative hints a `CapabilityContract` *may* carry, exactly like
+`requires_visual_verification`/`audio_only`/`video_required` already are. The only
+behavior this document attaches to them: **an Agent MAY use them to prefer a
+cheaper/local Provider over an expensive/networked one when both satisfy a requested
+Capability.** This is a Provider-selection preference signal, not a new mechanism — it
+plugs into `CAPABILITY_MODEL.md`'s existing Provider-selection/collision policy exactly
+where a default-provider policy or an Agent's own tie-breaking logic already operates
+(`CAPABILITY_MODEL.md` §Capability collision policy, mechanism 2); this document does not
+redefine that policy or add a fourth resolution mechanism to it.
+
+**What this document explicitly REJECTS building, and why:**
+
+- **A budget/spend-limit enforcement mechanism.** Nothing here tracks cumulative spend,
+  enforces a ceiling, or blocks an Operation for exceeding one. `estimated_relative_cost`
+  is a per-Capability ordinal hint, not an accounting ledger, and no audited repo has
+  anything resembling a spend concept to generalize from.
+- **A QoS/fairness system across concurrent Productions.** `EXECUTION_MODEL.md` §0/§2.2
+  already establish that execution is strictly sequential with no concurrency model —
+  there is nothing to be fair *between*, since no two Productions or Operations run at
+  the same time anywhere in the audited ecosystem. Inventing a fairness/QoS layer on top
+  of a system with no concurrency would be exactly the un-evidenced infrastructure
+  `ARCHITECTURE.md` §9 (lens 5) and §10 already rule out for scheduling generally.
+- **Any real-money cost tracking.** Cited directly: `ARCHITECTURE.md` §10's own reasoning
+  — "designing it now would be solving a problem this ecosystem does not have evidence of
+  yet" — is treated here as still true without qualification. No repo anywhere tracks a
+  dollar figure for anything it does; inventing one now would be fabricating a capability
+  no Skill author asked for or built toward.
+
+This is a direct instance of `PRINCIPLES.md` §10, "Simple now, extensible later — no
+abstraction without concrete evidence": the two fields proposed here are the smallest
+possible addition that gives a future networked or genuinely-costed Provider something to
+declare, without building the enforcement machinery around a problem — a real spend
+limit, real concurrent-Production contention — that has not occurred anywhere in the
+audited ecosystem. Should such evidence appear (a second, real networked Provider; a
+Workspace running genuinely concurrent Productions), a scheduler or budget system would
+be designed against that evidence, in a later Roadmap phase — not anticipated here.

@@ -268,3 +268,103 @@ matrix above):**
 **Total distinct rows: 67**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
 `Provider` collisions resolved (the 3 in §8a are flagged, not yet resolved — that is
 `ROADMAP.md` Phase 3's job).
+
+---
+
+## 10. Support Envelope — a queryable pre-planning artifact (PROPOSED)
+
+Everything above this section is **documentation**: a hand-built table, derived by a
+human (or an audit) reading source code, of which Capabilities exist in the ecosystem in
+principle and which Skill(s) theoretically provide them. It answers "what has anyone ever
+built." It does not, and cannot, answer a different and more operationally useful
+question: **"on this specific installed OS instance, right now, which of these
+Capabilities can I actually use?"** — given whatever Skills happen to be installed on
+this machine, whatever external binaries (`ffmpeg`, `ffprobe`, a specific `faster-whisper`
+model weight) happen to be present, and whatever each installed Skill's own
+environment-capability check currently reports. This section proposes a distinct, closely
+related concept for that second question: the **Support Envelope**.
+
+### 10.1 What it is
+
+A **Support Envelope** is a machine-readable, **queryable** snapshot — an actual runtime
+query response, not a document like this one — of which Capabilities are `AVAILABLE`
+(not merely documented as existing somewhere in the ecosystem) on one installed OS
+instance, and which registered Provider(s) of each are actually usable given what is
+installed on that machine right now.
+
+### 10.2 It is not a new mechanism — it is an aggregation of an existing one
+
+This is the load-bearing point: **the Support Envelope invents no new capability-detection
+machinery.** `SKILL_SPEC.md` §1 already establishes, as a **CURRENT** pattern verified
+across the whole ecosystem, that every one of the 10 audited Skill repos ships **a
+`doctor`/environment-capability-check command** — "reports, per capability the Skill
+declares, whether it is `AVAILABLE` or `MISSING` and why (missing binary, missing optional
+dependency, unmet OS requirement)" (`SKILL_SPEC.md` §3; the pattern is named for
+`ffmpeg-skill`'s own `doctor` report and generalized from there, per `CORE_PRIMITIVES.md`
+§3's Provider discussion and `CAPABILITY_MODEL.md` §Provider). This is real, present,
+per-Skill infrastructure — not a proposal. A Support Envelope is nothing more than the
+**aggregation** of every installed Skill's existing `doctor --json` output into one
+consolidated response, so an Agent can ask "is Capability X actually usable before I build
+a Plan that needs it" as **one query**, instead of shelling out to `doctor` on N separate
+Skill CLIs and reconciling the results itself.
+
+### 10.3 What is CURRENT vs. what is FUTURE here
+
+- **CURRENT:** the per-Skill `doctor` data this would aggregate. Every audited Skill
+  already reports its own AVAILABLE/MISSING status per capability it declares
+  (`SKILL_SPEC.md` §1, §3). This is the real, existing precedent the Support Envelope
+  builds on — nothing about the underlying data source is being proposed here.
+- **FUTURE — the aggregation itself.** No repository in the 11-repo ecosystem consolidates
+  these per-Skill reports into one response today. The closest thing that exists,
+  `video-production-agent`'s own capability-checking (`capabilities/resolver.py`'s
+  AVAILABLE/MISSING probing and `SkillRegistry.select_tool()`'s per-capability adapter
+  lookup, per `REPOSITORY_MAP.md`), checks adapters and capabilities **individually, one
+  at a time, as a Plan is being built** — not via one consolidated, queryable Support
+  Envelope response covering every installed Skill at once. Building that aggregation
+  (a registry-side fan-out over every installed Skill's `doctor --json`, cached and
+  re-queryable) is genuinely new work; nothing in the audit shows it exists anywhere yet.
+
+### 10.4 Illustrative shape (not a spec — this is one query, not this whole matrix)
+
+A Support Envelope query response might look structurally like this. This is illustrative
+only, intentionally under-specified — the exact schema is `ROADMAP.md`/`SPEC.md` work, not
+settled here:
+
+```json
+{
+  "queried_at": "2026-09-05T00:00:00Z",
+  "capabilities": [
+    {
+      "capability_id": "measure.audio.loudness",
+      "available": true,
+      "providers": [
+        { "provider_id": "qc-skill", "available": true },
+        { "provider_id": "media-analysis-skill", "available": true }
+      ]
+    },
+    {
+      "capability_id": "transcribe.audio",
+      "available": false,
+      "providers": [
+        {
+          "provider_id": "transcription-skill",
+          "available": false,
+          "reason_if_not": "faster-whisper model weights not found on this machine"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 10.5 Why this belongs in this document, and why it is not this document
+
+`CAPABILITY_MATRIX.md` (§§1–9 above) is the closest thing to a Support Envelope that
+exists today, and it is explicitly **not** one — its own header already says so ("This is
+a snapshot, not a registry"). The Support Envelope is what this document would become
+queryable *as*, once `ROADMAP.md`'s Capability registry work (§Provider,
+`CAPABILITY_MODEL.md`) lands: the same rows, but answered by live `doctor` data from one
+specific machine's installed Skills instead of by an audit reading source code once. It is
+named here, next to the static matrix, precisely so the two are never confused: this
+document is documentation of what the ecosystem *can theoretically do*; the Support
+Envelope, once built, is a live answer to what *this installed instance can do right now*.

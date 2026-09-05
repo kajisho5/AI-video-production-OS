@@ -242,3 +242,111 @@ hashing here is an identity and tamper-*detection* mechanism already proven in
 hash's own storage; no sandboxing/container runtime (§8, marked future/unknown rather
 than designed); no resource-scheduling or quota system (§5's honest gap is named, not
 "solved" with unevidenced machinery).
+
+## 10. Data lifecycle: retention, cleanup, and what must never be retained
+
+This section is deliberately thin — a proposal-level statement of what's true today and
+one recommendation, not a full data-governance subsystem, consistent with `PRINCIPLES.md`
+§10's "simple now, extensible later — no abstraction without concrete evidence." Nothing
+below invents an OS-core mechanism the ecosystem has no evidence of needing.
+
+### 10.1 What temporary/intermediate files exist today, and the honest gap
+
+**CURRENT, one real example, no ecosystem-wide policy.** `ffmpeg-skill`'s `render.py
+--keep`/`--work` flags (`FAILURE_RECOVERY.md` §0, `OPEN_ARCHITECTURAL_QUESTIONS.md`) are
+the one concrete, audited example of intermediate-artifact retention behavior anywhere in
+the ecosystem: they retain intermediate stage outputs from a multi-step render rather than
+deleting everything when one internal stage fails, which is also what makes a partially
+completed multi-step render inspectable and resumable (`FAILURE_RECOVERY.md` §0). Beyond
+this one flag pair on one script in one Skill, **no repository in the 11-repo audit has an
+explicit retention or cleanup policy today** — confirmed absent, not merely undocumented:
+no audited Skill deletes its own intermediate outputs on a schedule, on success, or on a
+size/age threshold, and none declares an intent to. This is named here as a real, honest
+gap, consistent with this document's practice elsewhere (§5, §8) of stating a limitation
+plainly rather than inventing a mechanism to appear to close it.
+
+### 10.2 What must never be logged or retained
+
+**CURRENT principle, extended one level.** §1.1 already establishes that
+`FORBIDDEN_KEYS`/`FORBIDDEN_ARG_KEYS` blocks parameter keys shaped like `api_key`, `token`,
+`secret`, and `password`-family names recursively, before they can even reach an adapter or
+subprocess call — this is an **input-side** control: such values are refused as parameters
+in the first place. `media-analysis-skill`'s and `qc-skill`'s own output-verification step
+goes one step further on the **output side**, per `REPOSITORY_MAP.md`'s finding: it rejects
+"secret-looking/command-like keys" appearing in a tool's own output before that output is
+returned to a caller — i.e., the ecosystem already has a precedent, one level down from
+parameter rejection, for treating credential-shaped values as something to actively keep
+out of what a Skill emits, not only what it accepts.
+
+This document extends that same principle explicitly to logging and provenance output,
+which is not yet named anywhere in the audited ecosystem: **even if a credential-shaped
+value somehow appeared in a request or in a Skill's raw output** (a malformed parameter
+that slipped past `FORBIDDEN_KEYS` because it was nested somewhere the denylist didn't
+walk, or a value embedded in file/container metadata rather than passed as a named
+parameter), it must be scrubbed before being written to any log, cache, or provenance
+record — a provenance sidecar (`PROVENANCE.md` §3) or a `ProductionReceipt` (`PROVENANCE.md`
+§4) is exactly as capable of persisting a leaked credential as a log line is, and neither
+this document nor `PROVENANCE.md` has previously stated that provenance output gets this
+protection. Concretely: any field a Capability Contract's `output_schema` marks as
+originating from a raw request echo, an error message, or extracted file metadata should be
+checked against the same `FORBIDDEN_KEYS`-shaped denylist before it is persisted anywhere,
+not only before it is accepted as an input parameter. This is the same "don't trust one
+checkpoint" discipline `ARTIFACT_MODEL.md` §6 already applies to caching (a cache hit is
+only honored if a stored hash still matches on read, not just trusted from write) — applied
+here to a different checkpoint: what gets **written**, not what gets **served back**. No
+new sanitizer/engine is proposed — this is the existing `FORBIDDEN_KEYS` denylist,
+generalized to one more site it should already run, not a new detection mechanism.
+
+### 10.3 Which providers/Skills receive copies of source media
+
+**FUTURE placeholder — ties to `INTENT_MODEL.md`, not redefined here.** Today, this is not
+a live concern: no Skill in the 11-repo audit is cloud-based or network-based
+(`SECURITY_MODEL.md` header; `INTENT_MODEL.md` §6 confirms "there is, today, nothing to
+permission" because no audited repo has a network-access code path at all), so every copy
+of source media a Skill ever touches stays on the local filesystem, inside the Workspace
+boundary this document already describes (§3). There is nothing to track yet, because there
+is no path by which source media leaves the machine.
+
+The forward-looking question — which Providers/Skills received a copy of source media, for
+a future cloud-based Provider (`CORE_PRIMITIVES.md` §3's recurring hypothetical: a cloud
+ASR Provider alongside `transcription-skill`'s local engine) — is exactly the
+**Permission** concept `INTENT_MODEL.md` §6 already proposes as a named placeholder in the
+Intent vocabulary ("network upload allowed/forbidden," scoped to a specific Provider or
+Capability). This document does not redefine or restate that proposal; it only notes that
+"which Provider got a copy of what media" is a fact a Permission record, once built, would
+need to make answerable, and is therefore an `INTENT_MODEL.md`-side concept, not a new
+Security Model mechanism.
+
+### 10.4 Retention policy for intermediate/failed artifacts (PROPOSED, Workspace-level, entirely future)
+
+**PROPOSED, and explicitly not OS-core mechanism.** Given §10.1's honest gap — one Skill's
+`--keep`/`--work` flags are the only retention behavior anywhere in the ecosystem, and
+nothing enforces cleanup of `working`-stage or failed Artifacts at all — this document
+recommends that a retention policy be a **Workspace-level policy**, not an OS-core
+mechanism, analogous to how `PathPolicy`/Workspace confinement (§3) is already a
+per-Workspace declaration rather than a hardcoded kernel rule. Example shapes such a policy
+might take, stated only as illustrative, not specified in any depth: "delete
+`working`-stage Artifacts older than N days," or "keep all Artifacts from the last N
+successful Jobs, archive or discard the rest." Either would sit alongside a Workspace's
+existing root declarations, applied by whatever the Agent/Runtime layer already uses to
+enforce Workspace confinement — not a new subsystem, and not something with a data-loss
+blast radius the OS itself decides on unilaterally.
+
+**Mark this entirely PROPOSED/FUTURE:** no repo implements any retention or cleanup
+automation today, and this document does not specify a policy schema, a default N, an
+eviction algorithm, or an enforcement mechanism — doing so now would be designing for a
+need this ecosystem has not yet produced evidence of, the same "architecture astronautics"
+this document declines elsewhere (§5, §8, §9) and the same "no abstraction without concrete
+evidence" discipline `PRINCIPLES.md` §10 names explicitly. The one concrete precedent this
+recommendation leans on is still just `render.py --keep`/`--work` (§10.1) — a policy that a
+caller opts into per-run, not an automatic background process — and this document does not
+propose going further than that precedent already goes without new evidence of need.
+
+### 10.5 Summary
+
+This section is intentionally proportionate to what the audit actually found: one real
+retention mechanism (§10.1), one principle extended one level from an existing denylist
+(§10.2), one forward reference to an already-named placeholder rather than a new mechanism
+(§10.3), and one Workspace-level policy recommendation marked entirely future (§10.4). It
+does not add a data-governance subsystem, a deletion scheduler, or a compliance framework —
+none of which any audited repo shows evidence of needing yet.
