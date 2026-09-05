@@ -48,8 +48,9 @@ class RegisterRealContractsTests(unittest.TestCase):
         added = []
         for name in FIXTURES.glob("*.provides.json"):
             added.extend(self.registry.register_contract(load(name.name)))
-        # 10 (qc) + 5 (media-analysis) + 1 (transcription) + 8 (video-editing) + 21 (ffmpeg) = 45
-        self.assertEqual(len(added), 45)
+        # 10 (qc) + 10 (media-analysis, all analysis kinds since CAPABILITY_MATRIX.md's
+        # section 8c resolution) + 1 (transcription) + 8 (video-editing) + 21 (ffmpeg) = 50
+        self.assertEqual(len(added), 50)
 
     def test_register_rejects_a_malformed_entry(self):
         with self.assertRaises(ContractError):

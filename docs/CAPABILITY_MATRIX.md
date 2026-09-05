@@ -193,7 +193,27 @@ a strict superset/subset relationship either — see 8b.
 |---|---|---|---|---|
 | `measure.video.scene_detection` | media-analysis-skill (ffmpeg `scdet`) | media-analysis-skill only | EXPERIMENTAL | Explicitly **"not semantic scenes"** per its own README — a hard-cut/shot-boundary detector, not content understanding. No AI. |
 | `measure.video.timing` (A-V sync) | media-analysis-skill (`timing`: packet-gap/A-V sync) | media-analysis-skill only | EXPERIMENTAL | — |
-| `measure.video.probe` / `measure.*.format` / `measure.*.duration` | media-analysis-skill (`media_probe`, `stream_layout`, `video_format`, `audio_format`, `duration` — all ffprobe-only, purely observational) | media-analysis-skill only | EXPERIMENTAL | **Base-layer overlap note, not a Capability collision:** `ffmpeg-skill`'s own `probe.py` tool also performs raw ffprobe-based probing. This is a base-layer *tool* overlap (two different code paths both call ffprobe), not a duplicated *Capability* in the same sense as §8a — `media-analysis-skill` talks to `ffprobe` directly and does not depend on the `ffmpeg-skill` package, so there is no shared identity to collide under today. Flagged here because it is the kind of overlap that could become a real Capability collision if `media-analysis-skill`'s probing were ever registered under the same id as an `ffmpeg-skill`-provided `measure.*.probe` capability — not registered as such today. **OPEN — blocks `provides`:** the Phase 2 `provides` rollout (`docs/ECOSYSTEM_CHANGELOG.md`, `media-analysis-skill` PR) left these four kinds unpublished rather than guess a single id per kind here, specifically because this row does not pin one — resolving that (one id each, or confirming they stay a bundle) is real, unstarted follow-up work, not done by this note alone. |
+| `measure.media.probe` | media-analysis-skill (`media_probe`: container format, duration, size, bitrate, video/audio summary — one ffprobe call) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05** (was an open, bundled placeholder — see history below): named `media`, not `video`, because this kind reports container-level facts across both stream types, not a video-specific measurement. |
+| `measure.media.stream_layout` | media-analysis-skill (`stream_layout`: every stream — index, type, codec, language, disposition, dimensions, rate, channels) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Enumerates *all* streams (video, audio, subtitle), so `media`, not `video` or `audio`. |
+| `measure.video.probe` | media-analysis-skill (`video_format`: resolution, fps, frame count, pixel format, colour, SAR/DAR, CFR/VFR of one video stream) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Deliberately *not* `measure.video.format`: that id is qc-skill's own (§8b) for a pass/fail judgment against caller-supplied thresholds — this is a raw, threshold-free probe, a different capability in kind, not degree (confirmed by re-reading both implementations: qc-skill's check compares against an expected value and emits PASS/FAIL/WARN; media-analysis-skill's analyzer only reports the measured value). `probe`, not `format`, marks that distinction in the id itself so the two are never mistaken for the same thing later. |
+| `measure.audio.probe` | media-analysis-skill (`audio_format`: sample rate, channels, layout, codec, sample format, bitrate of one audio stream) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Same reasoning as `measure.video.probe` above, for audio. |
+| `measure.media.duration` | media-analysis-skill (`duration`: per-stream durations and start times only — a strict subset of `media_probe`'s facts, with no packet-level timestamp analysis) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Distinct from `measure.video.timing` (A-V sync, above): `duration`'s analyzer (`TimingAnalyzer.analyze`, `kind == "duration"`) returns only `_durations(p)` and does no packet-timestamp work at all; `timing` additionally runs `run_packets`/`timestamp_report`/`av_mismatch`. Kept as its own Capability id, consistent with every other analysis kind in this ecosystem getting one, rather than folded into `measure.media.probe` even though it reports a subset of the same underlying facts. |
+
+**History — why these five were unassigned until now:** all five are ffprobe-only and
+purely observational (`REPOSITORY_MAP.md`); until this resolution they were kept as one
+bundled, unpinned note (`measure.video.probe` / `measure.*.format` / `measure.*.duration`)
+specifically because guessing individual ids risked colliding with `measure.video.format`
+above (qc-skill's own id) or with `ffmpeg-skill`'s base-layer `probe` tool
+(`ffmpeg-skill.probe`, §9) — two different, unrelated risks that both needed to be ruled
+out by direct code comparison before assigning anything, not assumed away. Both are now
+confirmed false: `ffmpeg-skill`'s `probe.py` is a base-layer *tool* overlap, not a
+Capability collision — `media-analysis-skill` talks to `ffprobe` directly and does not
+depend on the `ffmpeg-skill` package, so there is no shared identity to collide under,
+and the two namespaces (`measure.*` vs. `ffmpeg-skill.*`) never overlap by construction;
+and `measure.video.format`/`measure.video.probe` were confirmed to measure different
+things (a threshold judgment vs. a raw value) by reading both implementations, not by
+assumption. This is what unblocked assigning real ids above instead of continuing to
+defer the decision.
 
 **Explicitly out of scope for media-analysis-skill (by design, per its own docs):**
 freeze-frame detection, black-frame detection, semantic/content understanding, speaker
@@ -259,13 +279,15 @@ matrix above):**
 - **2 thumbnail** capabilities (thumbnail-skill, one self-contained via Pillow, one
   delegated)
 - **1 transcription** capability (transcription-skill → faster-whisper)
-- **13 measurement** capabilities across qc-skill and media-analysis-skill, of which
+- **17 measurement** capabilities across qc-skill and media-analysis-skill, of which
   **3 are confirmed collisions** (§8a), **7 are qc-skill-exclusive** (§8b), and
-  **3 are media-analysis-skill-exclusive** (§8c, one of which — probing — carries a
-  base-layer overlap note with `ffmpeg-skill`, not a Capability-level collision)
+  **7 are media-analysis-skill-exclusive** (§8c: `scene_detection`, `timing`, and five
+  resolved 2026-09-05 — `media.probe`, `media.stream_layout`, `video.probe`,
+  `audio.probe`, `media.duration` — each individually confirmed to carry only a
+  base-layer *tool* overlap note with `ffmpeg-skill`, never a Capability-level collision)
 - **21 base-layer** capabilities directly exposed by ffmpeg-skill's own tool scripts
 
-**Total distinct rows: 67**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
+**Total distinct rows: 71**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
 `Provider` collisions resolved (the 3 in §8a are flagged, not yet resolved — that is
 `ROADMAP.md` Phase 3's job).
 

@@ -38,6 +38,32 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — Resolve media-analysis-skill's remaining 5 Capability ids
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`, `kajisho5/media-analysis-skill`
+- **PR(s)**: `AI-video-production-OS` — pushed directly to PR #1's branch;
+  `media-analysis-skill` — additional commit on the still-open
+  https://github.com/kajisho5/media-analysis-skill/pull/4
+- **What changed**: `docs/CAPABILITY_MATRIX.md` section 8c's bundled, unpinned note
+  (`media_probe`, `stream_layout`, `video_format`, `audio_format`, `duration`) is
+  resolved into five real, individual Capability ids — `measure.media.probe`,
+  `measure.media.stream_layout`, `measure.video.probe`, `measure.audio.probe`,
+  `measure.media.duration` — after directly comparing `media-analysis-skill`'s
+  analyzer code against `qc-skill`'s rules and `ffmpeg-skill`'s `probe` tool to rule out
+  the two collision risks that had blocked the decision. `media-analysis-skill`'s
+  `provides` now covers all ten of its analysis kinds (was five). Also corrects an error
+  discovered in the process: this Skill has **ten** analysis kinds, not nine as several
+  earlier entries in this changelog and in `docs/ROADMAP.md` said — a plain counting
+  mistake, now fixed everywhere it appeared.
+- **Why**: this was flagged as real, unstarted follow-up work in the Phase 2 rollout and
+  in `docs/ROADMAP.md`'s Phase 2 status note — picked up next because it was the most
+  concretely-scoped open item directly descended from work already in flight, not a new
+  direction.
+- **Status**: `AI-video-production-OS` pushed (PR #1, not yet merged);
+  `media-analysis-skill` draft (PR #4, CI pending/running as of this entry)
+
+---
+
 ### 2026-09-05 — Phase 1: real Capability registry library (`registry/`)
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS` (no other repo involved — pure OS-side
@@ -122,12 +148,14 @@ autonomous development loop to find the next highest-value gap.
   `measure.audio.silence`, `measure.audio.loudness`, `measure.subtitle.timing`,
   `measure.delivery.integrity`) — one check (`audio.sample_rate_matches_expected`) is
   intentionally left ungrouped rather than forced into a group it doesn't belong to.
-  `media-analysis-skill`'s contract gains `provides` for five of its nine analysis kinds
-  (`silence`, `loudness`, `integrity`, `scene_detection`, `timing`) — the other four
+  `media-analysis-skill`'s contract gains `provides` for five of its ten analysis kinds
+  (`silence`, `loudness`, `integrity`, `scene_detection`, `timing`) — the other five
   (`media_probe`, `stream_layout`, `video_format`, `audio_format`, `duration`) are
   intentionally left unassigned because `CAPABILITY_MATRIX.md` itself has not settled a
   single id for them yet (guessing here risked publishing a false collision the matrix had
-  already ruled out — see each repo's own ADR for the full reasoning).
+  already ruled out — see each repo's own ADR for the full reasoning). **Update: this gap
+  is now closed — see "Resolve media-analysis-skill's remaining 5 Capability ids" above
+  for all ten kinds now assigned.**
 - **Why**: this is the ecosystem's **one documented Capability collision**, made real. Three
   ids — `measure.audio.loudness`, `measure.audio.silence`, `measure.audio.integrity` — are
   now published *identically* by both Skills, which independently implement the same three

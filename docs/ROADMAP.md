@@ -122,14 +122,19 @@ identical ids to `media-analysis-skill` for their three collision Capabilities, 
 first real demonstration of `CAPABILITY_MODEL.md`'s collision model; and both
 `transcription-skill` and `ffmpeg-skill`'s structurally different contract shapes each
 needed their own small, documented decision rather than a mechanical retrofit. One
-genuine gap surfaced during the work and was **not** forced shut: `media-analysis-skill`
-has four analysis kinds (`media_probe`, `stream_layout`, `video_format`, `audio_format`,
-`duration`) with no settled Capability id in `CAPABILITY_MATRIX.md` §8c — publishing a
-guessed id there risked creating a false collision the matrix had already ruled out
-(`video_format` is explicitly *not* the same capability as `qc-skill`'s
-`measure.video.format`), so those four kinds are intentionally left out of `provides`
-until that matrix decision is made. That decision is unstarted, real follow-up work, not
-part of this phase's "done."
+genuine gap surfaced during the work and was **not** forced shut at the time:
+`media-analysis-skill` has five analysis kinds (`media_probe`, `stream_layout`,
+`video_format`, `audio_format`, `duration`) that had no settled Capability id in
+`CAPABILITY_MATRIX.md` §8c — publishing a guessed id there risked creating a false
+collision the matrix had not yet ruled out. **Update, same day:** that gap is now
+closed. `CAPABILITY_MATRIX.md` §8c was resolved by directly reading both
+implementations rather than assuming — confirming `video_format` genuinely measures
+something different from `qc-skill`'s `measure.video.format` (a raw probe vs. a
+threshold judgment), and that the `ffmpeg-skill.probe` overlap is base-layer-tool-only,
+never a Capability collision — and `media-analysis-skill`'s `provides` now covers all
+ten of its analysis kinds (see `docs/ECOSYSTEM_CHANGELOG.md`, "Resolve
+media-analysis-skill's remaining 5 Capability ids"). Phase 2 is now fully complete, not
+complete-with-one-known-gap.
 
 **Delivers:** each of the 10 existing Skill repos (11 counting `ffmpeg-skill` itself)
 extends its existing `contract.py`/contract-emission code to output the Phase 1 schema's
@@ -165,7 +170,7 @@ output through the proposed schema — this replaces guesswork with fact):
   `thumbnail-skill` (3, and already has real per-operation Tool ids to map from) — small
   by virtue of being small Skills.
 - **Manual mapping against skill-internal names:** `qc-skill` (36 checks),
-  `media-analysis-skill` (9 tools) — the known collision case; mapping is real work but
+  `media-analysis-skill` (10 tools) — the known collision case; mapping is real work but
   fully worked out already for 5 of their Capabilities in the PoC.
 - **Structurally different, not yet scoped in this depth:** `transcription-skill`'s flat,
   skill-wide `capabilities` list and `ffmpeg-skill`'s own nested `skill: {...}` shape

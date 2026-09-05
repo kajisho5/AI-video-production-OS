@@ -2,6 +2,18 @@
   "skill_id": "media-analysis",
   "provides": [
     {
+      "id": "measure.audio.probe",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/audio",
+      "kind": "audio_format"
+    },
+    {
+      "id": "measure.media.duration",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/timing",
+      "kind": "duration"
+    },
+    {
       "id": "measure.audio.integrity",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "media-analysis/integrity",
@@ -12,6 +24,12 @@
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "media-analysis/loudness",
       "kind": "loudness"
+    },
+    {
+      "id": "measure.media.probe",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/probe",
+      "kind": "media_probe"
     },
     {
       "id": "measure.video.scene_detection",
@@ -26,10 +44,22 @@
       "kind": "silence"
     },
     {
+      "id": "measure.media.stream_layout",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/streams",
+      "kind": "stream_layout"
+    },
+    {
       "id": "measure.video.timing",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "media-analysis/timing",
       "kind": "timing"
+    },
+    {
+      "id": "measure.video.probe",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "media-analysis/video",
+      "kind": "video_format"
     }
   ]
 }
