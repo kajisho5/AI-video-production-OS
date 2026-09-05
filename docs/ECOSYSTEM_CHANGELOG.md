@@ -38,16 +38,19 @@ noteworthy.
 
 ---
 
-### 2026-09-05 — media-analysis-skill#4 merged (first merge in the `provides` rollout)
+### 2026-09-05 — `provides` rollout: merge tracker
 
-- **Repo(s)**: `kajisho5/media-analysis-skill`
-- **PR(s)**: https://github.com/kajisho5/media-analysis-skill/pull/4 (merged)
-- **What changed**: nothing further — this entry records the merge event itself. The PR
-  (all ten analysis kinds published under `provides`, see the two entries below for the
-  content) was marked ready for review and merged by the repository owner.
-- **Why**: noteworthy on its own per this log's own format note — the first of the ten
-  `provides` PRs to land, validating the pattern used across the other nine.
-- **Status**: merged
+- **Repo(s)**: all ten Skills in the rollout
+- **What changed**: nothing further — this entry only tracks which of the ten `provides`
+  PRs have actually merged, updated as each one lands (an exception to this log's usual
+  "don't update past entries" rule, made explicitly for this one running tracker so
+  merges don't each need their own entry).
+- **Merged**: `media-analysis-skill#4` (2026-09-05T20:57Z), `audio-production-skill#3`
+  (2026-09-05T20:57Z)
+- **Still open**: `video-editing-skill#2`, `subtitle-skill#2`, `thumbnail-skill#2`,
+  `color-grading-skill#4`, `motion-graphics-skill#2`, `qc-skill#5`,
+  `transcription-skill#5` (ready for review), `ffmpeg-skill#24`
+- **Status**: in progress
 
 ---
 
