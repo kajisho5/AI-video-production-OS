@@ -20,16 +20,23 @@ python3 -m unittest discover -s registry/tests -t .
   default choice was given for an id with 2+ independent Providers).
 - `conformance.py` — the eight checks from `docs/SKILL_SPEC.md` section 8. Three
   (`publishes_contract`, `lifecycle_declared`, `dependency_version_ranges`) are real,
-  answerable from a contract document alone. The other five need a running Skill
-  process; each is a documented stub that raises `NotImplementedError` naming exactly
-  what per-Skill wiring it needs, rather than reporting an unearned pass.
-- `tests/` — 21 tests against real captured `provides` data (`tests/fixtures/`, trimmed
-  excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
+  answerable from a contract document alone. Two more (`forbidden_keys_rejected`,
+  `doctor_status`) are real when given a `runner` callable that talks to a live Skill
+  process — `make_stdin_json_runner()` builds one for the ecosystem's common
+  "one JSON request on stdin, one JSON response on stdout" CLI convention, verified
+  end-to-end against a real `qc-skill` process (`tests/test_conformance_live.py`,
+  skipped when `qc` isn't on `PATH`). The remaining three (`no_unsafe_shell_out`,
+  `workspace_confinement`, `no_clobber_input`) are documented stubs that raise
+  `NotImplementedError` naming exactly what per-Skill wiring (and, for two of them,
+  filesystem setup this library does not manage) they still need.
+- `tests/` — 26 tests: 21 against real captured `provides` data (`tests/fixtures/`,
+  trimmed excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
   `transcription-skill` and `ffmpeg-skill`'s actual `contract`/`skill --json` output
   after their `provides` field was added — see `docs/ECOSYSTEM_CHANGELOG.md`), including
   the ecosystem's one real documented collision
   (`measure.audio.loudness`/`measure.audio.silence`/`measure.audio.integrity` between
-  `qc-skill` and `media-analysis-skill`).
+  `qc-skill` and `media-analysis-skill`); 5 more (`tests/test_conformance_live.py`) run
+  the two live conformance checks against a real `qc-skill` process.
 
 ## What this deliberately is not
 
@@ -48,10 +55,10 @@ python3 -m unittest discover -s registry/tests -t .
 - **Not Phase 3.** This library can *apply* an explicit or default-provider choice once
   one is given; deciding what a deployment's default-provider policy should be, and
   where it is configured, is `docs/ROADMAP.md` Phase 3's job, not this library's.
-- **Not the full conformance harness.** Five of the eight `SKILL_SPEC.md` checks need a
-  live Skill process; wiring a real runner per Skill (or a generic one, if the
-  invocation-mechanics diversity noted in `SKILL_SPEC.md` section 5 turns out to allow
-  one) is future work.
+- **Not the full conformance harness.** Three of the eight `SKILL_SPEC.md` checks
+  (`no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input`) still need
+  per-Skill wiring and, for two of them, managed filesystem setup this library does not
+  provide — future work.
 
 ## Why it lives here, not a new repository
 

@@ -1,21 +1,25 @@
 """Conformance suite skeleton (docs/ROADMAP.md Phase 1, item 3; checks defined in
 docs/SKILL_SPEC.md section 8).
 
-Three of the eight checks are fully real here: they need only a contract document, which
-this library already loads. The other five need a running Skill process (submit a
-crafted request, observe the rejection) - SKILL_SPEC.md section 5 notes every Skill's
-actual invocation mechanics differ (CLI argv vs. JSON stdin, different entrypoints), so
-this module does not invent a generic runner that would only fit some of them. Each is a
-documented stub: it states exactly what a per-Skill wiring must supply and raises
-NotImplementedError until one is, rather than silently reporting a pass it never checked.
-Building real per-Skill wiring for checks 2-5 and 7 is future work (docs/ROADMAP.md);
-marking them PASS today would be exactly the kind of unearned claim this project's
-architecture rules out.
+Three of the eight checks are answerable from a contract document alone. Two more
+(`forbidden_keys_rejected`, `doctor_status`) are real when given a `runner` callable that
+talks to a live Skill process - `make_stdin_json_runner` below builds one for the
+ecosystem's common "one JSON request on stdin, one JSON response on stdout" convention
+(confirmed for qc-skill, media-analysis-skill, transcription-skill, audio-production-skill,
+color-grading-skill, motion-graphics-skill; verified end-to-end against a real qc-skill
+process in registry/tests/test_conformance_live.py). The remaining three
+(`no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input`) stay documented stubs:
+SKILL_SPEC.md section 5 notes invocation mechanics differ per Skill, and these three also
+need filesystem setup (a workspace, existing input files) this library does not manage -
+building that harness is real future work (docs/ROADMAP.md), and marking them PASS today
+would be exactly the kind of unearned claim this project's architecture rules out.
 """
 from __future__ import annotations
 
+import json
+import subprocess
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from .contract import LIFECYCLES, extract_provides, skill_identity, validate_provides_entry
 
@@ -76,6 +80,101 @@ def check_dependency_version_ranges(doc: Dict[str, Any]) -> CheckResult:
 
 
 # ---- checks that require a running Skill process -----------------------------------
+def make_stdin_json_runner(command: Sequence[str], timeout: float = 30.0) -> Callable[[Dict[str, Any]], Dict[str, Any]]:
+    """A process runner for the ecosystem's common CLI convention: one JSON request
+    document on stdin, exactly one JSON response document on stdout (e.g. `qc run -
+    --json`). Raises RuntimeError if the process cannot be started or its stdout is not
+    valid JSON - a Skill that crashes instead of returning a structured error fails a
+    conformance check for a more serious reason than a forbidden key merely being
+    accepted, and that failure must not be silently swallowed."""
+    def run(request: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            proc = subprocess.run(list(command), input=json.dumps(request), capture_output=True, text=True, timeout=timeout)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise RuntimeError(f"could not run {list(command)}: {exc}") from exc
+        try:
+            return json.loads(proc.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"{list(command)} (exit {proc.returncode}) did not print one JSON document on stdout: "
+                                f"stdout={proc.stdout[:200]!r} stderr={proc.stderr[:200]!r}") from exc
+    return run
+
+
+def _is_rejected(response: Any) -> bool:
+    """A response counts as a structured rejection under either real convention this
+    ecosystem's Skills use for a failure envelope (docs/POC_CAPABILITY_CONTRACT.md notes
+    both exist: some Skills carry `ok: false`, others `status: failed|error` with no `ok`
+    key at all - qc-skill is the latter). Never inferred from the mere presence of an
+    `error` key alone, since a passing response could in principle echo unrelated data
+    under that name."""
+    if not isinstance(response, dict):
+        return False
+    if response.get("ok") is False:
+        return True
+    return response.get("status") in ("failed", "error")
+
+
+def check_forbidden_keys_rejected(
+    runner: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    forbidden_keys: Optional[Sequence[str]] = None,
+    base_request: Optional[Dict[str, Any]] = None,
+) -> CheckResult:
+    """SKILL_SPEC.md #2: for each denylisted key, submit a request carrying it - at top
+    level and nested one level deep inside `parameters` (mirroring the recursive check
+    video-production-agent itself performs) - and confirm the Skill responds with a
+    structured rejection, never a silent success.
+
+    Real when `runner`, `forbidden_keys` and `base_request` are all given (`runner` from
+    `make_stdin_json_runner` for the ecosystem's stdin-JSON convention, or any callable
+    with the same signature; `base_request` a request shape the Skill would otherwise
+    accept or reject for an unrelated, non-forbidden-key reason). Otherwise raises
+    NotImplementedError: SKILL_SPEC.md section 5 notes invocation mechanics differ per
+    Skill, so this library does not invent a generic runner that would only fit some of
+    them.
+    """
+    if runner is None or forbidden_keys is None or base_request is None:
+        raise NotImplementedError(
+            "forbidden_keys_rejected (SKILL_SPEC.md #2) needs runner, forbidden_keys and base_request "
+            "(see make_stdin_json_runner for Skills using the stdin-JSON CLI convention)."
+        )
+    problems: List[str] = []
+    for key in forbidden_keys:
+        top = dict(base_request)
+        top[key] = "conformance-probe"
+        nested = dict(base_request)
+        nested["parameters"] = {**(base_request.get("parameters") or {}), key: "conformance-probe"}
+        for placement, doc in (("top level", top), ("nested in parameters", nested)):
+            try:
+                response = runner(doc)
+            except Exception as exc:  # noqa: BLE001 - a crash is a failure to report, not to hide
+                problems.append(f"{key} ({placement}): runner raised {exc}")
+                continue
+            if not _is_rejected(response):
+                problems.append(f"{key} ({placement}): not rejected (response: {response!r})")
+    if problems:
+        return CheckResult("forbidden_keys_rejected", "FAIL", "; ".join(problems))
+    return CheckResult("forbidden_keys_rejected", "PASS", f"{len(forbidden_keys)} forbidden keys rejected, top level and nested")
+
+
+def check_doctor_status(runner: Optional[Callable[[], Dict[str, Any]]] = None) -> CheckResult:
+    """SKILL_SPEC.md #7: the Skill's doctor entrypoint produces a machine-readable
+    report without requiring the caller to already know what's installed.
+
+    Real when `runner` (a zero-argument callable invoking the Skill's doctor entrypoint
+    and returning its parsed JSON) is given; otherwise NotImplementedError."""
+    if runner is None:
+        raise NotImplementedError(
+            "doctor_status (SKILL_SPEC.md #7) needs a runner invoking the Skill's doctor entrypoint with no arguments."
+        )
+    try:
+        doc = runner()
+    except Exception as exc:  # noqa: BLE001 - report, don't hide
+        return CheckResult("doctor_status", "FAIL", f"doctor runner raised {exc}")
+    if not isinstance(doc, dict) or not doc:
+        return CheckResult("doctor_status", "FAIL", f"doctor did not return a non-empty JSON object: {doc!r}")
+    return CheckResult("doctor_status", "PASS", f"doctor returned a JSON object with {len(doc)} top-level keys")
+
+
 def _stub(name: str, spec_ref: str, wiring: str) -> Callable[..., CheckResult]:
     def check(*_args: Any, **_kwargs: Any) -> CheckResult:
         raise NotImplementedError(
@@ -89,10 +188,6 @@ def _stub(name: str, spec_ref: str, wiring: str) -> Callable[..., CheckResult]:
     return check
 
 
-check_forbidden_keys_rejected: Callable[..., CheckResult] = _stub(
-    "forbidden_keys_rejected", "SKILL_SPEC.md #2",
-    "a callable submitting a request whose parameters include a denylisted key and returning the Skill's response",
-)
 check_no_unsafe_shell_out: Callable[..., CheckResult] = _stub(
     "no_unsafe_shell_out", "SKILL_SPEC.md #3",
     "either source access for an AST walk, or a callable submitting shell-metacharacter injection probes",
@@ -104,10 +199,6 @@ check_workspace_confinement: Callable[..., CheckResult] = _stub(
 check_no_clobber_input: Callable[..., CheckResult] = _stub(
     "no_clobber_input", "SKILL_SPEC.md #5",
     "a callable submitting a request whose output path equals one of its input paths and returning the Skill's response",
-)
-check_doctor_status: Callable[..., CheckResult] = _stub(
-    "doctor_status", "SKILL_SPEC.md #7",
-    "a callable invoking the Skill's doctor entrypoint and returning its parsed output",
 )
 
 CHECKS: Dict[str, Callable[..., CheckResult]] = {

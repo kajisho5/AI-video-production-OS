@@ -84,7 +84,10 @@ question right now (see `WORK_QUEUE.md` item 1).
   problem independently. The remaining real work is connecting the two, not building
   Phase 4 from scratch (see `WORK_QUEUE.md`).
 - `registry/` item 1 (a standalone JSON Schema file for the CapabilityContract shape) and
-  item 3's 5 stubbed conformance checks (they need a live Skill process to run against).
+  item 3's remaining 3 stubbed conformance checks (`no_unsafe_shell_out`,
+  `workspace_confinement`, `no_clobber_input` — 2 of the original 5,
+  `forbidden_keys_rejected` and `doctor_status`, are now real, verified against a live
+  `qc-skill` process).
 - The four unresolved `media-analysis-skill` analysis kinds noted in `CAPABILITY_MATRIX.md`
   §8c were resolved during this session (all ten kinds now have Capability ids) — this line
   is intentionally kept to record that PLANNED work here is now DONE, not silently dropped.

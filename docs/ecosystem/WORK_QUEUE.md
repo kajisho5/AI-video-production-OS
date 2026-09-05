@@ -79,15 +79,26 @@ Six PRs still open as of the last check (`subtitle-skill#2`, `thumbnail-skill#2`
 CI-green, driven per the standing PR-maintenance rules. Mostly reactive (respond to CI/
 review events as they arrive) rather than work to actively schedule.
 
-## 3. `registry/` conformance harness: real per-Skill wiring for the 5 stubbed checks
+## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — PARTIALLY DONE 2026-09-05
 
-`registry/conformance.py` has 3 of 8 `SKILL_SPEC.md` §8 checks implemented for real; the
-other 5 (forbidden-keys rejection, no-unsafe-shell-out, workspace confinement, no-clobber-
-input, doctor status) need a live Skill process to run against. Real value: this is the
-mechanism `PLUGIN_MODEL.md` names for rejecting an unsafe third-party Skill without human
-judgment — currently only a promise, not a working gate. Scope: wire it against 1-2 real
-Skills first (e.g. `qc-skill`, `thumbnail-skill`, both already locally cloned this
-session) to prove the pattern before generalizing.
+**Done:** `forbidden_keys_rejected` and `doctor_status` (2 of the 5 process-based checks)
+are now real, via `make_stdin_json_runner()` for the ecosystem's common stdin-JSON CLI
+convention, verified end-to-end against a real `qc-skill` process
+(`registry/tests/test_conformance_live.py`, 5 tests, skipped when `qc` isn't on `PATH`).
+Along the way, found and fixed a real assumption error: the first implementation assumed
+every Skill's failure envelope carries `ok: false`, but `qc-skill`'s real responses use
+`status: "failed"` with no `ok` key at all — `_is_rejected()` now checks both real
+conventions this ecosystem actually uses.
+
+**Still open:** `no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input` — the
+three checks needing either source-level AST analysis or managed filesystem setup this
+library doesn't provide yet. Real value remains: this is the mechanism `PLUGIN_MODEL.md`
+names for rejecting an unsafe third-party Skill without human judgment. Scope for next
+attempt: `workspace_confinement`/`no_clobber_input` need a temp workspace + a fixture
+input file, doable against `qc-skill` similarly to the two checks just wired;
+`no_unsafe_shell_out`'s AST-walk variant needs source access, which every Skill in this
+ecosystem happens to provide (all are open source) — worth attempting before assuming the
+weaker injection-probe variant is necessary.
 
 ## 4. A standalone JSON Schema file for the CapabilityContract's `provides` shape
 
