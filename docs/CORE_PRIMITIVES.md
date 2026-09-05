@@ -160,6 +160,29 @@ typed, evidenced object, never an implicit side effect of a measurement or a raw
 completion. The OS's job is to keep owning the *type* (so any Agent produces the same
 shape of Decision) while the Agent owns the *logic* that produces one.
 
+**Confidence and evidence, clarified (added for this document's `AGENT_EVOLUTION.md` /
+`PRODUCTION_LIFECYCLE.md` companions — see those for full reasoning).** Prior text in this
+section left one thing genuinely unresolved: `agent/decision_engine.py`'s docstring states
+"risk and approval are set independently from confidence," which establishes that a
+confidence *concept* already exists in that module, but does not by itself confirm whether
+`confidence` is a formal typed field on the `Decision` dataclass — that specific question
+was UNKNOWN, not CURRENT, prior to direct verification. Direct verification against
+`video_agent.models` (performed for `PRODUCTION_LIFECYCLE.md` §(e)) confirms `confidence:
+float` is already a **required** field on both `Inference` and `Decision` — this resolves
+the prior UNKNOWN to **CURRENT**, not something this document proposes adding. Given it is
+already required and already meaningful there, this document does **not** propose an
+optional `confidence` field as a new addition, and explicitly rejects propagating a
+confidence field onto every other type (`ProductionPlan`, `Operation`, `Artifact`,
+`QCReport`) merely because it exists usefully on two of them — `QCReport`'s findings in
+particular are measured facts, not probabilistic judgments, and gaining a confidence field
+there would blur the fact/interpretation boundary this section exists to keep sharp.
+Separately, and worth stating as a named principle even though the code already does it
+correctly: **Evidence is not raw data.** `Decision.evidence` and `Inference.evidence` are
+`List[str]` — id references to Observations/Events — not embedded copies of the underlying
+Observation payloads. Evidence is the minimal, structured justification for an Inference or
+Decision (a small set of citations), never a dump of raw Observations; keeping it that way
+is what makes provenance auditable rather than duplicative.
+
 ## 6. ProductionPlan and Operation
 
 **CURRENT, adopted with one clarification.** A `ProductionPlan` is a DAG of
