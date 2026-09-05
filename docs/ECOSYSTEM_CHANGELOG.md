@@ -38,6 +38,24 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 3 — transcription-skill)
+
+- **Repo(s)**: `kajisho5/transcription-skill`
+- **PR(s)**: https://github.com/kajisho5/transcription-skill/pull/5
+- **What changed**: adds `provides` to `skill --json`, publishing exactly one Capability id
+  — `transcription/transcribe` → `transcribe.audio` — matching `docs/CAPABILITY_MATRIX.md`.
+  The other three tools (`segments`, `export`, `check`) operate on an existing Transcript
+  rather than producing a new one, so they are not published as a separate Capability
+  (same reasoning as `thumbnail-skill`'s `validate` tool).
+- **Why**: this repo uses `id` instead of `skill_id` and `TOOLS[].name` instead of
+  `tool_id` (the ecosystem's one confirmed naming outlier per `POC_CAPABILITY_CONTRACT.md`
+  Finding 5/9); `provides` entries still use the standard `{id, lifecycle, tool_id}` shape
+  regardless, so the cross-repo field stays consistent even where a Skill's own internal
+  naming differs.
+- **Status**: draft (CI pending/running as of this entry)
+
+---
+
 ### 2026-09-05 — `provides`: publish Capability ids for cross-repository discovery (rollout, part 2 — the collision pair)
 
 - **Repo(s)**: `kajisho5/qc-skill`, `kajisho5/media-analysis-skill`
