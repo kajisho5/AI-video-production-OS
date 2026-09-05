@@ -31,6 +31,47 @@ to silently paper over.
 rewrite of `SkillRegistry.select_tool`. Do not change Agent selection behavior as part of
 this item.
 
+**Investigated 2026-09-05 (complete for naming; tool-candidate mapping spot-checked, not
+exhaustively simulated):**
+
+Enumerated all 42 registered `SkillSpec`s (`default_registry()`) and every real Skill's
+`contract.SKILL_ID`. Of the 10 Skills, **7 use the same id as their agent-internal package
+id** (`ffmpeg-skill`, `video-editing` ↔ `video-editing-skill`'s real `SKILL_ID =
+"video-editing"`, `audio-production`, `color-grading`, `motion-graphics`, `qc`,
+`media-analysis` — all already match) and **3 do not**:
+
+| Skill | Real `contract.SKILL_ID` | Agent's internal package id |
+|---|---|---|
+| `subtitle-skill` | `subtitle-skill` | `subtitle` |
+| `thumbnail-skill` | `thumbnail-skill` | `thumbnail` |
+| `transcription-skill` | `transcription-skill` | `transcription` |
+
+All three mismatches are explicit and commented in the adapter source (e.g.
+`transcription/adapter.py`: `"package id in the agent's registry == tool id prefix"`) —
+**deliberate, working, not a bug.** The adapter correctly maps its own internal tool id to
+the Skill's real operation name at call time (e.g. `op_type = "generate" if tool ==
+TOOL_GENERATE else "render"`, then calls the Skill through its real contract) — the
+mismatch never reaches the actual Skill invocation.
+
+**Consequence for any future `provides`-based diagnostic**: it **cannot compare tool-id
+strings directly** — `"subtitle/generate"` (Agent) will never literal-match
+`"subtitle-skill/generate"` (the Skill's own `provides[].tool_id`) for these 3 of 10
+Skills. The Capability id itself (`"subtitle.generate"`) is the correct join key instead:
+it is independent of either side's internal naming, and already maps closely to the
+Agent's own production-skill concept (`subtitle_generation` ↔ `subtitle.generate`,
+`thumbnail_render` ↔ `thumbnail.render`, `speech_transcription` ↔ `transcribe.audio`).
+**A future diagnostic (or connecting layer) must be built against Capability id, never
+tool-id string equality, or it will silently misreport these 3 Skills as non-compliant
+when they are not.**
+
+Two registered production skills also have genuine multi-candidate tool lists — the actual
+collision-shaped cases in the Agent's own registry — worth checking explicitly once the
+`provides` rollout fully merges: `media_probe` (`["ffmpeg-skill/probe",
+"media-analysis/probe"]`) and `silence_analysis`/`loudness_analysis` (same two-way split).
+None of the Agent's registered `SkillSpec`s list `qc-skill` as an alternative candidate for
+any `media-analysis-skill`-served skill — consistent with, though not yet confirmed as
+deliberate proof of, the role-separation hypothesis in item 5 below.
+
 ## 2. Land the remaining `provides` rollout PRs
 
 Six PRs still open as of the last check (`subtitle-skill#2`, `thumbnail-skill#2`,
@@ -55,13 +96,13 @@ asked for a standalone `.schema.json`. Low effort, real value for any non-Python
 (a third-party Skill author who wants to validate their own `provides` output without
 importing this project's Python code).
 
-## 5. Confirm or refute the qc-skill/media-analysis-skill "collision avoidance by role separation" hypothesis
+## 5. ~~Confirm or refute the qc-skill/media-analysis-skill "collision avoidance by role separation" hypothesis~~ — RESOLVED 2026-09-05
 
-`CROSS_REPO_STATUS.md` flags that `video-production-agent`'s registry may not actually
-expose the `measure.audio.loudness` collision as a live choice (qc-skill appears to be used
-only as a final gate, not a competing per-measurement Provider). Read the Agent's ADRs
-(and, if needed, ask a scoped question) to confirm whether this is deliberate design or an
-accident, and update `CURRENT_STATE.md`'s "UNKNOWN" section with the answer either way.
+**Confirmed deliberate.** `video-production-agent`'s ADR-032 states explicitly that
+`qc-skill` is connected as "the final promotion gate" — architecturally scoped as the
+delivery-acceptance gate, never as an alternative per-measurement Provider to
+`media-analysis-skill`. Not an accident of build order. See `CURRENT_STATE.md`'s
+"Resolved" section for the citation. No further action needed on this item.
 
 ## 6. VISION-tier, not yet actionable: AI Provider connection
 

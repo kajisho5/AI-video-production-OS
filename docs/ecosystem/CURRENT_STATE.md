@@ -68,13 +68,13 @@ question right now (see `WORK_QUEUE.md` item 1).
 - `registry/`'s collision-resolution policy (`resolve()`) has real tests against the one
   real collision, but has never been exercised by a live Agent decision — no code path
   today actually calls it during a real production run.
-- `video-production-agent`'s Skill→Tool selection layer is real and tested, but only two
-  Skills (`ffmpeg-skill` vs. `video-editing-skill` for `silence_cleanup`) have more than
-  one tool candidate in its registry — it has not yet been exercised on a real N-way
-  collision the way `registry/`'s collision detector has (for `measure.audio.loudness`
-  etc.), because the Agent's registry does not currently declare `qc-skill` and
-  `media-analysis-skill` as competing candidates for the same production skill at all (see
-  below, "The collision question").
+- `video-production-agent`'s Skill→Tool selection layer is real and tested, but its actual
+  multi-candidate cases are all `ffmpeg-skill` vs. `media-analysis-skill`/`video-editing-skill`
+  two-way choices (`media_probe`, `silence_analysis`, `loudness_analysis`,
+  `silence_cleanup`) — it has never been exercised on the specific 3-way-shaped
+  `measure.audio.loudness`-style collision `registry/`'s collision detector proves, because
+  `qc-skill` is never registered as a competing candidate there at all (confirmed
+  deliberate — see "Resolved" below, not a gap).
 
 ## PLANNED (designed, not built)
 
@@ -101,6 +101,21 @@ in this ecosystem today lets an agent turn natural-language intent into a plan**
 real pipeline run demonstrated so far is driven by explicit `--set` flags, not natural
 language.
 
+## RESOLVED during this session's investigation (was UNKNOWN)
+
+- **The qc-skill/media-analysis-skill role separation is confirmed deliberate**, not
+  accidental. `video-production-agent`'s ADR-032 states explicitly: "qc-skill は最終
+  promotion の gate として接続" (qc-skill is connected as the final promotion gate) —
+  it is architecturally scoped as the delivery-acceptance gate, never as an alternative
+  per-measurement Provider to `media-analysis-skill`. This is why the Agent's registry
+  never lists them as competing candidates for the same production skill: it's by design,
+  confirmed by primary-source ADR text, not an artifact of what happened to get built
+  first.
+- **Tool-id naming between the Agent and the real Skills diverges for 3 of 10 Skills**
+  (`subtitle-skill`, `thumbnail-skill`, `transcription-skill` — see `WORK_QUEUE.md` item 1
+  for the full table), always deliberately and correctly handled inside each adapter. Any
+  future integration must key on Capability id, never on tool-id string equality.
+
 ## UNKNOWN
 
 - Whether `video-production-agent`'s static Skill→Tool registration model should ever be
@@ -109,9 +124,3 @@ language.
   as strongly as this Agent's own ADRs do. This is a real open architectural question, not
   a gap to silently close — see `DECISION_LOG.md` for the reasoning so far and
   `WORK_QUEUE.md` item 1 for the investigation this implies.
-- Whether the apparent "collision avoidance by role separation" between `qc-skill`
-  (final promotion gate, `qc_check`) and `media-analysis-skill` (per-measurement
-  Observations) in the Agent's actual registered skill list is a deliberate design choice
-  recorded somewhere, or an accident of what got implemented first. Not yet confirmed
-  against `video-production-agent`'s own ADRs by close reading — flagged for investigation,
-  not assumed either way.
