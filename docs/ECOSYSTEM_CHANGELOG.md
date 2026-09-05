@@ -46,9 +46,10 @@ noteworthy.
   "don't update past entries" rule, made explicitly for this one running tracker so
   merges don't each need their own entry).
 - **Merged**: `media-analysis-skill#4` (2026-09-05T20:57Z), `audio-production-skill#3`
-  (2026-09-05T20:57Z), `transcription-skill#5` (2026-09-05T20:58Z)
-- **Still open**: `video-editing-skill#2`, `subtitle-skill#2`, `thumbnail-skill#2`,
-  `color-grading-skill#4`, `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24`
+  (2026-09-05T20:57Z), `transcription-skill#5` (2026-09-05T20:58Z), `video-editing-skill#2`
+  (2026-09-05T20:59Z)
+- **Still open**: `subtitle-skill#2`, `thumbnail-skill#2`, `color-grading-skill#4`,
+  `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24`
 - **Status**: in progress
 
 ---
