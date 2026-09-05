@@ -20,23 +20,31 @@ python3 -m unittest discover -s registry/tests -t .
   default choice was given for an id with 2+ independent Providers).
 - `conformance.py` — the eight checks from `docs/SKILL_SPEC.md` section 8. Three
   (`publishes_contract`, `lifecycle_declared`, `dependency_version_ranges`) are real,
-  answerable from a contract document alone. Two more (`forbidden_keys_rejected`,
-  `doctor_status`) are real when given a `runner` callable that talks to a live Skill
-  process — `make_stdin_json_runner()` builds one for the ecosystem's common
-  "one JSON request on stdin, one JSON response on stdout" CLI convention, verified
-  end-to-end against a real `qc-skill` process (`tests/test_conformance_live.py`,
-  skipped when `qc` isn't on `PATH`). The remaining three (`no_unsafe_shell_out`,
-  `workspace_confinement`, `no_clobber_input`) are documented stubs that raise
-  `NotImplementedError` naming exactly what per-Skill wiring (and, for two of them,
-  filesystem setup this library does not manage) they still need.
-- `tests/` — 26 tests: 21 against real captured `provides` data (`tests/fixtures/`,
+  answerable from a contract document alone. Four more (`forbidden_keys_rejected`,
+  `doctor_status`, `workspace_confinement`, `no_clobber_input`) are real when given
+  callables that talk to a live Skill process — `make_stdin_json_runner()` builds one
+  for the ecosystem's common "one JSON request on stdin, one JSON response on stdout"
+  CLI convention, verified end-to-end against a real `qc-skill` process
+  (`tests/test_conformance_live.py`, skipped when `qc` isn't on `PATH`).
+  `workspace_confinement` and `no_clobber_input` turned out not to fit the "submit a bad
+  output path, check it's rejected" shape the other two use: live testing found
+  `qc-skill`'s `run` request schema has no output-path field at all (its operations are
+  read-only measurement; its report cache writes to a fixed, non-request-controlled
+  path). They're instead observational — snapshot directories outside the workspace
+  before/after a real run (`workspace_confinement`), or hash the input fixture
+  before/after (`no_clobber_input`) — properties that hold for any Skill regardless of
+  whether it exposes an output-path field. The remaining check (`no_unsafe_shell_out`)
+  is a documented stub that raises `NotImplementedError` naming exactly what wiring
+  (source access for an AST walk, or an injection-probe callable) it still needs.
+- `tests/` — 32 tests: 21 against real captured `provides` data (`tests/fixtures/`,
   trimmed excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
   `transcription-skill` and `ffmpeg-skill`'s actual `contract`/`skill --json` output
   after their `provides` field was added — see `docs/ECOSYSTEM_CHANGELOG.md`), including
   the ecosystem's one real documented collision
   (`measure.audio.loudness`/`measure.audio.silence`/`measure.audio.integrity` between
-  `qc-skill` and `media-analysis-skill`); 5 more (`tests/test_conformance_live.py`) run
-  the two live conformance checks against a real `qc-skill` process.
+  `qc-skill` and `media-analysis-skill`); 11 more (`tests/test_conformance_live.py`) run
+  all four live conformance checks against a real `qc-skill` process, each paired with a
+  synthetic sanity check proving it can actually FAIL (not just always PASS).
 
 ## What this deliberately is not
 
@@ -55,10 +63,9 @@ python3 -m unittest discover -s registry/tests -t .
 - **Not Phase 3.** This library can *apply* an explicit or default-provider choice once
   one is given; deciding what a deployment's default-provider policy should be, and
   where it is configured, is `docs/ROADMAP.md` Phase 3's job, not this library's.
-- **Not the full conformance harness.** Three of the eight `SKILL_SPEC.md` checks
-  (`no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input`) still need
-  per-Skill wiring and, for two of them, managed filesystem setup this library does not
-  provide — future work.
+- **Not the full conformance harness.** One of the eight `SKILL_SPEC.md` checks
+  (`no_unsafe_shell_out`) still needs per-Skill wiring this library does not provide —
+  future work.
 
 ## Why it lives here, not a new repository
 

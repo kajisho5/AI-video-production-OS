@@ -1,25 +1,43 @@
 """Conformance suite skeleton (docs/ROADMAP.md Phase 1, item 3; checks defined in
 docs/SKILL_SPEC.md section 8).
 
-Three of the eight checks are answerable from a contract document alone. Two more
-(`forbidden_keys_rejected`, `doctor_status`) are real when given a `runner` callable that
-talks to a live Skill process - `make_stdin_json_runner` below builds one for the
-ecosystem's common "one JSON request on stdin, one JSON response on stdout" convention
-(confirmed for qc-skill, media-analysis-skill, transcription-skill, audio-production-skill,
-color-grading-skill, motion-graphics-skill; verified end-to-end against a real qc-skill
-process in registry/tests/test_conformance_live.py). The remaining three
-(`no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input`) stay documented stubs:
-SKILL_SPEC.md section 5 notes invocation mechanics differ per Skill, and these three also
-need filesystem setup (a workspace, existing input files) this library does not manage -
-building that harness is real future work (docs/ROADMAP.md), and marking them PASS today
-would be exactly the kind of unearned claim this project's architecture rules out.
+Three of the eight checks are answerable from a contract document alone. Four more
+(`forbidden_keys_rejected`, `doctor_status`, `workspace_confinement`, `no_clobber_input`)
+are real when given callables that talk to a live Skill process -
+`make_stdin_json_runner` below builds one for the ecosystem's common "one JSON request on
+stdin, one JSON response on stdout" convention (confirmed for qc-skill,
+media-analysis-skill, transcription-skill, audio-production-skill, color-grading-skill,
+motion-graphics-skill; all four process-based checks verified end-to-end against a real
+qc-skill process in registry/tests/test_conformance_live.py). The remaining one
+(`no_unsafe_shell_out`) stays a documented stub: it needs either source-level AST analysis
+or a callable submitting shell-metacharacter injection probes, neither of which this
+library builds yet - real future work (docs/ROADMAP.md), and marking it PASS today would
+be exactly the kind of unearned claim this project's architecture rules out.
+
+`workspace_confinement` and `no_clobber_input` were originally scoped (see git history) as
+"submit a request whose output path is outside the workspace / equals an input path, and
+check the Skill rejects it" - the same request-mutation shape as `forbidden_keys_rejected`.
+Live testing against qc-skill found that shape does not fit: qc-skill's `run` request
+schema has no output-path field at all (its `validate`/`inspect`/`check` operations are
+read-only measurement, returning a report on stdout; its on-disk report cache is a fixed,
+non-request-controlled path under the workspace, via a code path - `PathPolicy.resolve_output`
+- that is defined but never actually called). Rather than force a check design onto a Skill
+it does not apply to, these two checks were redefined around what is actually observable
+from outside the process for *any* Skill, regardless of whether it exposes an output-path
+field: `workspace_confinement` snapshots caller-chosen directories outside the declared
+workspace before and after a real run and fails if any of them gained a file;
+`no_clobber_input` hashes the input fixture before and after a real run and fails if the
+Skill changed it. Both are real properties every Skill must hold, not proxies for one.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import subprocess
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set
 
 from .contract import LIFECYCLES, extract_provides, skill_identity, validate_provides_entry
 
@@ -192,14 +210,86 @@ check_no_unsafe_shell_out: Callable[..., CheckResult] = _stub(
     "no_unsafe_shell_out", "SKILL_SPEC.md #3",
     "either source access for an AST walk, or a callable submitting shell-metacharacter injection probes",
 )
-check_workspace_confinement: Callable[..., CheckResult] = _stub(
-    "workspace_confinement", "SKILL_SPEC.md #4",
-    "a callable submitting an output path outside the declared workspace (including via a symlink) and returning the Skill's response",
-)
-check_no_clobber_input: Callable[..., CheckResult] = _stub(
-    "no_clobber_input", "SKILL_SPEC.md #5",
-    "a callable submitting a request whose output path equals one of its input paths and returning the Skill's response",
-)
+
+
+def _snapshot(directory: str) -> Set[str]:
+    """Every file under `directory`, as paths relative to it. A missing directory
+    snapshots as empty rather than raising - it may not exist yet before the first run
+    that could create it, which is itself a legitimate thing for the check to notice."""
+    root = Path(directory)
+    if not root.is_dir():
+        return set()
+    return {str(p.relative_to(root)) for p in root.rglob("*") if p.is_file()}
+
+
+def check_workspace_confinement(
+    run_in_workspace: Optional[Callable[[str], Any]] = None,
+    workspace: Optional[str] = None,
+    watch_dirs: Optional[Sequence[str]] = None,
+) -> CheckResult:
+    """SKILL_SPEC.md #4: every file a Skill writes during one real run must land inside
+    the workspace root it was told to confine itself to - never in a directory it merely
+    happens to have OS-level access to.
+
+    Real when `run_in_workspace` (a callable that performs one full, synchronous Skill
+    invocation against `workspace` - e.g. spawns `qc run - --json --workspace <workspace>`
+    and waits for it to exit, so every file that run will ever write already exists on
+    disk by the time the callable returns), `workspace`, and `watch_dirs` (directories to
+    snapshot before/after, none of which may be `workspace` itself or contain it - e.g.
+    the process's own cwd, the system temp dir) are all given. Otherwise raises
+    NotImplementedError.
+    """
+    if run_in_workspace is None or workspace is None or watch_dirs is None:
+        raise NotImplementedError(
+            "workspace_confinement (SKILL_SPEC.md #4) needs run_in_workspace, workspace and watch_dirs "
+            "(directories outside the workspace to check for stray writes)."
+        )
+    workspace_resolved = os.path.realpath(workspace)
+    for d in watch_dirs:
+        resolved = os.path.realpath(d)
+        if resolved == workspace_resolved or resolved.startswith(workspace_resolved + os.sep):
+            raise ValueError(f"watch_dirs entry {d!r} is the workspace (or inside it) - it can't also be an 'outside' probe")
+    before = {d: _snapshot(d) for d in watch_dirs}
+    run_in_workspace(workspace)
+    stray: List[str] = []
+    for d in watch_dirs:
+        new_files = _snapshot(d) - before[d]
+        stray.extend(str(Path(d) / f) for f in new_files)
+    if stray:
+        return CheckResult("workspace_confinement", "FAIL", f"file(s) written outside the declared workspace: {stray}")
+    return CheckResult("workspace_confinement", "PASS", f"no stray writes across {len(watch_dirs)} watched director{'y' if len(watch_dirs) == 1 else 'ies'} outside the workspace")
+
+
+def _file_sha256(path: str) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def check_no_clobber_input(
+    run_with_input: Optional[Callable[[str], Any]] = None,
+    input_path: Optional[str] = None,
+) -> CheckResult:
+    """SKILL_SPEC.md #5: a Skill must never modify the input file(s) a caller hands it,
+    regardless of what operation was requested or whether it succeeded.
+
+    Real when `run_with_input` (a callable that performs one full, synchronous Skill
+    invocation reading `input_path` as its input - e.g. spawns `qc run - --json` with a
+    request whose `input` field is `input_path`) and `input_path` (an existing fixture
+    file) are both given. Otherwise raises NotImplementedError.
+    """
+    if run_with_input is None or input_path is None:
+        raise NotImplementedError(
+            "no_clobber_input (SKILL_SPEC.md #5) needs run_with_input and input_path (an existing fixture file)."
+        )
+    before = _file_sha256(input_path)
+    run_with_input(input_path)
+    after = _file_sha256(input_path)
+    if before != after:
+        return CheckResult("no_clobber_input", "FAIL", f"input file content changed after the run (sha256 {before} -> {after})")
+    return CheckResult("no_clobber_input", "PASS", f"input file unchanged (sha256 {after})")
 
 CHECKS: Dict[str, Callable[..., CheckResult]] = {
     "publishes_contract": check_publishes_contract,

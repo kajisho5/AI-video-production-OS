@@ -48,23 +48,29 @@ architecture document instead of moving to implementation).
 ## Phase 1 — Minimal OS kernel: the Capability Contract format + reference registry
 
 **Status: CURRENT / IMPLEMENTED as of 2026-09-05, for items 1-2; item 3 mostly real.**
-[`registry/`](../registry/) is a real, tested Python library (26 tests, all passing —
-21 against real captured data from five Skills, 5 live against a real `qc-skill`
+[`registry/`](../registry/) is a real, tested Python library (32 tests, all passing —
+21 against real captured data from five Skills, 11 live against a real `qc-skill`
 process — see `registry/README.md`): `registry.contract` resolves a Skill's identity
 across the three real shapes the ecosystem actually uses and validates a `provides[]`
 entry against what Skills actually publish (not the full aspirational shape below — see
 the delta noted under item 1); `registry.registry.CapabilityRegistry` registers
 Capabilities, detects collisions, and applies the 3-tier policy; `registry.conformance`
-implements 5 of `SKILL_SPEC.md` section 8's 8 checks for real — 3 answerable from a
-contract document alone, plus 2 (`forbidden_keys_rejected`, `doctor_status`) wired
-against a live Skill process via `make_stdin_json_runner()`, verified end-to-end against
-`qc-skill` — and the remaining 3 as documented stubs (`no_unsafe_shell_out`,
-`workspace_confinement`, `no_clobber_input`; the latter two also need managed filesystem
-setup this library does not provide). Not yet built: a formal JSON Schema *file* for the
-CapabilityContract shape (item 1's "not just the prose shape already written" — the
-Python-level validation in `registry.contract` exists and is real, but is not
-additionally expressed as a standalone `.schema.json`); real per-Skill wiring for the
-3 remaining stubbed conformance checks.
+implements 7 of `SKILL_SPEC.md` section 8's 8 checks for real — 3 answerable from a
+contract document alone, plus 4 (`forbidden_keys_rejected`, `doctor_status`,
+`workspace_confinement`, `no_clobber_input`) wired against a live Skill process via
+callables (`make_stdin_json_runner()` for the request/response pair, plus a
+filesystem-snapshot and a content-hash comparison for the latter two), verified
+end-to-end against `qc-skill` — and the remaining 1 (`no_unsafe_shell_out`) as a
+documented stub. `workspace_confinement`/`no_clobber_input` ended up shaped differently
+than originally planned: live testing found `qc-skill`'s `run` request has no
+output-path field to probe at all (its operations are read-only measurement), so both
+checks were redesigned around externally observable properties — no stray files outside
+the declared workspace, no change to the input fixture's content — that apply to any
+Skill regardless of whether it exposes an output-path field. Not yet built: a formal
+JSON Schema *file* for the CapabilityContract shape (item 1's "not just the prose shape
+already written" — the Python-level validation in `registry.contract` exists and is
+real, but is not additionally expressed as a standalone `.schema.json`); real per-Skill
+wiring for the 1 remaining stubbed conformance check (`no_unsafe_shell_out`).
 
 **Delivers:**
 1. The `CapabilityContract` JSON shape from `SPEC.md` §1, formalized as an actual JSON

@@ -38,6 +38,31 @@ noteworthy.
 
 ---
 
+### 2026-09-05 — `registry/` conformance: wire `workspace_confinement` and `no_clobber_input` for real
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: (pushed to `claude/ai-video-production-os-arch-fck6fy`, same branch as the
+  earlier `forbidden_keys_rejected`/`doctor_status` entry below)
+- **What changed**: `registry/conformance.py` now implements 2 more of `SKILL_SPEC.md`
+  §8's checks for real (`workspace_confinement`, `no_clobber_input`), bringing the total
+  to 7 of 8 (only `no_unsafe_shell_out` remains a stub). Both checks were redesigned
+  mid-implementation: live testing against `qc-skill` found its `run` request schema has
+  no output-path field at all (its operations are read-only measurement; its report
+  cache writes to a fixed path never reached through `PathPolicy.resolve_output()`,
+  which is defined but unused in the real codebase). Redesigned around externally
+  observable properties instead — a before/after filesystem snapshot of directories
+  outside the workspace, and a before/after content hash of the input fixture — verified
+  against a real `qc-skill` process in `registry/tests/test_conformance_live.py` (6 new
+  tests, including a synthetic "does this check actually FAIL" sanity test for each).
+  Registry suite is now 32 tests, all passing. `registry/README.md` and
+  `docs/ROADMAP.md`'s Phase 1 status note updated to match.
+- **Why**: `docs/ecosystem/WORK_QUEUE.md` item 3 — continuing the conformance-harness
+  work started the same day, following its own documented next-scope note.
+- **Status**: pushed directly to the branch (registry/ is this project's own reference
+  library, not a cross-repo Skill change requiring PR review).
+
+---
+
 ### 2026-09-05 — `provides` rollout: merge tracker
 
 - **Repo(s)**: all ten Skills in the rollout

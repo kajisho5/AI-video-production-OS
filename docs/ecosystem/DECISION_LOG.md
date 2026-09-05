@@ -83,3 +83,32 @@ which parts depend on assumptions `provides` doesn't capture, like declared-orde
 policy) needs to happen before either mechanism should change. Forcing convergence before
 that investigation risks breaking the one thing in this whole ecosystem that is a real,
 working, end-to-end system today.
+
+## D5 — `workspace_confinement`/`no_clobber_input` were redesigned around observable behavior, not the originally-planned request-mutation shape
+
+**Context**: these two `SKILL_SPEC.md` §8 checks were originally scoped the same way as
+`forbidden_keys_rejected` — submit a request with a bad value (an output path outside the
+workspace, or equal to an input path) and confirm the Skill rejects it. Live testing
+against `qc-skill` (the only Skill this conformance harness currently exercises against a
+real process) found that shape doesn't fit: `qc-skill`'s `run` request schema has no
+output-path field at all — its operations (`validate`/`inspect`/`check`) are read-only
+measurement returning a report on stdout, and its on-disk report cache writes to a fixed
+path under the workspace via a code path (`PathPolicy.resolve_output()`) that exists but
+is never actually called anywhere in the real codebase (confirmed by `grep -rn` finding
+zero call sites).
+
+**Decision**: redesigned both checks around properties observable from outside the
+process, real for any Skill regardless of whether it exposes a request-level output-path
+field: `workspace_confinement` snapshots directories outside the declared workspace
+before/after one real, synchronous run and fails if any gained a file;
+`no_clobber_input` hashes the input fixture before/after and fails if its content
+changed.
+
+**Why**: this project's rule against unearned claims applies as much to a conformance
+check's own design as to a status label — a check whose only test target doesn't have
+the field the check assumes would either be permanently `NotImplementedError` (true but
+stalled) or would need a synthetic fake to exercise (proving nothing about a real Skill).
+The observable-behavior redesign is answerable against `qc-skill` as it actually exists
+today, and the property it verifies (no stray writes outside the workspace; the input is
+never mutated) is the same real safety guarantee `SKILL_SPEC.md` §8 items 4-5 are meant
+to protect, reached by a different, equally valid route.

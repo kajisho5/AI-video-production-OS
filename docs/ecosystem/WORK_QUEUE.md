@@ -79,26 +79,39 @@ Six PRs still open as of the last check (`subtitle-skill#2`, `thumbnail-skill#2`
 CI-green, driven per the standing PR-maintenance rules. Mostly reactive (respond to CI/
 review events as they arrive) rather than work to actively schedule.
 
-## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — PARTIALLY DONE 2026-09-05
+## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — MOSTLY DONE 2026-09-05
 
-**Done:** `forbidden_keys_rejected` and `doctor_status` (2 of the 5 process-based checks)
-are now real, via `make_stdin_json_runner()` for the ecosystem's common stdin-JSON CLI
-convention, verified end-to-end against a real `qc-skill` process
-(`registry/tests/test_conformance_live.py`, 5 tests, skipped when `qc` isn't on `PATH`).
-Along the way, found and fixed a real assumption error: the first implementation assumed
-every Skill's failure envelope carries `ok: false`, but `qc-skill`'s real responses use
-`status: "failed"` with no `ok` key at all — `_is_rejected()` now checks both real
-conventions this ecosystem actually uses.
+**Done:** `forbidden_keys_rejected`, `doctor_status`, `workspace_confinement` and
+`no_clobber_input` (4 of the 5 process-based checks) are now real, verified end-to-end
+against a real `qc-skill` process (`registry/tests/test_conformance_live.py`, 11 tests —
+4 real checks × ~2-3 tests each including a synthetic "does this check actually FAIL"
+sanity test per check — skipped when `qc` isn't on `PATH`).
 
-**Still open:** `no_unsafe_shell_out`, `workspace_confinement`, `no_clobber_input` — the
-three checks needing either source-level AST analysis or managed filesystem setup this
-library doesn't provide yet. Real value remains: this is the mechanism `PLUGIN_MODEL.md`
-names for rejecting an unsafe third-party Skill without human judgment. Scope for next
-attempt: `workspace_confinement`/`no_clobber_input` need a temp workspace + a fixture
-input file, doable against `qc-skill` similarly to the two checks just wired;
-`no_unsafe_shell_out`'s AST-walk variant needs source access, which every Skill in this
-ecosystem happens to provide (all are open source) — worth attempting before assuming the
-weaker injection-probe variant is necessary.
+Two findings worth recording:
+- The first `forbidden_keys_rejected` implementation assumed every Skill's failure
+  envelope carries `ok: false`, but `qc-skill`'s real responses use `status: "failed"`
+  with no `ok` key at all — `_is_rejected()` now checks both real conventions this
+  ecosystem actually uses.
+- `workspace_confinement` and `no_clobber_input` were originally scoped as "submit a
+  request whose output path is outside the workspace / equals an input path, and check
+  it's rejected" — the same shape as `forbidden_keys_rejected`. Live testing against
+  `qc-skill` found this doesn't fit: its `run` request schema has **no output-path field
+  at all** (its `validate`/`inspect`/`check` operations are read-only measurement
+  returning a report on stdout; its on-disk report cache writes to a fixed,
+  non-request-controlled path via a `PathPolicy.resolve_output()` method that is defined
+  but never actually called anywhere in the codebase — confirmed by grep). Redesigned
+  instead around properties observable from outside the process for *any* Skill:
+  `workspace_confinement` snapshots caller-chosen directories outside the declared
+  workspace before/after a real run and fails if any gained a file;
+  `no_clobber_input` hashes the input fixture before/after and fails if it changed.
+
+**Still open:** `no_unsafe_shell_out` — needs either source-level AST analysis or a
+callable submitting shell-metacharacter injection probes, neither built yet. Real value
+remains: this is the mechanism `PLUGIN_MODEL.md` names for rejecting an unsafe
+third-party Skill without human judgment. Scope for next attempt: the AST-walk variant
+needs source access, which every Skill in this ecosystem happens to provide (all are
+open source) — worth attempting before assuming the weaker injection-probe variant is
+necessary.
 
 ## 4. A standalone JSON Schema file for the CapabilityContract's `provides` shape
 
