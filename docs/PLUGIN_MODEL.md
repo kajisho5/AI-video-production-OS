@@ -214,3 +214,99 @@ third-party Skills exist yet to design a marketplace around):
   minimal required property (zero OS core changes per new Skill) is committed to here.
 - Sandboxed/containerized execution (§6's FUTURE gap) — named as a real limitation, not
   designed as a solution.
+
+## 10. The Skill Supply Chain: naming the lifecycle end to end
+
+**This section is a documentation consolidation, not a new mechanism.** Every stage named
+below already exists as a decision recorded somewhere in this project's docs — this
+section's only contribution is giving the sequence a single name (**the Skill Supply
+Chain**) and a single place a reader can follow it end to end, instead of having to
+already know that `SKILL_PROPOSAL.md`, `GOVERNANCE.md`, `SPEC.md`, `SKILL_SPEC.md`,
+`ADR-009`, this document's own §1–§8, `VERSIONING.md`, `EXECUTION_MODEL.md`,
+`SECURITY_MODEL.md`, and `PROVENANCE.md` each cover one link of it. That gap — pieces
+present, nothing naming the whole — is exactly the kind of onboarding friction
+`SKILL_PROPOSAL.md`'s own stated goal (a practical checklist a third-party contributor can
+follow, not philosophy scattered across documents they'd have to already know to read) is
+trying to remove. Nothing here changes what any stage requires; each stage below is cited,
+not restated.
+
+1. **Creation** — a Skill's proposal is written and checked against the granularity
+   criteria before anyone writes code. See `SKILL_PROPOSAL.md` §1–§3.
+2. **Repository** — the Skill's own repo records its internal decisions the same way at
+   least five existing Skills already do independently (a `docs/decisions.md` ADR log),
+   and any decision that touches an OS-level shared contract additionally gets an ADR in
+   `docs/adr/` per this project's own convention. See `GOVERNANCE.md` §1–§2.
+3. **Contract Publication** — the Skill exposes its `CapabilityContract` (`skill_id`,
+   `skill_version`, `contract_version`, `capabilities[]`, `dependencies`,
+   `not_provided`) via a `contract` entrypoint, as every audited Skill already does in
+   some form. See `SPEC.md` §1, `SKILL_SPEC.md` §2.1.
+4. **Conformance Verification** — the published contract and the Skill's actual behavior
+   at its process boundary are checked against the black-box requirements: schema
+   validity, forbidden-key rejection, no unsafe shell-out, workspace confinement,
+   no-clobber-input, lifecycle declaration, `doctor` reporting, and ranged (not exact-pin)
+   dependency versioning. See `SKILL_SPEC.md` §8's conformance checklist, and `ADR-009`
+   for why this is a black-box test suite rather than manual source review.
+5. **Trust/Registration** — a Skill that publishes a valid contract and passes
+   conformance is registered as an available Provider of the Capabilities it declares,
+   using the same discovery mechanism (directory-scan or explicit registration call) and
+   the same rejection criteria for every Skill, in-house or third-party. See this
+   document's own §1 (Discovery) and §7 (rejection).
+6. **Compatibility Checking** — before a dependent Skill or Agent actually invokes this
+   Skill, its `contract_version` is checked against whatever ranges other Skills have
+   declared against it (`SUPPORTED_MIN`/`SUPPORTED_MAX`-shaped, per the five existing
+   `ffmpeg-skill` adapters), failing fast if out of range. See `VERSIONING.md` §2, and
+   §10 of that document for the aggregated view across the whole ecosystem.
+7. **Installation** — getting the Skill's package onto a machine at all (an npm install,
+   a git checkout, some future package-index fetch) is a **Distribution** concern, not a
+   Plugin Model or Supply Chain concern. No `DISTRIBUTION_MODEL.md` exists yet in this
+   docs/ set; the only real precedent today is `ffmpeg-skill`'s own npm-distributed
+   installer/CLI wrapper (`REPOSITORY_MAP.md`, `ffmpeg-skill` §Interfaces). This stage is
+   named here only so the lifecycle is complete — its design is explicitly out of this
+   document's scope, exactly like §9's marketplace non-goals.
+8. **Runtime Execution** — an installed, registered, compatible Skill actually runs
+   through the Runtime contract: process isolation, timeout/kill-tree semantics,
+   environment scrubbing, path containment. See `EXECUTION_MODEL.md` and
+   `SECURITY_MODEL.md`'s Runtime contract (`CORE_PRIMITIVES.md` §4).
+9. **Provenance Recording** — every Operation the Skill executes records `skill_id`,
+   `skill_version`, and (per the reproducibility fields `PROVENANCE.md` §2 requires)
+   `contract_version`, alongside the Capability id and Provider id that were resolved.
+   This is not a new recording obligation — it is §5 of this document (Provenance
+   recording) and `PROVENANCE.md` §1–§2, restated here only as the chain's final link.
+
+```mermaid
+graph LR
+    A["Creation<br/>SKILL_PROPOSAL.md"] --> B["Repository<br/>GOVERNANCE.md"]
+    B --> C["Contract Publication<br/>SPEC.md §1 / SKILL_SPEC.md §2"]
+    C --> D["Conformance Verification<br/>SKILL_SPEC.md §8 / ADR-009"]
+    D --> E["Trust / Registration<br/>PLUGIN_MODEL.md §1, §7"]
+    E --> F["Compatibility Checking<br/>VERSIONING.md §2, §10"]
+    F --> G["Installation<br/>Distribution — out of scope"]
+    G --> H["Runtime Execution<br/>EXECUTION_MODEL.md / SECURITY_MODEL.md"]
+    H --> I["Provenance Recording<br/>PROVENANCE.md §1–§2"]
+```
+
+**When a Skill fails conformance at any stage (stage 4), it is rejected.** This is not a
+new rule — it is §7 of this document, restated as this lifecycle's failure branch: a
+Skill that fails a schema-validity check, a black-box conformance check, or declares a
+permission it does not confine itself to is not admitted as OS-compatible. This is a
+**structural rejection**, never a maintainer's subjective read of the Skill's code (§7
+above; `ADR-009`).
+
+**When a previously-conformant Skill's contract drifts (a later release changes its
+published shape without a `contract_version` bump it should have made, or a dependent's
+declared range simply falls out of step with reality), the ecosystem's real, working
+precedent for catching this is not a code-review step — it is the same
+compatibility-checking mechanism at stage 6, applied continuously rather than once.**
+Concretely, this is exactly what the five `ffmpeg-skill` adapters' startup
+`SUPPORTED_MIN`/`SUPPORTED_MAX` check already does today (`VERSIONING.md` §2,
+`REPOSITORY_MAP.md` `video-editing-skill and audio-production-skill` §), combined with
+the `doctor` command's per-capability `AVAILABLE`/`MISSING` reporting every audited Skill
+already exposes (`SKILL_SPEC.md` §2.3): when a dependency's `contract_version` moves
+outside a dependent's declared range, that dependency does not get silently invoked
+against a shape the dependent no longer actually matches — the version check fails fast,
+and the capability that dependency was backing correctly becomes `MISSING` rather than
+the Runtime silently proceeding against a contract that no longer matches what was
+verified at conformance time. This is a real, already-implemented pattern, not a proposed
+new drift-detection tool — the Supply Chain framing above just makes explicit that
+"compatibility checking" is not a one-time gate at registration, but a check re-applied
+every time a dependent actually resolves a Provider.
