@@ -655,6 +655,9 @@ class, 0 regressions.
 **Session note**: after five consecutive rounds of real hands-on gap-hunting (items 9-14),
 round 5 surfaced only this one minor, inert config field — a sharp drop from rounds 1-4's
 substantive execution/decision bugs. This is the expected signal that gap-hunting has hit
-diminishing returns for now; the next highest-value work per this document's own priority
-ordering is the still-open P0 (no single bootstrap/install script for the ecosystem, see the
-Gaps section below), not further speculative discovery rounds.
+diminishing returns for now, and the session pivoted toward `OS_USABILITY_FLOW.md`'s P0 item
+next — which turned out to already be resolved in the code (`scripts/bootstrap.sh` existed and
+works) but stale in that document's own wording (it still said "no single bootstrap script"
+after the script had already shipped). Fixed the actual, narrower gap that remained — the
+script wasn't linked from `README.md`'s Quick Start — rather than re-building something that
+already existed; see `OS_USABILITY_FLOW.md`'s own correction note for the full account.
