@@ -283,30 +283,55 @@ extend (its `AI Provider contract`, ADR-018, already defines the boundary — "A
 never executes"), not something this project should implement unilaterally inside another
 repository. Track it here as the thing to watch for, not a task to start.
 
-## 8. A read-only `--check-provides` diagnostic for `video-production-agent`
+## 8. ~~A read-only `--check-provides` diagnostic for `video-production-agent`~~ — IMPLEMENTED 2026-09-06 (Draft PR open)
 
-Item 1's 2026-09-06 exhaustive investigation confirmed this is now concretely buildable
-with real, useful day-one output: it would correctly surface `qc_check` and
-`subtitle_generation`/`subtitle_burn_in`'s self-declared (contract-unconfirmed) tool ids as
-informational, not errors (join on Capability id, never tool-id string — item 1's own
-finding), and would report `video-editing-skill`'s unused `video.trim` and
-`audio-production-skill`'s five unused capabilities (`audio.dynamics`, `audio.mix`,
-`audio.noise_reduction`, `audio.silence_remove`, `audio.trim`) as "published, not yet
-consumed by any `SkillSpec`" — real, actionable signal for future roadmap prioritization,
-not noise.
+**Built, in `video-production-agent` itself** (not this repository — see this item's own
+original scoping below, still the right call):
+[`kajisho5/video-production-agent#27`](https://github.com/kajisho5/video-production-agent/pull/27)
+(kept Draft, not merged — the user's own standing boundary for this work: no merge, no
+Draft→Ready, no force-push/history-rewrite across any repository touched this session).
+`src/video_agent/skills/diagnostics.py`'s `check_provides()`/`check_all()` join a Skill's
+real `provides[]` against this Agent's registered `SkillPackage`/`SkillSpec` data by
+Capability id, reporting `PROVIDES_VALID` / `PROVIDES_MISMATCH` / `CAPABILITY_UNCONSUMED`
+/ `CAPABILITY_MISSING` / `UNKNOWN` per Capability id — pure, side-effect-free, never calls
+`SkillRegistry.select_tool()` or anything in `execution/`. 16 new tests (3 of them
+real-data regressions of this item's own qc-skill/subtitle-skill finding).
 
-**Scope, precisely** (per item 1's own Boundary, still binding here): a new, additive,
-read-only report only — e.g. a script that fetches each installed Skill's real `contract
---json`, extracts `provides[]`, and cross-references it against `default_registry()`'s
-`SkillSpec.tools` by Capability id (not tool-id string). It would live inside
-`video-production-agent` itself (the only place that already has `default_registry()` and
-real adapter connections), not in this repository — this project's own role is limited to
-having produced the `provides` data and the Capability-id join methodology this diagnostic
-would depend on, exactly as `docs/ROADMAP.md` Phase 1's registry library was scoped to be
-consumed by, not built into, another repository's tooling. **Never** changes
-`SkillRegistry.select_tool()`'s actual selection behavior — diagnostic output only.
+**Run against all 10 registered Skills' real, current `provides[]`** (captured from each
+Skill's actual merged `main`, no live network): confirmed exactly this item's predictions
+for `qc-skill` (10/10 self-declared `PROVIDES_MISMATCH`) and `subtitle-skill` (2/2, same
+pattern) — both confirmed **not live bugs** (`SkillRegistry.select_tool()` still works,
+since each adapter builds its own `SkillPackage` from its self-declared tool ids, never
+from the contract). Confirmed `video-editing-skill`'s `video.trim` as
+`CAPABILITY_UNCONSUMED`. Found `CAPABILITY_MISSING` nowhere across all 10 Skills. Also
+found something this item's own prediction did not anticipate: `ffmpeg-skill` exposes
+only 12 of its real 21 capabilities to this Agent's own reference `CATALOG` at all — 9 are
+reached only indirectly through other Skills that delegate to it (by design), 3 more
+(`fit`/`report`/`scenes`) are known but superseded by other Skills' own equivalents.
 
-**Depends on:** nothing further in this repository — item 1's investigation already
-supplies the exact findings such a diagnostic should reproduce, usable as its own test
-fixtures/expected-output once someone builds it (in `video-production-agent`, by whoever
-owns that repository's roadmap).
+**One prediction from this item's own text needs a correction, not a contradiction**: the
+claim above that `audio-production-skill` has "five unused capabilities" (`audio.dynamics`,
+`audio.mix`, `audio.noise_reduction`, `audio.silence_remove`, `audio.trim`) was reached by
+manually matching each capability's internal `operation` name against `SkillSpec`
+descriptions — a Skill-specific semantic reading, not something a generic diagnostic can
+reproduce. `audio-production-skill` (like `color-grading-skill` and `motion-graphics-skill`)
+exposes every one of its capabilities through one shared, generic tool id
+(`audio-production/run`); tool-id-level evidence alone cannot distinguish which of the
+capabilities sharing that id are individually requested, only that the shared endpoint as
+a whole is. The diagnostic therefore correctly reports all of them as `PROVIDES_VALID`,
+each annotated with its full sibling list (`evidence["shared_tool_id_capabilities"]`)
+rather than silently claiming a confidence the tool-id join cannot support — the more
+specific "5 unused" claim stands only as this item's own earlier manual reading, not as
+something the shipped diagnostic asserts or can verify generically.
+
+---
+
+*Original scoping (2026-09-05/06), preserved for the reasoning it still applies:*
+Per item 1's own Boundary, still binding: a new, additive, read-only report only, living
+inside `video-production-agent` itself (the only place that already has
+`default_registry()` and real adapter connections), not in this repository — this
+project's own role is limited to having produced the `provides` data and the
+Capability-id join methodology the diagnostic depends on, exactly as `docs/ROADMAP.md`
+Phase 1's registry library was scoped to be consumed by, not built into, another
+repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
+behavior — diagnostic output only.

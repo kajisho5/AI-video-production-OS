@@ -29,22 +29,31 @@ Also load: `docs/ECOSYSTEM_CHANGELOG.md` (factual change log, append-only, newes
 architecture documents assumed. It has a real, tested, working end-to-end production
 pipeline integrating all 9 Skills, and it independently solved the Skill→Tool selection
 problem `docs/ROADMAP.md` Phase 4 describes as future work — with its own mechanism, not
-this project's `provides`/`registry/` system. The two are still not connected — and, as of
-2026-09-06's exhaustive investigation (`WORK_QUEUE.md` item 1, `DECISION_LOG.md` D8), that
-is now a confirmed, evidenced conclusion rather than an open question: Phase 4 stays
-scoped as-is (nothing found contradicts it), and the concrete near-term step is a small,
-separate, read-only diagnostic (`WORK_QUEUE.md` item 8) — not a Phase 4 rewrite, and not
-something to build inside `video-production-agent` from this project. Read
-`CURRENT_STATE.md`'s "RESOLVED"/"UNKNOWN" sections before touching registry/discovery work
-again.
+this project's `provides`/`registry/` system. The two are still not connected at the
+execution layer — and, as of 2026-09-06's exhaustive investigation (`WORK_QUEUE.md`
+item 1, `DECISION_LOG.md` D8), that is a confirmed, evidenced conclusion rather than an
+open question: Phase 4 stays scoped as-is (nothing found contradicts it). The concrete
+near-term step, a small, separate, read-only diagnostic (`WORK_QUEUE.md` item 8), **is
+now built** — inside `video-production-agent` itself
+([PR #27](https://github.com/kajisho5/video-production-agent/pull/27), kept Draft per the
+user's own standing boundary for this work: no merge, no Draft→Ready, no force-push/
+history-rewrite in any repository touched). The user has explicitly authorized acting
+across repository boundaries in this ecosystem when warranted (2026-09-06) — repository
+ownership is not itself a reason to stop; only the specific boundaries just listed, plus
+getting confirmation before a design change large enough to risk breaking existing
+behavior, still apply. Read `CURRENT_STATE.md`'s "RESOLVED"/"UNKNOWN" sections before
+touching registry/discovery work again.
 
 ## What's actively in flight right now
 
 - The Phase 2 `provides` rollout: **complete** — all 10 Skills' PRs merged (see
   `docs/ECOSYSTEM_CHANGELOG.md`'s merge tracker and `CROSS_REPO_STATUS.md`).
-- No PR is open against `video-production-agent` from this project, and per the conclusion
-  above, none is currently planned — `WORK_QUEUE.md` item 8's diagnostic is a proposal for
-  that repository's own maintainers, not a queued task here.
+- `kajisho5/video-production-agent#27` (`WORK_QUEUE.md` item 8's diagnostic) is open,
+  Draft, kept Draft — not merged, not marked ready. Run against all 10 registered Skills'
+  real data; found no `CAPABILITY_MISSING` anywhere. Not queued for further action here
+  unless the user asks for the qc-skill/subtitle-skill tool-id naming to actually be
+  reconciled (a real code change to that Agent's adapters, deliberately not done
+  unprompted — see the PR body).
 - **`dashboard/`** (Ecosystem Dashboard, built 2026-09-05): read-only, mobile-first, PWA
   web dashboard over the ecosystem's real GitHub state. **Live**, not just built: GitHub
   Pages was manually enabled 2026-09-06 and the deploy workflow has run successfully —
