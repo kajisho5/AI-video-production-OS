@@ -203,3 +203,38 @@ committed or pushed yet. Recorded here so a future session doesn't repeat either
 mistake: don't use `git checkout <ref> -- .` for read-only comparison during an
 in-progress merge (a separate clone or worktree is the safe way), and always run the
 affected code (not just diff it) after resolving a Capability-contract-shaped conflict.
+
+## D8 — `docs/ROADMAP.md` Phase 4 stays as scoped; the Agent-integration investigation's output is a proposed diagnostic, not a rewrite
+
+**Context**: `docs/ecosystem/WORK_QUEUE.md` item 1 asked whether Phase 4 ("Cross-Skill
+Execution/Artifact model") is still needed as scoped, or should be rewritten as "a thin
+connecting layer," once `video-production-agent`'s registry could be checked against real
+`provides[]` data from all 10 merged rollout PRs (2026-09-06). Ran every one of the
+42 `SkillSpec.tools` candidates in `default_registry()` against every real Skill's actual
+`capability_provides()` (executed live from a detached worktree per repo, not from pinned
+adapter fixtures) — see the item's own "Investigated 2026-09-06 (exhaustive)" section for
+the full findings.
+
+**Decision**: Phase 4's text is unchanged — the investigation found nothing that
+contradicts its premise. `video_agent/service.py`'s `Service.adapter()` → `tools/
+router.py`'s `ToolRouter` is still the actual hardcoded execution-routing path Phase 4
+targets; `SkillRegistry.select_tool()` is a separate, declarative availability/fallback
+layer that does not drive real execution today. What *is* new: concrete, evidenced support
+for building a small, separate, read-only `--check-provides`-shaped diagnostic (now item 8
+in `WORK_QUEUE.md`) — the investigation surfaced two real self-declared-tool-id cases
+(`qc_check`, `subtitle_generation`/`subtitle_burn_in`) that such a diagnostic must join on
+Capability id, never tool-id string, to avoid false-positiving, plus two real
+published-but-unconsumed capabilities (`video-editing-skill`'s `video.trim`,
+`audio-production-skill`'s five extra operations) worth a future `SkillSpec` each. That
+diagnostic is new, additive tooling for `video-production-agent`'s own repository to build
+when its own maintainers choose to — not something this investigation implemented, per the
+item's own Boundary ("investigation and, if warranted, an additive diagnostic — not a
+rewrite... Do not change Agent selection behavior as part of this item").
+
+**Why**: distinguishing "the registry-driven execution model Phase 4 describes" from "a
+read-only compliance report over the registry that already exists" avoids two mistakes at
+once — prematurely rewriting Phase 4 away from real, still-valid future work on the
+strength of a same-day finding, and conflating a low-risk, immediately buildable
+diagnostic with the actual execution-path rewrite (moderate-to-high risk, touches 187 unit
+/ 90 adapter tests per Phase 4's own risk section) that Phase 4's dependency chain
+(Phase 3's collision-resolution policy) is not ready for yet.

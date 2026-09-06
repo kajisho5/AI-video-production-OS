@@ -72,6 +72,99 @@ None of the Agent's registered `SkillSpec`s list `qc-skill` as an alternative ca
 any `media-analysis-skill`-served skill — consistent with, though not yet confirmed as
 deliberate proof of, the role-separation hypothesis in item 5 below.
 
+**Investigated 2026-09-06 (exhaustive — every Agent tool candidate against every real
+`provides[]` entry, now that all 10 rollout PRs are merged):**
+
+Ran each of the 10 Skills' own `capability_provides()` (or equivalent) directly against
+its real, merged `main` source (a detached worktree per repo, not the pinned adapter
+fixtures) to get every real `{id, tool_id}` pair, then checked every one of the 42
+`SkillSpec.tools` candidates in `default_registry()` against it. Two real, load-bearing
+findings emerged that the 2026-09-05 spot-check could not see without the merged data —
+both are naming drift, **neither is a live bug**, both are exactly what the Capability-id
+warning above predicted:
+
+1. **`qc_check`'s tool candidate (`"qc/check"`) does not exist in `qc-skill`'s real
+   `provides[]` at all.** Every one of `qc-skill`'s 10 published Capability ids
+   (`measure.audio.loudness`, `measure.video.format`, ...) shares one single real tool id,
+   `"qc/run"` — `qc-skill`'s own contract has never had a `"qc/check"` operation name.
+   `video_agent/tools/qc/adapter.py` already documents why, in its own words (line 25):
+   *"the contract declares operations [inspect, check, validate] but no tool ids; the
+   agent defines qc/check and qc/inspect."* The adapter builds its `SkillPackage`'s
+   `ToolSpec`s directly from those two Agent-invented ids (`TOOL_CHECK`, `TOOL_INSPECT`),
+   never from the Skill's own `tools`/`provides` output — so `SkillRegistry.select_tool()`
+   still works today (the Agent's own registered package really does declare and support
+   `"qc/check"`), but a naive provides-based diagnostic joining on tool-id string would
+   report `qc_check` as "tool not found," which would be **wrong**: the real join, by
+   Capability id, is unambiguous (`qc_check`'s intent maps to `measure.delivery.integrity`
+   / the QC gate role generally, per item 5's ADR-032 finding).
+2. **`subtitle_generation`/`subtitle_burn_in`'s tool candidates (`"subtitle/generate"`,
+   `"subtitle/render"`) do not literal-match `subtitle-skill`'s real `provides[].tool_id`
+   (`"subtitle-skill/generate"`, `"subtitle-skill/render"`)** — `video_agent/tools/
+   subtitle/adapter.py` hardcodes the short prefix (`SKILL_ID = "subtitle"`, matching the
+   already-known package-id mismatch above), building its own `ToolSpec`s the same
+   self-declared way `qc`'s adapter does, not derived from the contract. Same consequence:
+   works today (self-declared), would false-positive a naive tool-id diagnostic, resolves
+   cleanly by Capability id (`subtitle.generate`, `subtitle.render` — exact 1:1 match with
+   the Agent's own `SkillSpec` names).
+
+   By contrast, **`thumbnail-skill`'s real tool ids (`"thumbnail/render"`,
+   `"thumbnail/extract_frame"`) already literal-match** the Agent's candidates exactly,
+   despite the same *package*-id mismatch (`thumbnail-skill` vs `thumbnail`) — proving the
+   package-id mismatch table above does not, by itself, predict a tool-id mismatch. Only
+   Capability id is a reliable predictor either way.
+
+   All three of `color-grading`, `audio-production` and `motion-graphics`'s adapters
+   correctly reference (or, for `audio-production`, read live from the contract) the
+   Skill's own real single generic tool id (`"<skill>/run"`) — no drift there, because
+   unlike `qc`/`subtitle`, these three adapters do not invent their own tool-id naming.
+
+3. **The two-way "candidate" `SkillSpec`s (`media_probe`, `silence_analysis`,
+   `loudness_analysis`) are NOT Capability collisions in `CAPABILITY_MODEL.md`'s sense.**
+   Each candidate pair maps to two genuinely **different** Capability ids from two
+   different Skills (`media_probe`: `ffmpeg-skill.probe` vs `measure.media.probe`;
+   `silence_analysis`: `ffmpeg-skill.silence` vs `measure.audio.silence`;
+   `loudness_analysis`: `ffmpeg-skill.loudness` vs `measure.audio.loudness`) — never the
+   *same* id published by two Providers. This is an Agent-internal "try a fallback tool"
+   mechanism (`SkillRegistry.select_tool()` walks `tools` in declared order until one is
+   supported), unrelated to and does not need `registry.CapabilityRegistry`'s
+   collision-resolution policy at all. The ecosystem's one real, already-documented
+   Capability collision (`measure.audio.loudness` / `measure.audio.silence` /
+   `measure.audio.integrity`, both published by `qc-skill` and `media-analysis-skill` —
+   `registry/README.md`) is not reachable from the Agent's registry today: no registered
+   `SkillSpec` lists `qc-skill` as an alternative candidate for anything
+   `media-analysis-skill` serves — **now confirmed**, not merely consistent with, item 5's
+   role-separation hypothesis (qc-skill is architecturally the delivery-acceptance gate,
+   never an interchangeable measurement Provider).
+
+4. **Two real capability gaps, not mismatches**, worth surfacing for future roadmap
+   prioritization rather than fixing here (out of this item's boundary): `video-editing-
+   skill` publishes `video.trim` (`tool_id: "video-editing/trim"`) with **no** corresponding
+   `SkillSpec` anywhere in `default_registry()` — a real, working capability the Agent
+   cannot select today. `audio-production-skill` similarly publishes five capabilities the
+   Agent's nine `audio_*` `SkillSpec`s never reference: `audio.dynamics`, `audio.mix`,
+   `audio.noise_reduction`, `audio.silence_remove`, `audio.trim`.
+
+5. **All other ~30 of the 42 `SkillSpec`s' tool candidates line up cleanly**, by both
+   tool-id string *and* Capability id, with what the corresponding Skill's real merged
+   `provides[]` publishes — including every `ffmpeg-skill/*`, `video-editing/*` (other than
+   `trim`), and `media-analysis/*` reference the Agent declares.
+
+**Conclusion for this item's own question** ("is `docs/ROADMAP.md` Phase 4 as scoped still
+needed, or should it be rewritten as a thin connecting layer?"): **Phase 4 as scoped is
+still the right shape, not rewritten.** `SkillRegistry.select_tool()` is a declarative
+availability/fallback layer; real execution routing still goes through `Service.adapter()`
+→ `ToolRouter` (`video_agent/service.py`, `tools/router.py`), exactly the hardcoded wiring
+Phase 4's own text already targets — nothing in this investigation contradicts that
+premise. What this investigation *does* newly support, concretely: a small, **separate**,
+read-only diagnostic (`video-agent skills --check-provides` or similar) joining on
+Capability id is now genuinely buildable with real, useful output on day one — it would
+correctly flag findings 1–2 as "self-declared, contract does not confirm" (informational,
+not an error) and findings 4 as "Capability published, no SkillSpec consumes it yet." That
+diagnostic is lower-risk, additive tooling, separate from and no substitute for Phase 4's
+actual execution-model work — building it is a new, well-scoped candidate for a future
+item in this queue, not something this investigation implements (per this item's own
+Boundary).
+
 ## 2. ~~Land the remaining `provides` rollout PRs~~ — DONE 2026-09-06
 
 All 10 Skills' `provides` PRs merged. The last four (`subtitle-skill#2`,
@@ -153,8 +246,9 @@ step will fail. Not a code gap.
   workflow's first real scheduled/dispatched run will overwrite it with genuinely live
   data — worth confirming this actually happens once Pages is enabled, rather than
   assuming it silently.
-- No live npm/PyPI version lookup yet (`MATURITY_MODEL.md` level 6 relies entirely on
-  `capability-status.json`'s documented `distribution` field).
+- ~~No live npm/PyPI version lookup yet~~ — DONE 2026-09-06: `dashboard/aggregator/src/
+  packageRegistry.ts` performs a real live lookup; see `docs/ecosystem/MATURITY_MODEL.md`
+  level 6 and `dashboard/README.md`.
 - No snapshot history/trend view (deliberately deferred, per `MATURITY_MODEL.md`'s own
   "deliberately not part of this model" section).
 - `capability-status.json`'s documented (non-automatic) fields will drift from reality
@@ -162,12 +256,14 @@ step will fail. Not a code gap.
   the accepted, explicit limitation ADR-011/MATURITY_MODEL.md already name, not a new
   finding, but worth remembering the next time `CROSS_REPO_STATUS.md` changes.
 
-## 4. A standalone JSON Schema file for the CapabilityContract's `provides` shape
+## 4. ~~A standalone JSON Schema file for the CapabilityContract's `provides` shape~~ — DONE 2026-09-06
 
-`registry/` validates `provides` entries in Python; `docs/ROADMAP.md` Phase 1 item 1 also
-asked for a standalone `.schema.json`. Low effort, real value for any non-Python consumer
-(a third-party Skill author who wants to validate their own `provides` output without
-importing this project's Python code).
+`registry/capability_contract.schema.json` (draft 2020-12), `registry/schema.py`'s
+`load_schema()`, and 12 new tests (`registry/tests/test_schema.py`) — see
+`docs/ROADMAP.md` Phase 1 item 1 and `registry/README.md` for the full description. Real
+value for any non-Python consumer (a third-party Skill author who wants to validate their
+own `provides` output without importing this project's Python code) now exists, not just
+proposed.
 
 ## 5. ~~Confirm or refute the qc-skill/media-analysis-skill "collision avoidance by role separation" hypothesis~~ — RESOLVED 2026-09-05
 
@@ -186,3 +282,31 @@ out of scope for immediate action: it is `video-production-agent`'s own architec
 extend (its `AI Provider contract`, ADR-018, already defines the boundary — "AI proposes,
 never executes"), not something this project should implement unilaterally inside another
 repository. Track it here as the thing to watch for, not a task to start.
+
+## 8. A read-only `--check-provides` diagnostic for `video-production-agent`
+
+Item 1's 2026-09-06 exhaustive investigation confirmed this is now concretely buildable
+with real, useful day-one output: it would correctly surface `qc_check` and
+`subtitle_generation`/`subtitle_burn_in`'s self-declared (contract-unconfirmed) tool ids as
+informational, not errors (join on Capability id, never tool-id string — item 1's own
+finding), and would report `video-editing-skill`'s unused `video.trim` and
+`audio-production-skill`'s five unused capabilities (`audio.dynamics`, `audio.mix`,
+`audio.noise_reduction`, `audio.silence_remove`, `audio.trim`) as "published, not yet
+consumed by any `SkillSpec`" — real, actionable signal for future roadmap prioritization,
+not noise.
+
+**Scope, precisely** (per item 1's own Boundary, still binding here): a new, additive,
+read-only report only — e.g. a script that fetches each installed Skill's real `contract
+--json`, extracts `provides[]`, and cross-references it against `default_registry()`'s
+`SkillSpec.tools` by Capability id (not tool-id string). It would live inside
+`video-production-agent` itself (the only place that already has `default_registry()` and
+real adapter connections), not in this repository — this project's own role is limited to
+having produced the `provides` data and the Capability-id join methodology this diagnostic
+would depend on, exactly as `docs/ROADMAP.md` Phase 1's registry library was scoped to be
+consumed by, not built into, another repository's tooling. **Never** changes
+`SkillRegistry.select_tool()`'s actual selection behavior — diagnostic output only.
+
+**Depends on:** nothing further in this repository — item 1's investigation already
+supplies the exact findings such a diagnostic should reproduce, usable as its own test
+fixtures/expected-output once someone builds it (in `video-production-agent`, by whoever
+owns that repository's roadmap).
