@@ -390,3 +390,28 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   `FakeAdapter(audio=False)`. `tests/test_unit.py`: 188 passed (4 known environmental
   failures, unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every
   real-Skill class, 0 regressions. Tracked as `WORK_QUEUE.md` item 11, now resolved.
+- Continuing the search, found a natural-language-layer version of the same "silent
+  disappearance" bug class: `agent/requirements.py`'s `KEYWORDS` pass has extracted a named
+  platform from free text (`"youtube"` → `delivery.platform="youtube"`) since it was written,
+  and the capture genuinely works — `--request "please upload this to youtube"` really adds
+  the requirement to `project.json` — but nothing ever consumed it (`grep -rn
+  '"delivery.platform"' src/` found only its own definition). `delivery.targets` came only
+  from the profile's fixed JSON, so the request was captured and then silently discarded: the
+  plan and delivered file were identical to never having named a platform. Different from the
+  already-known "small hand-written phrase list" limitation (missing *coverage*) — here the
+  phrase matches and is parsed, creating a false impression that it does something. Fixed via
+  `video-production-agent` PR #39 (**merged**): the delivery decision loop now applies a named
+  platform to the profile's own preset-less targets (the platform name is the preset name for
+  the one platform this keyword pass recognizes today), the same outcome `--profile youtube`
+  produces — a target that already has a preset is untouched. Verified for real: `plan`,
+  `explain`, and a full `render` (real `ffmpeg-skill/export` + platform check, QA correctly
+  caught the un-normalized test tone) all confirm the preset is genuinely applied; confirmed
+  no interference with profiles that already choose a preset. The same PR also fixed a small,
+  independently-found `explain` crash: `--decision`/`--step`/`--context`/`--observation`/
+  `--pipeline` raised a raw `NoneType` Python error instead of a clear message when the
+  optional `PROJECT` argument was omitted (`cmd_explain` called `load_ir(args.project)`
+  unconditionally except in `--artifact` mode) — fixed with an explicit upfront check. New
+  regression tests for both. `tests/test_unit.py` + `tests/test_requirements.py`: 196 passed
+  (4 known environmental failures, unrelated); `tests/test_integration.py`: **45 passed, 0
+  skipped**, every real-Skill class, 0 regressions. Tracked as `WORK_QUEUE.md` item 12, now
+  resolved.

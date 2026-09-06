@@ -559,3 +559,39 @@ landscape case (within ~2% across every resolution tested). There is no font-sca
 the draft fix (which would have changed default caption sizing/wrapping behavior for every
 existing caller, on a false premise) was reverted before commit. Recorded here so a future
 session doesn't have to re-investigate the same false lead.
+
+## 12. `video-production-agent`: the `delivery.platform` free-text keyword is dead code — RESOLVED 2026-09-06 (PR #39)
+
+**Found and fixed 2026-09-06** while searching for the next real gap after item 11.
+`agent/requirements.py`'s `KEYWORDS` pass has captured a named platform from free text since
+it was written (`r"\byoutube\b"` → `delivery.platform="youtube"`), and the capture genuinely
+works: `video-agent plan <video> --profile generic --request "please upload this to
+youtube"` really does add a `delivery.platform="youtube"` requirement to `project.json`. But
+nothing ever read it back — confirmed by exhaustive `grep -rn '"delivery.platform"' src/`:
+only its own definition, no consumer anywhere in `decision.py`, the planner, or the compiler.
+`delivery.targets` is sourced only from the profile's own fixed JSON. So the request was
+captured, then silently discarded — the plan, decisions, and delivered file were identical to
+never having mentioned a platform. Same class of "silent request disappearance" as items 9
+and 11, but at the natural-language layer, and this one never worked even partially (unlike
+the already-known "small hand-written phrase list" scope limitation, where the gap is missing
+*coverage*, not a phrase that matches and then does nothing).
+
+**Fixed** (`video-production-agent` PR #39, merged): the delivery decision loop now applies a
+named platform to the profile's own preset-less targets — the platform name is the preset
+name for the one platform this keyword pass currently recognizes (`youtube`), the same
+outcome `--profile youtube` would produce. A target that already carries an explicit preset
+(`conference`, or `--profile youtube` itself) is left untouched — this only fills a gap, it
+never overrides an explicit choice. Verified for real: `--request "please upload this to
+youtube"` on the generic profile now shows the youtube preset in `plan`, cites the
+requirement in `explain`, and a full `render` genuinely runs the youtube export + platform
+check (QA correctly caught the un-normalized test tone's loudness, proving the real pipeline
+ran, not a no-op). Confirmed no interference with profiles that already choose a preset. New
+regression test.
+
+The same PR also fixed a second, small, independently-found bug from the same investigation:
+`video-agent explain --decision/--step/--context/--observation/--pipeline` crashed with a raw
+`NoneType` Python error instead of a clear message when the optional `PROJECT` argument was
+omitted (`cli.py`'s `cmd_explain` called `load_ir(args.project)` unconditionally except in
+`--artifact` mode). Fixed with an explicit upfront check. `tests/test_unit.py` +
+`tests/test_requirements.py`: 196 passed (4 known environmental failures, unrelated);
+`tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class, 0 regressions.
