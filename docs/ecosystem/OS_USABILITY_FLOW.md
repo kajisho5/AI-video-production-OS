@@ -564,3 +564,45 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
   passed, 0 failed**. `ROADMAP.md` updated to IMPLEMENTED for Phase 6; tracked as
   `WORK_QUEUE.md` item 18.
+- With Phase 6 closing `ROADMAP.md` as its own status paragraphs asked ("end the roadmap
+  here as complete, for now"), the user asked a different question: given all this work,
+  how complete is it really, and what is it useful for? Answered honestly rather than with
+  marketing language: a real Skill ecosystem with real capability negotiation and real
+  provenance, but zero of it had ever touched real (non-synthetic) footage — every test in
+  every phase used ffmpeg-generated media. The user rejected evaluating this against their
+  own (unrelated) production business and asked what problems that gap itself would reveal
+  once actually tested with real data. Rather than answer in words, they supplied 5 real,
+  non-synthetic video sample files with the single word "サンプル" — the answer delivered as
+  data, not text.
+- That real-data pass immediately found a genuine `ffmpeg-skill` bug no synthetic test had
+  ever exercised (`join.py` crashing on 2+ audio-less clips — every prior test used at most
+  one; the 5 real samples are all audio-less), fixed and merged upstream as `ffmpeg-skill`
+  PR #41. Cleaning up after that merge (resetting the local checkout onto the newly-released
+  ffmpeg-skill 0.10.0) surfaced two further findings in `video-production-agent` itself,
+  neither hypothetical: (1) the declared ffmpeg-skill version safety range
+  (`SUPPORTED_MIN`/`SUPPORTED_MAX_EXCLUSIVE` in `locate.py`, with a comment reading like an
+  enforced gate) was never actually called anywhere outside tests -- `CapabilityResolver`
+  reported the real, unverified 0.10.0 checkout as plain `AVAILABLE` with no warning, and a
+  third, independently stale copy of the same range lived as a hand-written display string
+  in `package.py`; (2) six Skill locators (`ffmpeg_skill`/`media_analysis`/`transcription`/
+  `video_editing`/`audio_production`, and the shared helper behind `subtitle`/`thumbnail`/
+  `color-grading`/`motion-graphics`/`qc`) all let an explicit "not here" override fall
+  through silently to sibling-directory guesses on a miss -- a live bug on exactly this
+  ecosystem's own intended layout (every Skill checked out as a sibling of
+  `video-production-agent`), and the actual, previously uninvestigated root cause of 4
+  `tests/test_unit.py` failures that PRs #43/#44/#45 had each logged as "known
+  environmental failures, unrelated" without ever digging in.
+- **Fixed** (`video-production-agent` PR #46, merged): wired `version_supported()` into
+  `CapabilityResolver` (`DEGRADED`, not `MISSING` -- ffmpeg-skill construction stays
+  unguarded per `ARCHITECTURE_REVIEW.md` §1.7, so this is a visibility fix, nothing breaks);
+  derived `package.py`'s display string from the real constants so the two can't drift
+  apart again; made all six locators treat an explicit/env override as authoritative, with
+  no fallthrough to the guess candidates on a miss. Verified ffmpeg-skill 0.10.0 against the
+  full real-Skill integration suite before bumping the pin, per this repo's existing
+  "verify then pin" discipline (all 7 failures on 0.10.0 turned out to be hardcoded
+  `"@0.9"` version-string assertions, zero behavioral) -- bumped `SUPPORTED_MAX_EXCLUSIVE`
+  to `(0, 11, 0)` and fixed those three assertions to compare dynamically. `tests/test_
+  unit.py`: **210 passed, 0 known-environmental failures remaining** (they were a real,
+  reproducible bug, not the environment; new `LocateAuthoritativeOverrideTests`, 7 tests).
+  `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48 passed, 0
+  failed**. ADR-041 added; tracked as `WORK_QUEUE.md` item 19.
