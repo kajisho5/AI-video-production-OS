@@ -2,7 +2,7 @@ name: Ecosystem Dashboard
 
 # Builds and deploys two read-only pages to GitHub Pages from one dashboard/web build:
 #   /                the Ecosystem Dashboard (dashboard/, current OS/repo state)
-#   /control-room/   the Ecosystem Control Room (dashboard/control-room, cross-repo
+#   /control-room.html   the Ecosystem Control Room (dashboard/control-room, cross-repo
 #                    development read model: roadmap, tasks, PR/CI state, SI findings)
 # See docs/adr/ADR-011-ecosystem-dashboard.md for the Dashboard's architecture and
 # dashboard/control-room/src/types.ts for the Control Room's read model.

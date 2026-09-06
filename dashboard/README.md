@@ -206,4 +206,4 @@ separate, additive page answers a different question — "where are we in the
 one: see [`dashboard/control-room/README.md`](control-room/README.md). It reuses this
 Dashboard's own `shared/types.ts` conventions (UNKNOWN as a first-class value, evidence
 over guesses) and its already-generated `ecosystem-snapshot.json` for live GitHub facts,
-and is served at `/control-room/` alongside this Dashboard at `/`.
+and is served at `/control-room.html` alongside this Dashboard at `/`.

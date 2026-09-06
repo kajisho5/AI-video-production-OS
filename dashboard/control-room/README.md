@@ -59,7 +59,7 @@ dashboard/web/public/data/control-room-snapshot.json
 dashboard/web/control-room.html + src/control-room/   (a second page in the same Vite app)
         |
         v
-  viewer's browser, served at /control-room/ alongside the Dashboard at /
+  viewer's browser, served at /control-room.html alongside the Dashboard at /
 ```
 
 - **`src/types.ts`** — the canonical read model: `Objective`, `Phase`, `Task`,
