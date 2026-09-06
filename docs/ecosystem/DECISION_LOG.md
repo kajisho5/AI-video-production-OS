@@ -238,3 +238,52 @@ strength of a same-day finding, and conflating a low-risk, immediately buildable
 diagnostic with the actual execution-path rewrite (moderate-to-high risk, touches 187 unit
 / 90 adapter tests per Phase 4's own risk section) that Phase 4's dependency chain
 (Phase 3's collision-resolution policy) is not ready for yet.
+
+## D9 — `qc-skill`'s tool-id "mismatch" is not drift to fix; `subtitle-skill`'s is real but wider-blast-radius than a rename
+
+**Context**: `video-production-agent`#27's own diagnostic (item 8) reported both
+`qc-skill` (10/10 Capability ids) and `subtitle-skill` (2/2) as `PROVIDES_MISMATCH`.
+2026-09-06's initial write-up treated both the same way ("self-declared, not a live
+bug"). Traced each Skill's actual CLI transport and the Agent's own adapter code to go
+one level deeper, at the user's explicit direction to act on findings rather than only
+report them.
+
+**Finding, `qc-skill`**: its real CLI has exactly one operational subcommand, `qc run`
+("run inspect/check/validate against a request document"); `check`/`inspect` are a field
+*inside* that one request, not separate commands. `provides[]`'s single tool id
+(`qc/run`) for all 10 Capability ids is therefore the *correct* granularity for what the
+Skill actually exposes at the CLI level. The Agent's own `TOOL_CHECK`/`TOOL_INSPECT`
+(`tools/qc/adapter.py`) are a deliberately *finer* identifier space of the Agent's own
+choosing, correctly translated to the real `"check"`/`"inspect"` request field via
+`TOOL_OPERATIONS` before any request is sent. Collapsing the Agent's two ids to match the
+Skill's one would be a **regression** — it would erase the one distinction the Agent
+needs to build the right request.
+
+**Decision, `qc-skill`**: no fix. `PROVIDES_MISMATCH` is technically accurate (the
+strings differ) but this specific shape — one real Skill-side command, several
+Agent-side operation ids atop it — should be read as expected granularity difference,
+not drift. Recorded so a future session doesn't "fix" this into a real bug.
+
+**Finding, `subtitle-skill`**: unlike `qc-skill`, this really is a simple 1:1 naming
+difference (`subtitle-skill/generate`/`render` vs. this Agent's `subtitle/generate`/
+`render`) — reconcilable in principle. But `SKILL_ID = "subtitle"`
+(`tools/subtitle/adapter.py`) does triple duty: the package-registry key, the required
+tool-id prefix (`SkillPackage.validate()`), and a `ToolSpec.required_capabilities` entry
+that must exactly match the *independently* named `CapabilityResolver` environment
+capability (`capabilities/resolver.py`'s `_finishing_skill(caps, "subtitle", ...)`) and
+two `SkillSpec.required_capabilities=["subtitle"]` entries in `registry.py`. Renaming
+`SKILL_ID` for the tool-id fix without updating all three in lockstep would silently
+break availability detection (the package would require a capability name
+`CapabilityResolver` never populates, and `subtitle_generation`/`subtitle_burn_in` would
+report `UNAVAILABLE` in every real environment).
+
+**Decision, `subtitle-skill`**: not attempted. A correct fix touches
+`tools/subtitle/adapter.py`, `capabilities/resolver.py`, two spots in `registry.py`, and
+`tests/test_adapter_subtitle.py`'s literal tool-id references, together — real,
+coordinated, testable work, scoped precisely enough now to execute confidently in a
+follow-up, but a behavior-affecting rename this diagnostic's own PR should not bundle in
+unasked.
+
+**Why this belongs in the log**: distinguishing "the join key doesn't match" from "this
+is actually wrong" is exactly the kind of judgment call that gets silently lost if only
+the diagnostic's raw `PROVIDES_MISMATCH` label is trusted at face value next time.

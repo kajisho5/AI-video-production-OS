@@ -305,16 +305,29 @@ Capability id, reporting `PROVIDES_VALID` / `PROVIDES_MISMATCH` / `CAPABILITY_UN
 real-data regressions of this item's own qc-skill/subtitle-skill finding).
 
 **Run against all 10 registered Skills' real, current `provides[]`** (captured from each
-Skill's actual merged `main`, no live network): confirmed exactly this item's predictions
-for `qc-skill` (10/10 self-declared `PROVIDES_MISMATCH`) and `subtitle-skill` (2/2, same
-pattern) — both confirmed **not live bugs** (`SkillRegistry.select_tool()` still works,
-since each adapter builds its own `SkillPackage` from its self-declared tool ids, never
-from the contract). Confirmed `video-editing-skill`'s `video.trim` as
-`CAPABILITY_UNCONSUMED`. Found `CAPABILITY_MISSING` nowhere across all 10 Skills. Also
-found something this item's own prediction did not anticipate: `ffmpeg-skill` exposes
-only 12 of its real 21 capabilities to this Agent's own reference `CATALOG` at all — 9 are
-reached only indirectly through other Skills that delegate to it (by design), 3 more
-(`fit`/`report`/`scenes`) are known but superseded by other Skills' own equivalents.
+Skill's actual merged `main`, no live network): confirmed `qc-skill` (10/10) and
+`subtitle-skill` (2/2) as `PROVIDES_MISMATCH`. **Traced one level deeper afterward
+(`DECISION_LOG.md` D9) and split what looked like the same finding into two genuinely
+different ones**: `qc-skill`'s is not drift at all — its real CLI has one `run`
+subcommand, `check`/`inspect` are a field inside the request, so `provides[]`'s single
+`qc/run` tool id is the *correct* granularity, and this Agent's finer `TOOL_CHECK`/
+`TOOL_INSPECT` split is a deliberate, working, correctly-translated choice — collapsing
+it to match would be a regression, not a fix. `subtitle-skill`'s is a real, simple 1:1
+naming difference in principle, but `SKILL_ID` does triple duty (package-registry key,
+tool-id prefix, and a `required_capabilities` name that must exactly match an
+independently-named `CapabilityResolver` capability and two `registry.py` entries) — a
+correct fix needs all of those changed together, real coordinated work, not attempted
+without confirmation that specific behavior-affecting change is wanted. Confirmed
+`video-editing-skill`'s `video.trim` as `CAPABILITY_UNCONSUMED` and then **closed it**:
+declared `video_trim` in `default_registry()` the same safe way `multi_source_sync`/
+`semantic_deletion` are (phase 2, never selectable) — re-running the diagnostic confirms
+`video-editing`'s `CAPABILITY_UNCONSUMED` count dropped from 1 to 0. Found
+`CAPABILITY_MISSING` nowhere across all 10 Skills. Also found something this item's own
+prediction did not anticipate: `ffmpeg-skill` exposes only 12 of its real 21 capabilities
+to this Agent's own reference `CATALOG` at all — 9 are reached only indirectly through
+other Skills that delegate to it (by design), 3 more (`fit`/`report`/`scenes`) are known
+but superseded by other Skills' own equivalents (`report`'s own before/after generator
+superseded by this Agent's own `audit`/provenance mechanism).
 
 **One prediction from this item's own text needs a correction, not a contradiction**: the
 claim above that `audio-production-skill` has "five unused capabilities" (`audio.dynamics`,
