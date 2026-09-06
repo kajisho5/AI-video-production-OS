@@ -546,3 +546,21 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   failures, unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no
   mocks): **48 passed, 0 failed**. `ROADMAP.md` updated to IMPLEMENTED for Phase 5; tracked
   as `WORK_QUEUE.md` item 17.
+- Continued to `ROADMAP.md` Phase 6. Confirmed against `Service.render()`'s actual source,
+  before writing anything, that the composition Phase 6 asks for (a `ProductionReceipt`
+  rolling up what already exists: `ir.doc["provenance"]`'s skill/tool versions,
+  `_register_artifacts()`'s Artifact list with Phase 4's provenance fields,
+  `ir.doc["decisions"]`) is genuinely just assembly, not new data. Resolved the two
+  questions `OPEN_ARCHITECTURAL_QUESTIONS.md` named as blocking this phase (I5: emit the
+  receipt whenever execution reaches any terminal status, not only full success -- never
+  when execution never started at all; I7: free-text warnings/failures, per the docs' own
+  "non-blocking" framing of a more structured alternative) rather than leaving them for a
+  future session. Implemented as one more `Artifact.type` (`PRODUCTION_RECEIPT`), registered
+  through the exact same store path every other Artifact uses -- deliberately not a new
+  subsystem. `qc_report_ids` stays honestly empty since qc-skill's reports aren't registered
+  as independent Artifacts in this codebase today; their verdict already reaches
+  `warnings`/`failures` through the QA items that admit them. `video-production-agent` PR
+  #45 (**merged**). `tests/test_unit.py`: 199 passed (4 known environmental failures,
+  unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
+  passed, 0 failed**. `ROADMAP.md` updated to IMPLEMENTED for Phase 6; tracked as
+  `WORK_QUEUE.md` item 18.

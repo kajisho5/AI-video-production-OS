@@ -778,3 +778,38 @@ regression test: a real end-to-end render's `duration` item asserts `threshold_s
 `subject_artifact_id`. `tests/test_unit.py`: 198 passed (4 known environmental failures,
 unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
 passed, 0 failed**. `ROADMAP.md`'s Phase 5 status updated to IMPLEMENTED.
+
+## 18. `video-production-agent`: Phase 6 — `ProductionReceipt` (Artifact type `PRODUCTION_RECEIPT`) emitted per completed execution — RESOLVED 2026-09-06 (PR #45)
+
+**Investigated 2026-09-06**, continuing the roadmap after Phase 5. `ROADMAP.md`'s Phase 6
+asks for a `ProductionReceipt` (`SPEC.md` §6 / `PROVENANCE.md` §4) — the once-per-completed-
+Plan roll-up of what happened, why, with what tools, and whether it passed verification.
+Both design docs are explicit this is composition work, not a new concept: before writing
+code, confirmed against the actual `Service.render()` source that `skill_versions`/
+`tool_versions`/`plan_hash`/`ir_hash` already exist in `ir.doc["provenance"]`/`["source"]`,
+the producing-Operation-to-Artifact links already exist via `_register_artifacts()`
+(carrying Phase 4's `capability_id`/`provider_id`/`derived_from`), and the full decision
+list already exists in `ir.doc["decisions"]`. Two questions were explicitly left open for
+this phase to resolve, per `OPEN_ARCHITECTURAL_QUESTIONS.md`'s I5/I7.
+
+**Fixed** (`video-production-agent` PR #45, merged): resolved **I5** (emission timing) by
+emitting a receipt whenever `Executor.run()` reaches any terminal status (`COMPLETED`/
+`FAILED`/`BLOCKED`/`CANCELLED`) — "the Plan finished running," per `PROVENANCE.md`'s own
+wording, not that it fully passed; never emitted when execution never started at all
+(rejection/block/pending-approval gates before `ex.run()`). Resolved **I7**
+(warnings/failures shape) with free-text strings, exactly `SPEC.md`'s literal shape, since
+`PROVENANCE.md` itself names a more structured alternative as non-blocking. Implemented as
+`Artifact.type = "PRODUCTION_RECEIPT"` (new `audit/receipt.py`'s `build_receipt()`
+assembles the body; `Service.render()` registers it through the exact same
+`ArtifactStore.integrity()`/`artifact_id()`/`register()` path every other Artifact uses —
+"not a new subsystem," per both docs). `qc_report_ids` stays honestly `[]`: qc-skill's
+reports aren't registered as independent Artifacts anywhere in this codebase today, so
+naming an artifact id nothing owns would be worse than the honest gap — their PASS/WARN/FAIL
+verdict already reaches `warnings`/`failures` via the QA items that admit them. New
+regression tests: a COMPLETED render's receipt fields checked one by one against the real
+IR/Artifact data; a FAILED render (mid-run tool failure) still gets a receipt with the
+execution failure recorded and empty `output_artifact_ids`; the receipt reads back through
+`svc.artifact()` exactly like any other registered Artifact. `tests/test_unit.py`: 199
+passed (4 known environmental failures, unrelated). `tests/test_integration.py` (real
+ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**. `ROADMAP.md`'s Phase 6
+status updated to IMPLEMENTED.
