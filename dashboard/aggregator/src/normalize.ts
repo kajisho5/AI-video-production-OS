@@ -12,6 +12,7 @@ import type {
   RepoType,
 } from "../../shared/types.js";
 import { UNKNOWN } from "../../shared/types.js";
+import type { Unknown } from "../../shared/types.js";
 import type { CapabilityStatusRepoEntry, RegistryRepo } from "./config.js";
 import type { RepoGithubFacts } from "./github.js";
 import { computeMaturity } from "./maturity.js";
@@ -21,11 +22,13 @@ export function buildRepoStatus(
   github: RepoGithubFacts,
   status: CapabilityStatusRepoEntry | undefined,
   fetchedAt: string,
+  distributionLookup?: { version: string | Unknown; lookupError?: string },
 ): RepoStatus {
   const maturity = computeMaturity({
     repoType: registryEntry.type,
     github: { exists: github.exists, ci: github.ci, sizeKb: github.sizeKb },
     status,
+    distributionLookup,
   });
 
   const capabilityContractPublished: EvidencedBoolean =
@@ -66,7 +69,7 @@ export function buildRepoStatus(
     ci: github.ci,
     release: github.release,
     distribution: status?.distribution
-      ? { kind: status.distribution.kind as "npm" | "pypi", package: status.distribution.package, latestVersion: UNKNOWN }
+      ? { kind: status.distribution.kind as "npm" | "pypi", package: status.distribution.package, latestVersion: distributionLookup?.version ?? UNKNOWN }
       : { kind: UNKNOWN, package: null, latestVersion: UNKNOWN },
 
     capabilityContractPublished,

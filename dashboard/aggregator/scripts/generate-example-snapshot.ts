@@ -1,15 +1,18 @@
 /**
  * Generates a realistic EXAMPLE snapshot for local frontend development, using the
  * real aggregator pipeline (buildRepoStatus/buildOverview/detectBottlenecks/buildGraph
- * -- the same functions index.ts uses) fed with real facts gathered via the GitHub MCP
- * tool on 2026-09-05 (this development sandbox's raw HTTPS access to api.github.com is
- * blocked by its own GitHub App connector policy; the abstracted MCP tool is not,
- * which is how these facts were actually verified -- see dashboard/README.md's "Known
- * gaps" section). This is NOT the output of a live `npm run generate` run against the
- * real network from this sandbox -- it exercises the real computation code with
- * real-as-of-2026-09-05 input data, which is the closest verification possible here.
- * The real CI workflow (.github/workflows/dashboard.yml) will overwrite this file with
- * a genuinely live-fetched snapshot on its first run.
+ * -- the same functions index.ts uses) fed with real GitHub facts gathered via the
+ * GitHub MCP tool on 2026-09-05 (this development sandbox's raw HTTPS access to
+ * api.github.com is blocked by its own GitHub App connector policy; the abstracted MCP
+ * tool is not, which is how these facts were actually verified). The one exception is
+ * the npm/PyPI version lookup (packageRegistry.ts), which uses a real, live network
+ * call -- that registry is directly reachable from this sandbox, unlike api.github.com.
+ *
+ * The real `.github/workflows/dashboard.yml` has since run for real in CI and overwrote
+ * this file with a genuinely, entirely live-fetched snapshot -- this script and its
+ * fixture data are kept only as a documented, reproducible way to regenerate a
+ * realistic example for local frontend development (`npm run dev` needs *some* snapshot
+ * file to exist under `web/public/data/`).
  *
  *   npx tsx scripts/generate-example-snapshot.ts
  */
@@ -21,8 +24,9 @@ import { buildAgentStatus } from "../src/agentStatus.js";
 import { detectBottlenecks } from "../src/bottlenecks.js";
 import { loadCapabilityStatus, loadRegistry } from "../src/config.js";
 import { fetchRepoFacts } from "../src/github.js";
+import { fetchLatestVersion } from "../src/packageRegistry.js";
 import { buildGraph, buildOverview, buildRepoStatus } from "../src/normalize.js";
-import type { EcosystemSnapshot } from "../../shared/types.js";
+import type { EcosystemSnapshot, Unknown } from "../../shared/types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -222,7 +226,14 @@ async function main() {
     const [owner, repo] = entry.slug.split("/");
     const octokit = fakeOctokitFor(entry.slug);
     const facts = await fetchRepoFacts(octokit, owner, repo);
-    repos.push(buildRepoStatus(entry, facts, capabilityStatus.repos[entry.slug], fetchedAt));
+    const status = capabilityStatus.repos[entry.slug];
+    let distributionLookup: { version: string | Unknown; lookupError?: string } | undefined;
+    const distKind = status?.distribution?.kind;
+    if ((distKind === "npm" || distKind === "pypi") && status?.distribution?.package) {
+      const result = await fetchLatestVersion(distKind, status.distribution.package);
+      distributionLookup = { version: result.version, lookupError: result.error };
+    }
+    repos.push(buildRepoStatus(entry, facts, status, fetchedAt, distributionLookup));
   }
 
   const bottlenecks = detectBottlenecks(repos);
