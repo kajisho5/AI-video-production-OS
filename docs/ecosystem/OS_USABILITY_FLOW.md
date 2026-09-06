@@ -179,3 +179,31 @@ fixed via PR #31 (**merged**): see step 9.
   308 passed, same 4 pre-existing environmental failures, 0 new regressions. The genuinely
   unprocessed "nothing to do" case is unaffected and remains WORK_QUEUE.md item 9 — updated that
   item to record what's now fixed vs. what's still open.
+- Extended real end-to-end verification (genuine `plan`→`render`, not just `doctor`) to two more
+  Skill/tool pairs this round: `thumbnail-skill` (`--set thumbnail=true` → real
+  `thumbnail/extract_frame` call, a genuine 1280×720 PNG written and QA `PASS`, artifact
+  `stage: candidate`/`delivery_status: READY`) and `audio-production-skill`'s `audio.extract`
+  path (`--set audio.production=true --set audio.gain=-3 --set audio.extract=true` on the same
+  video → a real `audio-production/run` gain op, `.wav` output, `COMPLETED`, and — since this is
+  exactly the "processed, no preset" shape PR #32 just fixed — a correctly registered `MASTER`
+  artifact). `subtitle-skill` was attempted (`--set subtitle=true --kind transcript --offline`)
+  but correctly `BLOCK`ed: the test clip is a synthetic tone with no speech, so an empty
+  transcript is the right outcome (`transcription-skill` itself reports `AVAILABLE`) — not a
+  bug, just an unsuitable test asset; needs a real speech clip to verify further.
+- Re-diagnosed the "4 pre-existing environmental failures" precisely instead of continuing to
+  wave at them as "known, environmental" — 2 turned out to be genuinely cwd-dependent and now
+  pass cleanly when the suite is run from inside the `video-production-agent` checkout instead
+  of `/tmp` (`VideoEditingRealTests`'s two tests call `locate_ffmpeg_skill()` with no explicit
+  dir, which needs to run from inside the checkout for its own sibling-discovery to find
+  `../ffmpeg-skill`). The other 2 (`MediaAnalysisAdapterTests`) fail regardless of cwd for a
+  different, now-precisely-understood reason: `locate_media_analysis()`'s checkout-discovery
+  fallback checks `Path.cwd().parent / "media-analysis-skill"` unconditionally — it is **not**
+  parameterized by the function's own `explicit`/`env` arguments — so a test that passes
+  `explicit="/nonexistent"` and `env={"PATH": "/nonexistent"}` to assert "not locatable" still
+  finds the real `/home/user/media-analysis-skill` checkout sitting next to cwd. This is the
+  same class of thing as the earlier editable-install lesson in this document: a deliberate,
+  documented convenience feature (run from inside a sibling-checkout layout, zero env vars) that
+  a test written for a clean/CI environment can't isolate against in this exact sandbox layout —
+  not a product bug, and not something to change in `video-production-agent`'s own code (that
+  would mean ripping out the convenience feature this whole document has been verifying is
+  real). Recorded here so a future session doesn't have to re-derive this a third time.
