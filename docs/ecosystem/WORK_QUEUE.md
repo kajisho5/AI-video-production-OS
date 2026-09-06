@@ -355,7 +355,27 @@ Phase 1's registry library was scoped to be consumed by, not built into, another
 repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
 behavior — diagnostic output only.
 
-## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — needs a real passthrough operation, not a same-file patch
+## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — PARTIALLY RESOLVED 2026-09-06 (PR #32), the harder half still needs a real passthrough operation
+
+**Update 2026-09-06 (PR #32, merged)**: the finding below turned out to be two cases, not
+one, and only one of them needed the cross-repo work described. **Case A — something real
+was processed** (a motion-graphics element, or the always-on technical silence trim), just
+with no delivery preset: `compiler.py`'s `delivery()` already resolves a real, in-workspace
+path for it (verified for real with a motion-graphics text overlay); only
+`service.py`'s `_register_artifacts()`'s `not t.get("preset")` guard was dropping it. **Fixed**
+by removing that guard — `logical not in paths` alone already correctly leaves Case B (below)
+unregistered, so nothing needed to change in `compiler.py`'s `delivery()` itself. Tried
+dropping the identical guard in `compiler.py`'s `qc_gate()` too; reverted after it exposed a
+real crash (`agent/planner.py`'s `qc_steps()` never plans a qc step for a no-preset target,
+so `_step_tools()` has no tool selection for the compiler to find, and compiling one anyway
+raises `CompileError`). Left `qc_gate()` untouched — `run_qa`'s existing ADR-032 fail-closed
+check already covers a requested-but-unrun QC gate correctly and safely on its own (verified
+for real: `--set qc=true` on Case A now registers the artifact but correctly comes back QA
+`FAIL`/stage `NOT_READY` with `fix_hint: "the QC gate was planned but no report exists for
+this artifact"` — honest, not a crash, not a false pass). New regression test added; full
+suite 308 passed, 0 new regressions. **Case B — genuinely nothing was processed** (the plain
+"nothing to do" request) is untouched by PR #32 and is exactly the remaining gap the rest of
+this item describes below: it still needs the real stream-copy/remux operation.
 
 **Found 2026-09-06** while verifying `video-production-agent` PR #31 (the zero-step
 render-crash fix) end to end. A generic-profile plan with no delivery preset — "deliver
