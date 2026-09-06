@@ -1,12 +1,12 @@
 {
   "$schema_note": "Structured mirror of capability/integration facts documented in CURRENT_STATE.md, CROSS_REPO_STATUS.md, CAPABILITY_MATRIX.md and MATURITY_MODEL.md (see docs/adr/ADR-011-ecosystem-dashboard.md). Update this file in the same commit that updates those prose documents. Every field not directly re-verifiable by the Dashboard's aggregator from a GitHub API call is 'documented' evidence per MATURITY_MODEL.md, carries 'as_of' (the date this entry was last checked against real source), and an 'evidence' pointer (a PR, ADR, or file this fact is drawn from) -- never asserted without one.",
   "schema_version": 1,
-  "updated_at": "2026-09-05",
+  "updated_at": "2026-09-06",
   "repos": {
     "kajisho5/ffmpeg-skill": {
       "contract_published": true,
-      "provides_published": false,
-      "provides_evidence": "PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch",
+      "provides_published": true,
+      "provides_evidence": "PR #24 merged 2026-09-06",
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent depends on this Skill for all 9 other Skills' delegated execution; not a single named adapter, it is the shared execution substrate",
       "verified_e2e": "unknown",
@@ -15,7 +15,7 @@
         "package": "ffmpeg-skill",
         "note": "published to npm per docs/ecosystem/CURRENT_STATE.md; version not independently re-checked by this file"
       },
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/video-editing-skill": {
       "contract_published": true,
@@ -25,7 +25,7 @@
       "os_integration_evidence": "video-production-agent registry.py default_registry(), package id video-editing matches SKILL_ID exactly",
       "verified_e2e": "documented",
       "verified_e2e_evidence": "video-production-agent README's real end-to-end pipeline command sequence includes an editing step",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/audio-production-skill": {
       "contract_published": true,
@@ -34,25 +34,25 @@
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(), package id audio-production matches SKILL_ID exactly",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/color-grading-skill": {
       "contract_published": true,
-      "provides_published": false,
-      "provides_evidence": "PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending.",
+      "provides_published": true,
+      "provides_evidence": "PR #4 merged 2026-09-06 after a real merge conflict against PR #5 (PRIMARY_CORRECTION, merged first): both sides had independently claimed ADR-15, and PRIMARY_CORRECTION had no Capability id assigned in CAPABILITY_IDS -- resolved by renumbering the provides ADR to ADR-16 and adding a provisional id (color.primary_correction, following the matrix's own <domain>.<verb> convention) so contract.capability_provides() doesn't KeyError.",
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(), package id color-grading matches SKILL_ID exactly",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/subtitle-skill": {
       "contract_published": true,
-      "provides_published": false,
-      "provides_evidence": "PR #2 open (draft) as of 2026-09-05 -- not yet on default branch",
+      "provides_published": true,
+      "provides_evidence": "PR #2 merged 2026-09-06",
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'subtitle', deliberately different from this Skill's own SKILL_ID 'subtitle-skill' (commented in adapter.py) -- join by Capability id, never tool-id string, per WORK_QUEUE.md item 1's finding",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/motion-graphics-skill": {
       "contract_published": true,
@@ -61,7 +61,7 @@
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(), package id motion-graphics matches SKILL_ID exactly; agent's pinned MotionGraphicsAdapter.check_contract() re-verified against this Skill's live contract as of PR #4/#6",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/thumbnail-skill": {
       "contract_published": true,
@@ -70,16 +70,16 @@
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'thumbnail', deliberately different from this Skill's own SKILL_ID 'thumbnail-skill' -- join by Capability id, never tool-id string",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/qc-skill": {
       "contract_published": true,
-      "provides_published": false,
-      "provides_evidence": "PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
+      "provides_published": true,
+      "provides_evidence": "PR #5 merged 2026-09-06 after a real merge conflict against 4 stacked feature PRs (#2/#3/#4/#6, delivery_package/cross_artifact/timeline_integrity/luminance checks, merged first): both sides had independently claimed ADR-009, and the 4 PRs' 7 new checks were unaccounted for in UNGROUPED_CHECKS -- resolved by renumbering the provides ADR to ADR-014 and adding the 7 checks to UNGROUPED_CHECKS (test_contract_completeness.py's own completeness invariant correctly caught this, not silently passed). This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
       "os_integration": "integrated_as_gate",
       "os_integration_evidence": "video-production-agent ADR-032: qc-skill is connected as the final promotion gate, never as an alternative per-measurement Provider to media-analysis-skill -- confirmed deliberate, not a gap",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/media-analysis-skill": {
       "contract_published": true,
@@ -88,7 +88,7 @@
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(), package id media-analysis matches SKILL_ID exactly",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/transcription-skill": {
       "contract_published": true,
@@ -97,7 +97,7 @@
       "os_integration": "integrated",
       "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'transcription', matches this Skill's tool id prefix by convention (commented in adapter.py) though SKILL_ID is 'transcription-skill' -- join by Capability id, never tool-id string",
       "verified_e2e": "unknown",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/video-production-agent": {
       "architecture": "documented",
@@ -115,12 +115,12 @@
       },
       "verified_e2e": "documented",
       "verified_e2e_evidence": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     },
     "kajisho5/AI-video-production-OS": {
       "registry_library": "implemented",
       "registry_library_evidence": "registry/ Python library, 50 tests passing, all 8 SKILL_SPEC.md section 8 conformance checks real as of 2026-09-05",
-      "as_of": "2026-09-05"
+      "as_of": "2026-09-06"
     }
   }
 }

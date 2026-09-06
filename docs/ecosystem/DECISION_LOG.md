@@ -167,3 +167,39 @@ client" (there is no server to compromise). The tradeoff — data is only as fre
 last aggregation run (hourly, or on-demand via `workflow_dispatch`) — is an explicit,
 accepted, documented cost (`dashboard/README.md`'s "Known gaps"), not a hidden one. See
 `docs/adr/ADR-011-ecosystem-dashboard.md` for the full decision record.
+
+## D7 — Merge-conflict resolutions on `color-grading-skill#4`/`qc-skill#5` fixed real gaps, not just text collisions
+
+**Context**: both PRs developed real merge conflicts (2026-09-06) because sibling
+feature PRs in the same repos merged first: `color-grading-skill#5` (PRIMARY_CORRECTION)
+before `#4` (provides); `qc-skill#2/#3/#4/#6` (delivery_package/cross_artifact/
+timeline_integrity/luminance checks) before `#5` (provides). In both cases the textual
+conflict was superficial (both sides had independently claimed the next ADR number in
+`docs/decisions.md`), but resolving it purely as text would have shipped a real bug: in
+`color-grading-skill`, `contract.capability_provides()` would `KeyError` on
+`PRIMARY_CORRECTION` (no entry in `CAPABILITY_IDS`); in `qc-skill`,
+`tests/test_contract_completeness.py`'s own completeness invariant would fail on 7 new
+checks unaccounted for in `CAPABILITY_CHECK_GROUPS`/`UNGROUPED_CHECKS`.
+
+**Decision**: resolved both by (1) renumbering the losing side's ADR to the next free
+number rather than picking one arbitrarily, and (2) fixing the actual code gap the merge
+exposed — a provisional Capability id for `PRIMARY_CORRECTION` (`color.
+primary_correction`, following the matrix's own `<domain>.<verb>` convention, same
+pattern as motion-graphics-skill's `bug`/`chapter` ids) and adding the 7 new qc-skill
+checks to `UNGROUPED_CHECKS` (each real, run against a fresh clone of the merged `main`
+to confirm the same failure/error counts reproduce there too, so the resolution wasn't
+mistaken for something the merge itself broke).
+
+**Why**: this project's repeated principle — a merge conflict is a signal to actually
+read both sides' code, not just to make text combine cleanly. A conflict that resolves
+without error is not the same as a conflict that resolves *correctly*; here, git's
+auto-merge of `contract.py`/`tests/test_contract_completeness.py` succeeded with no
+marked conflict at all, yet still left behind a real defect only running the code (not
+just `git merge`) would catch. Mid-resolution, an exploratory `git checkout origin/main
+-- .` followed by `git checkout HEAD -- .` (meant only to compare against a clean
+baseline) instead corrupted the in-progress merge's working tree — recovered cleanly via
+`git merge --abort` and redoing the resolution from scratch, since nothing had been
+committed or pushed yet. Recorded here so a future session doesn't repeat either
+mistake: don't use `git checkout <ref> -- .` for read-only comparison during an
+in-progress merge (a separate clone or worktree is the safe way), and always run the
+affected code (not just diff it) after resolving a Capability-contract-shaped conflict.

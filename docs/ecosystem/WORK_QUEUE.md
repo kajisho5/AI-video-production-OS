@@ -72,12 +72,16 @@ None of the Agent's registered `SkillSpec`s list `qc-skill` as an alternative ca
 any `media-analysis-skill`-served skill — consistent with, though not yet confirmed as
 deliberate proof of, the role-separation hypothesis in item 5 below.
 
-## 2. Land the remaining `provides` rollout PRs
+## 2. ~~Land the remaining `provides` rollout PRs~~ — DONE 2026-09-06
 
-Six PRs still open as of the last check (`subtitle-skill#2`, `thumbnail-skill#2`,
-`color-grading-skill#4`, `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24`) — all
-CI-green, driven per the standing PR-maintenance rules. Mostly reactive (respond to CI/
-review events as they arrive) rather than work to actively schedule.
+All 10 Skills' `provides` PRs merged. The last four (`subtitle-skill#2`,
+`ffmpeg-skill#24`, `color-grading-skill#4`, `qc-skill#5`) required draft removal + merge;
+the latter two had developed real merge conflicts against sibling feature PRs that
+landed first in the same repos, each fixing a real gap the conflict exposed (a missing
+Capability id; 7 unaccounted-for checks) rather than a purely textual resolution — see
+`DECISION_LOG.md` D7 and `docs/ecosystem/capability-status.json` for the evidence.
+`docs/ecosystem/WORK_QUEUE.md` item 1's broader tool-candidate mapping simulation (which
+explicitly waited for this) can now proceed.
 
 ## 3. ~~`registry/` conformance harness: real per-Skill wiring~~ — DONE 2026-09-05
 
