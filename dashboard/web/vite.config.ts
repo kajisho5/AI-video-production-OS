@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -55,6 +56,18 @@ export default defineConfig({
   resolve: {
     alias: {
       "@ecosystem/types": new URL("../shared/types.ts", import.meta.url).pathname,
+      "@ecosystem/control-room-types": new URL("../control-room/src/types.ts", import.meta.url).pathname,
+    },
+  },
+  build: {
+    // Second entry point: the Ecosystem Control Room is a separate page
+    // (/control-room/), never merged into or replacing the existing Dashboard's
+    // own index.html / App.tsx.
+    rollupOptions: {
+      input: {
+        main: resolve(import.meta.dirname, "index.html"),
+        controlRoom: resolve(import.meta.dirname, "control-room.html"),
+      },
     },
   },
   test: {

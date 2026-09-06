@@ -26,8 +26,11 @@ hardcoded and is what a future registry-driven rewrite would target — the inve
 found two self-declared (contract-unconfirmed) tool ids and two published-but-unconsumed
 Capabilities, real but non-urgent findings, not evidence that a connection is needed now.
 A small, additive, read-only diagnostic joining the two by Capability id (never tool-id
-string) is proposed as `WORK_QUEUE.md` item 8, to be built inside `video-production-agent`
-itself when its own maintainers choose to.
+string) — `WORK_QUEUE.md` item 8 — is now **built**, inside `video-production-agent`
+itself (`skills/diagnostics.py`,
+[PR #27](https://github.com/kajisho5/video-production-agent/pull/27), kept Draft), and
+run against all 10 registered Skills' real data: it confirmed the two self-declared tool
+ids and found `CAPABILITY_MISSING` nowhere.
 
 ## CURRENT / IMPLEMENTED (real, verified, working code)
 
@@ -119,9 +122,10 @@ itself when its own maintainers choose to.
   (registry-driven discovery) as originally scoped — **confirmed still the right shape**
   by 2026-09-06's exhaustive investigation (`DECISION_LOG.md` D8), not superseded: the
   Agent's real execution routing is still hardcoded (`Service.adapter()` → `ToolRouter`),
-  exactly what Phase 4 targets. The concretely-buildable near-term step is smaller than a
-  Phase 4 rewrite: a separate, additive, read-only diagnostic (`WORK_QUEUE.md` item 8),
-  not a connection of the two selection mechanisms.
+  exactly what Phase 4 targets. The concretely-buildable near-term step, a separate,
+  additive, read-only diagnostic (`WORK_QUEUE.md` item 8), is now **done** (see CURRENT/
+  IMPLEMENTED above) — Phase 3/4 themselves remain PLANNED, genuinely, not merely
+  unstarted-by-oversight.
 - The `registry/` conformance harness (item 3) is **done**: all 8 of `SKILL_SPEC.md` §8's
   checks are now real functions, including `no_unsafe_shell_out` (a static AST walk,
   manually verified PASS against all 9 real Python Skills' source trees — it does not

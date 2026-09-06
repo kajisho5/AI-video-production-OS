@@ -1,7 +1,11 @@
 name: Ecosystem Dashboard
 
-# Builds and deploys the read-only Ecosystem Dashboard (dashboard/) to GitHub Pages.
-# See docs/adr/ADR-011-ecosystem-dashboard.md for the full architecture.
+# Builds and deploys two read-only pages to GitHub Pages from one dashboard/web build:
+#   /                the Ecosystem Dashboard (dashboard/, current OS/repo state)
+#   /control-room.html   the Ecosystem Control Room (dashboard/control-room, cross-repo
+#                    development read model: roadmap, tasks, PR/CI state, SI findings)
+# See docs/adr/ADR-011-ecosystem-dashboard.md for the Dashboard's architecture and
+# dashboard/control-room/src/types.ts for the Control Room's read model.
 #
 # This is the ONLY job in this project that touches a GitHub token capable of reading
 # other repositories in the ecosystem, and it runs entirely server-side in Actions --
@@ -23,8 +27,11 @@ on:
     branches: [main]
     paths:
       - "dashboard/**"
+      - "docs/ROADMAP.md"
       - "docs/ecosystem/registry.json"
       - "docs/ecosystem/capability-status.json"
+      - "docs/ecosystem/WORK_QUEUE.md"
+      - "docs/ecosystem/DECISION_LOG.md"
       - ".github/workflows/dashboard.yml"
 
 permissions:
@@ -65,6 +72,27 @@ jobs:
         working-directory: dashboard/aggregator
         env:
           GITHUB_TOKEN: ${{ secrets.ECOSYSTEM_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npm run generate
+
+      - name: Install control-room dependencies
+        working-directory: dashboard/control-room
+        run: npm ci
+
+      - name: Typecheck control-room
+        working-directory: dashboard/control-room
+        run: npm run typecheck
+
+      - name: Test control-room
+        working-directory: dashboard/control-room
+        run: npm test
+
+      - name: Generate control-room snapshot
+        working-directory: dashboard/control-room
+        env:
+          GITHUB_TOKEN: ${{ secrets.ECOSYSTEM_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          # No SI_SNAPSHOT_DIR here: this repository does not generate or bundle a
+          # System Intelligence snapshot. If one is ever produced for this target and
+          # committed/fetched somewhere in CI, point this at that directory.
         run: npm run generate
 
       - name: Install web dependencies

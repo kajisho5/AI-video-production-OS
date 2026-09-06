@@ -225,27 +225,34 @@ actual CI job in any Skill's own repository — each is a real, callable functio
 not yet an automated gate anywhere. That would be a per-Skill PR (adding a conformance
 CI step), a different and separate piece of work from building the checks themselves.
 
-## 7. Ecosystem Dashboard (`dashboard/`) — IMPLEMENTED 2026-09-05, one manual step remaining
+## 7. ~~Ecosystem Dashboard (`dashboard/`)~~ — LIVE 2026-09-06, verified against the real deployed site
 
 Built per an explicit user request: a read-only, mobile-first, PWA-ready web dashboard
 over the ecosystem's real GitHub state. See `dashboard/README.md` and
 `docs/adr/ADR-011-ecosystem-dashboard.md` for the architecture, `docs/ecosystem/
-MATURITY_MODEL.md` for the maturity ladder it renders. 50 tests, all passing, no network
+MATURITY_MODEL.md` for the maturity ladder it renders. 61 tests, all passing, no network
 access required by any of them.
 
-**Remaining, human-only step**: enable GitHub Pages for this repository (Settings →
-Pages → Source: "GitHub Actions") — outside this project's write access. Until that's
-done, `.github/workflows/dashboard.yml` will build and test successfully but the deploy
-step will fail. Not a code gap.
+**GitHub Pages is enabled and the site is genuinely live**, confirmed by fetching
+`https://kajisho5.github.io/AI-video-production-OS/data/ecosystem-snapshot.json`
+directly (2026-09-06) and finding data this session never fed it: a real open PR count
+and a real PR-body detail on `video-production-agent` (a merge conflict on a real,
+specific PR number about multi-source sync) neither present in, nor derivable from, the
+fixture snapshot committed to this repository, plus a `generatedAt` timestamp
+independently later than that committed fixture's own commit time. Not a hypothesis —
+directly observed.
 
-**Real gaps worth revisiting, in rough priority order**:
-- The committed `dashboard/web/public/data/ecosystem-snapshot.json` was produced by
-  running the real aggregator pipeline against real-as-of-2026-09-05 fixture facts (this
-  development sandbox's own GitHub access is MCP-tool-only; raw `api.github.com` calls
-  are blocked by its egress policy — see `dashboard/README.md`'s "Known gaps"). The
-  workflow's first real scheduled/dispatched run will overwrite it with genuinely live
-  data — worth confirming this actually happens once Pages is enabled, rather than
-  assuming it silently.
+**Correcting this item's own earlier assumption**: the previous text here expected "the
+workflow's first real run will overwrite [the committed fixture] with genuinely live
+data." That was wrong about the mechanism, not just unconfirmed: `.github/workflows/
+dashboard.yml` only builds a snapshot in-memory during the run and uploads it straight to
+GitHub Pages via `actions/upload-pages-artifact` — it never commits anything back to this
+repository. **The committed `dashboard/web/public/data/ecosystem-snapshot.json` will
+correctly stay a development-time fixture forever**, by design (it exists only so
+`dashboard/web` has something to render locally and in its own tests) — this is not a gap
+to watch for, and no future check should expect that file to start reflecting live state.
+
+**Remaining real gaps, in rough priority order**:
 - ~~No live npm/PyPI version lookup yet~~ — DONE 2026-09-06: `dashboard/aggregator/src/
   packageRegistry.ts` performs a real live lookup; see `docs/ecosystem/MATURITY_MODEL.md`
   level 6 and `dashboard/README.md`.
@@ -283,30 +290,68 @@ extend (its `AI Provider contract`, ADR-018, already defines the boundary — "A
 never executes"), not something this project should implement unilaterally inside another
 repository. Track it here as the thing to watch for, not a task to start.
 
-## 8. A read-only `--check-provides` diagnostic for `video-production-agent`
+## 8. ~~A read-only `--check-provides` diagnostic for `video-production-agent`~~ — IMPLEMENTED 2026-09-06 (Draft PR open)
 
-Item 1's 2026-09-06 exhaustive investigation confirmed this is now concretely buildable
-with real, useful day-one output: it would correctly surface `qc_check` and
-`subtitle_generation`/`subtitle_burn_in`'s self-declared (contract-unconfirmed) tool ids as
-informational, not errors (join on Capability id, never tool-id string — item 1's own
-finding), and would report `video-editing-skill`'s unused `video.trim` and
-`audio-production-skill`'s five unused capabilities (`audio.dynamics`, `audio.mix`,
-`audio.noise_reduction`, `audio.silence_remove`, `audio.trim`) as "published, not yet
-consumed by any `SkillSpec`" — real, actionable signal for future roadmap prioritization,
-not noise.
+**Built, in `video-production-agent` itself** (not this repository — see this item's own
+original scoping below, still the right call):
+[`kajisho5/video-production-agent#27`](https://github.com/kajisho5/video-production-agent/pull/27)
+(kept Draft, not merged — the user's own standing boundary for this work: no merge, no
+Draft→Ready, no force-push/history-rewrite across any repository touched this session).
+`src/video_agent/skills/diagnostics.py`'s `check_provides()`/`check_all()` join a Skill's
+real `provides[]` against this Agent's registered `SkillPackage`/`SkillSpec` data by
+Capability id, reporting `PROVIDES_VALID` / `PROVIDES_MISMATCH` / `CAPABILITY_UNCONSUMED`
+/ `CAPABILITY_MISSING` / `UNKNOWN` per Capability id — pure, side-effect-free, never calls
+`SkillRegistry.select_tool()` or anything in `execution/`. 16 new tests (3 of them
+real-data regressions of this item's own qc-skill/subtitle-skill finding).
 
-**Scope, precisely** (per item 1's own Boundary, still binding here): a new, additive,
-read-only report only — e.g. a script that fetches each installed Skill's real `contract
---json`, extracts `provides[]`, and cross-references it against `default_registry()`'s
-`SkillSpec.tools` by Capability id (not tool-id string). It would live inside
-`video-production-agent` itself (the only place that already has `default_registry()` and
-real adapter connections), not in this repository — this project's own role is limited to
-having produced the `provides` data and the Capability-id join methodology this diagnostic
-would depend on, exactly as `docs/ROADMAP.md` Phase 1's registry library was scoped to be
-consumed by, not built into, another repository's tooling. **Never** changes
-`SkillRegistry.select_tool()`'s actual selection behavior — diagnostic output only.
+**Run against all 10 registered Skills' real, current `provides[]`** (captured from each
+Skill's actual merged `main`, no live network): confirmed `qc-skill` (10/10) and
+`subtitle-skill` (2/2) as `PROVIDES_MISMATCH`. **Traced one level deeper afterward
+(`DECISION_LOG.md` D9) and split what looked like the same finding into two genuinely
+different ones**: `qc-skill`'s is not drift at all — its real CLI has one `run`
+subcommand, `check`/`inspect` are a field inside the request, so `provides[]`'s single
+`qc/run` tool id is the *correct* granularity, and this Agent's finer `TOOL_CHECK`/
+`TOOL_INSPECT` split is a deliberate, working, correctly-translated choice — collapsing
+it to match would be a regression, not a fix. `subtitle-skill`'s is a real, simple 1:1
+naming difference in principle, but `SKILL_ID` does triple duty (package-registry key,
+tool-id prefix, and a `required_capabilities` name that must exactly match an
+independently-named `CapabilityResolver` capability and two `registry.py` entries) — a
+correct fix needs all of those changed together, real coordinated work, not attempted
+without confirmation that specific behavior-affecting change is wanted. Confirmed
+`video-editing-skill`'s `video.trim` as `CAPABILITY_UNCONSUMED` and then **closed it**:
+declared `video_trim` in `default_registry()` the same safe way `multi_source_sync`/
+`semantic_deletion` are (phase 2, never selectable) — re-running the diagnostic confirms
+`video-editing`'s `CAPABILITY_UNCONSUMED` count dropped from 1 to 0. Found
+`CAPABILITY_MISSING` nowhere across all 10 Skills. Also found something this item's own
+prediction did not anticipate: `ffmpeg-skill` exposes only 12 of its real 21 capabilities
+to this Agent's own reference `CATALOG` at all — 9 are reached only indirectly through
+other Skills that delegate to it (by design), 3 more (`fit`/`report`/`scenes`) are known
+but superseded by other Skills' own equivalents (`report`'s own before/after generator
+superseded by this Agent's own `audit`/provenance mechanism).
 
-**Depends on:** nothing further in this repository — item 1's investigation already
-supplies the exact findings such a diagnostic should reproduce, usable as its own test
-fixtures/expected-output once someone builds it (in `video-production-agent`, by whoever
-owns that repository's roadmap).
+**One prediction from this item's own text needs a correction, not a contradiction**: the
+claim above that `audio-production-skill` has "five unused capabilities" (`audio.dynamics`,
+`audio.mix`, `audio.noise_reduction`, `audio.silence_remove`, `audio.trim`) was reached by
+manually matching each capability's internal `operation` name against `SkillSpec`
+descriptions — a Skill-specific semantic reading, not something a generic diagnostic can
+reproduce. `audio-production-skill` (like `color-grading-skill` and `motion-graphics-skill`)
+exposes every one of its capabilities through one shared, generic tool id
+(`audio-production/run`); tool-id-level evidence alone cannot distinguish which of the
+capabilities sharing that id are individually requested, only that the shared endpoint as
+a whole is. The diagnostic therefore correctly reports all of them as `PROVIDES_VALID`,
+each annotated with its full sibling list (`evidence["shared_tool_id_capabilities"]`)
+rather than silently claiming a confidence the tool-id join cannot support — the more
+specific "5 unused" claim stands only as this item's own earlier manual reading, not as
+something the shipped diagnostic asserts or can verify generically.
+
+---
+
+*Original scoping (2026-09-05/06), preserved for the reasoning it still applies:*
+Per item 1's own Boundary, still binding: a new, additive, read-only report only, living
+inside `video-production-agent` itself (the only place that already has
+`default_registry()` and real adapter connections), not in this repository — this
+project's own role is limited to having produced the `provides` data and the
+Capability-id join methodology the diagnostic depends on, exactly as `docs/ROADMAP.md`
+Phase 1's registry library was scoped to be consumed by, not built into, another
+repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
+behavior — diagnostic output only.

@@ -38,6 +38,35 @@ noteworthy.
 
 ---
 
+### 2026-09-06 — `video-production-agent`: read-only provides/Capability consumption diagnostic (WORK_QUEUE item 8)
+
+- **Repo(s)**: `kajisho5/video-production-agent`
+- **PR(s)**: https://github.com/kajisho5/video-production-agent/pull/27 (Draft — kept
+  Draft per the user's explicit standing boundary for this work: no merge, no
+  Draft→Ready, no force-push/history-rewrite in any repository)
+- **What changed**: `src/video_agent/skills/diagnostics.py` (`check_provides()`/
+  `check_all()`, a new `ProvidesFinding` dataclass) joins a Skill's real `provides[]`
+  against this Agent's registered `SkillPackage`/`SkillSpec` data by Capability id,
+  reporting `PROVIDES_VALID` / `PROVIDES_MISMATCH` / `CAPABILITY_UNCONSUMED` /
+  `CAPABILITY_MISSING` / `UNKNOWN`. Generic — not hardcoded to this ecosystem or any one
+  Skill; explicitly annotates the case where several Capability ids share one generic
+  tool id rather than overclaiming per-capability confidence it cannot support. Wired to
+  `video-agent skills --check-provides [--json]`; never touches `SkillRegistry.
+  select_tool()` or `execution/`. 16 new tests, 3 of them real-data regressions of
+  `WORK_QUEUE.md` item 1's own qc-skill/subtitle-skill finding. Run against all 10
+  registered Skills' real, current `provides[]` (captured from each Skill's actual
+  merged `main`): confirmed item 1's qc-skill/subtitle-skill predictions exactly, found
+  `CAPABILITY_MISSING` nowhere, and surfaced a new finding item 1 did not anticipate
+  (`ffmpeg-skill` exposes only 12 of its real 21 capabilities to this Agent's reference
+  `CATALOG`, the other 9 reached only indirectly through delegating Skills, by design).
+- **Why**: `docs/ecosystem/WORK_QUEUE.md` item 8, proposed after item 1's 2026-09-06
+  exhaustive investigation confirmed this was concretely buildable with real value.
+- **Status**: draft (open, no CI configured on this repo's PRs — `tests.yml` is
+  `workflow_dispatch` only; verified locally instead — 308 tests, no new failures,
+  pyflakes/mypy/AST-walk security check all clean).
+
+---
+
 ### 2026-09-06 — `docs/ecosystem`: bring `CURRENT_STATE.md` and `HANDOFF.md` current
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS`
