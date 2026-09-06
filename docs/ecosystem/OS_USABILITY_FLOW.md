@@ -70,28 +70,30 @@ fixed via PR #31 (**merged**): see step 9.
   general free-text understanding. This remains the gap most directly limiting
   "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
   underlying scope limitation.
-- **Fixed this session, merged (PR #32), for the processed case; genuinely open for the
-  untouched case — see WORK_QUEUE.md item 9 for the full history**: for a generic-profile,
-  no-preset delivery, the render's own `report.md`/`report.json` was showing `"artifacts": []`
-  even on `COMPLETED` — nothing was ever delivered, and `--set qc=true` never ran a QC check
-  either. Split into two cases while investigating: (1) **something real was processed**
-  (a motion-graphics overlay, or the always-on technical silence trim) — `compiler.py`'s
-  `delivery()` already resolved a real, in-workspace, QA-verified path for it; only
-  `service.py`'s `_register_artifacts()`'s `not t.get("preset")` guard was silently dropping it.
-  Fixed by dropping that guard (PR #32, **merged**) — this deliverable is now correctly
-  registered as a `MASTER` Artifact. Tried dropping the identical guard in `compiler.py`'s
-  `qc_gate()` too and reverted it: `agent/planner.py`'s `qc_steps()` only creates a qc step
-  alongside a `delivery_export` step (preset-only), so compiling a qc op for this case would
-  reference a tool selection that was never planned and crash with `CompileError` — a second,
-  worse hole this session chose not to open while closing the first. The QA layer's own ADR-032
-  fail-closed check already covers the gap safely on its own: verified for real that
-  `--set qc=true` on this exact case now registers the artifact but correctly marks it QA
-  `FAIL` / stage `NOT_READY` with a precise `fix_hint` ("the QC gate was planned but no report
-  exists for this artifact") — honest, not a crash, not a false pass. (2) **nothing was
-  processed at all** (the plain "nothing to do" case) — still genuinely unregistered; a real fix
-  needs an actual stream-copy/remux operation materializing the passthrough deliverable inside
-  the workspace, which does not exist today in `ffmpeg-skill`, so this is real cross-repo work,
-  not a same-file patch. Tracked as `WORK_QUEUE.md` item 9.
+- **QC gate fully fixed this session (PRs #32, #33, #34, all merged); only Artifact
+  registration for a genuinely untouched deliverable remains open — see WORK_QUEUE.md item 9
+  for the full history**: for a generic-profile, no-preset delivery, the render's own
+  `report.md`/`report.json` was showing `"artifacts": []` even on `COMPLETED` — nothing was
+  ever delivered, and `--set qc=true` never ran a QC check either. Split into two cases while
+  investigating: (1) **something real was processed** (a motion-graphics overlay, or the
+  always-on technical silence trim) — `compiler.py`'s `delivery()` already resolved a real,
+  in-workspace, QA-verified path for it; only `service.py`'s `_register_artifacts()`'s
+  `not t.get("preset")` guard was silently dropping it. Fixed (PR #32) and its own provenance
+  (which operation/decisions actually produced it) fixed right after (PR #33) — this deliverable
+  is now correctly registered as a `MASTER` Artifact with a real, complete audit trail.
+  (2) **`--set qc=true` never ran a check at all**, for either case — traced one layer deeper
+  than PR #32 reached: `agent/planner.py`'s `qc_steps()` only ever plans a qc step alongside a
+  `delivery_export` step (preset-only), so there was never a tool selection for the compiler to
+  find for a no-preset target. Fixed (PR #34): the planner now plans a qc step gating the
+  subject's own current media directly, the compiler compiles it, and the QA layer looks it up
+  correctly — verified for real that both an untouched and a processed no-preset request now get
+  a genuine qc-skill check (admitted, real verdict, surfaced in the QA summary; a processed
+  artifact now correctly promotes to `approved` instead of the false FAIL that PR #32 left as an
+  honest but incomplete stand-in). **What's left**: registering an Artifact for a genuinely
+  untouched deliverable (case 1 only when literally nothing processed the subject) — that needs
+  an actual stream-copy/remux operation materializing the passthrough deliverable inside the
+  workspace, which does not exist today in `ffmpeg-skill`, so it's real cross-repo work, not a
+  same-file patch. Tracked as `WORK_QUEUE.md` item 9.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -246,3 +248,24 @@ fixed via PR #31 (**merged**): see step 9.
   real: the same render now reports the real op id and both decisions involved instead of `[]`/
   `[]`. New regression test extends #32's own test. Full suite: 308 passed, same 4 pre-existing
   environmental failures, 0 new regressions.
+- `video-production-agent` PR #34 (**merged**): closed the "QC never runs on a no-preset
+  delivery" half of the finding above for good — root-caused one layer deeper than PR #32
+  reached: `agent/planner.py`'s `qc_steps()` never planned a qc step for a no-preset target at
+  all (it only creates one alongside a `delivery_export` step, preset-only), so there was never
+  a tool selection for the compiler to find. Fixed across all three coordinated layers
+  (`planner.py` plans the step against the subject's own media, `compiler.py`'s `qc_gate()`
+  compiles it, `qa/checks.py`'s `run_qa()` looks it up correctly) and verified for real with
+  qc-skill: an untouched no-preset request now runs a genuine, admitted qc check against the
+  real source (6 real QA checks instead of 0); a processed no-preset request now gets the same
+  real gate against the real processed file and correctly promotes to `approved` instead of the
+  honest-but-incomplete FAIL PR #32 left behind. New real-Skill regression test
+  (`test_s11_qc_gate_without_a_delivery_preset`). While validating this by running the suite
+  from inside the checkout (its own sibling-discovery needs that — a `/tmp` run skips every
+  real-Skill test entirely, silently), also caught and fixed a second, unrelated pre-existing
+  gap: `AudioProductionRealTests::test_two_inputs_concat_mono_normalize_end_to_end` still
+  asserted the pre-#32 buggy "no artifact registered" behavior as correct, undetected until now
+  because it needs a real audio-production-skill checkout. Full suite (from `/tmp`): 308 passed,
+  same 4 pre-existing failures; real-Skill classes (from inside the checkout):
+  `AudioProductionRealTests` 5/5, `IntegratedPipelineRealTests` 11/11, 0 regressions. The only
+  piece of this whole finding still open is registering an Artifact for a genuinely untouched
+  deliverable — `WORK_QUEUE.md` item 9, now scoped to exactly that and nothing else.

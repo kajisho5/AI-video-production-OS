@@ -355,7 +355,40 @@ Phase 1's registry library was scoped to be consumed by, not built into, another
 repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
 behavior — diagnostic output only.
 
-## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — PARTIALLY RESOLVED 2026-09-06 (PR #32), the harder half still needs a real passthrough operation
+## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — QC RESOLVED 2026-09-06 (PR #34); only Artifact registration for a genuinely untouched deliverable remains, needs a real passthrough operation
+
+**Update 2026-09-06 (PR #34, merged)**: the QC half of the finding below is now fully
+fixed, for both cases A and B — this reverses the "left `qc_gate()` untouched" call made in
+the PR #32 update just below, and closes the "no-preset delivery skips QC" half of this
+item's own title. Root cause was one layer deeper than the PR #32 investigation reached:
+`agent/planner.py`'s `qc_steps()` only ever plans a qc `ProductionStep` (and its tool
+selection) alongside a `delivery_export` step, which only exists for a preset target — so
+there was never a tool for the compiler to find for a no-preset target, whether or not the
+subject was processed. Fixed by having `qc_steps()` also plan a qc step for a no-preset
+target (gating the subject's own current media directly — no re-encode, same real bytes as
+the deliverable), `compiler.py`'s `qc_gate()` compiling that op instead of skipping the
+target, and `qa/checks.py`'s `run_qa()` looking up the subject's own media too (only when
+`qc=true`, so every other no-preset render's QA scope and cost is unchanged) so a genuinely
+admitted qc report reaches the agent's own QA summary. Verified for real with qc-skill and
+motion-graphics-skill: an untouched no-preset request now runs a real `qc/check` against the
+real source (admitted, verdict PASS, surfaced as 6 real QA checks instead of 0); a processed
+no-preset request now gets the same real gate against the real processed file, correctly
+promoting the artifact to `approved` instead of the false `FAIL`/`NOT_READY` PR #32 left
+behind (the check now actually runs instead of the ADR-032 fail-closed path reporting "no
+report"). New real-Skill regression test added (`test_s11_qc_gate_without_a_delivery_preset`).
+While validating this by running the suite from inside the checkout (needed for the
+real-Skill classes' own sibling-discovery to work; a `/tmp` run skips them entirely), also
+found and fixed an unrelated, second pre-existing gap this exposed:
+`AudioProductionRealTests::test_two_inputs_concat_mono_normalize_end_to_end` still asserted
+the *old*, buggy "generic profile registers no preset artifact" behavior as correct — a
+stale assertion from before PR #32, never caught because it requires a real
+`audio-production-skill` checkout. Updated it to assert the artifact is registered, matching
+PR #32/#33's actual intended behavior. Full suite 308 passed (from `/tmp`); the two
+real-Skill classes this touches, run from inside the checkout: `AudioProductionRealTests`
+5/5, `IntegratedPipelineRealTests` 11/11, 0 regressions. **What's left**: Case B's Artifact
+registration itself (an untouched deliverable is now correctly QC'd, but still has no
+registered Artifact) — that part is unchanged and still needs the real stream-copy/remux
+operation described below.
 
 **Update 2026-09-06 (PR #32, merged)**: the finding below turned out to be two cases, not
 one, and only one of them needed the cross-repo work described. **Case A — something real
