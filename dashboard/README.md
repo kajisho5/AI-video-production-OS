@@ -197,3 +197,13 @@ dashboard/
     public/icons/, public/data/        PWA icons, generated snapshot
     test/ + *.test.tsx                  12 tests, no network
 ```
+
+## Related: the Ecosystem Control Room
+
+This Dashboard answers "what is the OS/repos' current state" (maturity, CI, PRs). A
+separate, additive page answers a different question — "where are we in the
+*development process itself*, and what's next" — without replacing or duplicating this
+one: see [`dashboard/control-room/README.md`](control-room/README.md). It reuses this
+Dashboard's own `shared/types.ts` conventions (UNKNOWN as a first-class value, evidence
+over guesses) and its already-generated `ecosystem-snapshot.json` for live GitHub facts,
+and is served at `/control-room/` alongside this Dashboard at `/`.

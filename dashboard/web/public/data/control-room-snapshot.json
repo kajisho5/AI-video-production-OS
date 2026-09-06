@@ -1,0 +1,1061 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-06T06:27:49.759Z",
+  "generator": {
+    "name": "ecosystem-control-room",
+    "version": "0.1.0"
+  },
+  "objective": {
+    "statement": "A set of open contracts and shared execution infrastructure that let independent Skills, Providers, and Agents — human or AI — turn video-production intent into deterministic, verifiable, reproducible changes to a project's artifacts.",
+    "evidence": {
+      "source": "doc",
+      "locator": "README.md#what-this-is-in-one-sentence",
+      "detail": "extracted verbatim"
+    }
+  },
+  "phases": [
+    {
+      "id": "Phase 0",
+      "title": "Research + architecture",
+      "status": "DONE",
+      "statusText": "substantially complete once this document and its two companions (`CAPABILITY_MATRIX.md`, `DEPENDENCY_GRAPH.md`) land",
+      "dependsOnPhaseIds": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-0",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 1",
+      "title": "Minimal OS kernel: the Capability Contract format + reference registry",
+      "status": "DONE",
+      "statusText": "CURRENT / IMPLEMENTED as of 2026-09-05, for items 1-2 and item 3.",
+      "dependsOnPhaseIds": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-1",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 2",
+      "title": "Retrofit existing Skills to publish the CapabilityContract shape",
+      "status": "DONE",
+      "statusText": "CURRENT / IMPLEMENTED as of 2026-09-05.",
+      "dependsOnPhaseIds": [
+        "Phase 1"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-2",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 3",
+      "title": "Fix the qc-skill/media-analysis-skill collision + real Provider resolution",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [
+        "Phase 1",
+        "Phase 2"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-3",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 4",
+      "title": "Cross-Skill Execution/Artifact model (real registry-driven discovery)",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [
+        "Phase 3"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-4",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 5",
+      "title": "QC/Verification extension: verify against declared Plan intent",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [
+        "Phase 4"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-5",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 6",
+      "title": "Provenance/ProductionReceipt",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [
+        "Phase 4",
+        "Phase 5"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-6",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 7",
+      "title": "Third-party Skill support (dynamic discovery + published conformance harness)",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [
+        "Phase 1"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-7",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "Phase 8",
+      "title": "Advanced agent autonomy, resource-aware provider selection, cost modeling",
+      "status": "UNKNOWN",
+      "statusText": "UNKNOWN",
+      "dependsOnPhaseIds": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-8",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Investigate: can `video-production-agent`'s registry be *expressed* via `provides`, without a rewrite?",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "Phase 4",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "UNKNOWN",
+      "statusMarker": null,
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-1",
+          "detail": "heading: \"Investigate: can `video-production-agent`'s registry be *expressed* via `provides`, without a rewrite?\""
+        }
+      ],
+      "isRecommendedNext": true
+    },
+    {
+      "id": "2",
+      "title": "Land the remaining `provides` rollout PRs",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "UNKNOWN",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DONE",
+      "statusMarker": "DONE 2026-09-06",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-2",
+          "detail": "heading: \"Land the remaining `provides` rollout PRs\" — DONE 2026-09-06"
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "3",
+      "title": "`registry/` conformance harness: real per-Skill wiring",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "UNKNOWN",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DONE",
+      "statusMarker": "DONE 2026-09-05",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-3",
+          "detail": "heading: \"`registry/` conformance harness: real per-Skill wiring\" — DONE 2026-09-05"
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "7",
+      "title": "Ecosystem Dashboard (`dashboard/`)",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "UNKNOWN",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "VERIFIED",
+      "statusMarker": "LIVE 2026-09-06, verified against the real deployed site",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-7",
+          "detail": "heading: \"Ecosystem Dashboard (`dashboard/`)\" — LIVE 2026-09-06, verified against the real deployed site"
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "4",
+      "title": "A standalone JSON Schema file for the CapabilityContract's `provides` shape",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "Phase 1",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DONE",
+      "statusMarker": "DONE 2026-09-06",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-4",
+          "detail": "heading: \"A standalone JSON Schema file for the CapabilityContract's `provides` shape\" — DONE 2026-09-06"
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "5",
+      "title": "Confirm or refute the qc-skill/media-analysis-skill \"collision avoidance by role separation\" hypothesis",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "UNKNOWN",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DONE",
+      "statusMarker": "RESOLVED 2026-09-05",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-5",
+          "detail": "heading: \"Confirm or refute the qc-skill/media-analysis-skill \"collision avoidance by role separation\" hypothesis\" — RESOLVED 2026-09-05"
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "6",
+      "title": "VISION-tier, not yet actionable: AI Provider connection",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "UNKNOWN",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DEFERRED",
+      "statusMarker": null,
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-6",
+          "detail": "heading: \"VISION-tier, not yet actionable: AI Provider connection\""
+        }
+      ],
+      "isRecommendedNext": false
+    },
+    {
+      "id": "8",
+      "title": "A read-only `--check-provides` diagnostic for `video-production-agent`",
+      "source": "WORK_QUEUE.md",
+      "phaseId": "Phase 1",
+      "epic": "UNKNOWN",
+      "milestone": "UNKNOWN",
+      "status": "DRAFT_PR",
+      "statusMarker": "IMPLEMENTED 2026-09-06 (Draft PR open)",
+      "dependencies": [],
+      "blockers": [],
+      "pullRequests": [
+        {
+          "repoSlug": "video-production-agent",
+          "number": 27,
+          "citedText": "the right call):\n[`kajisho5/video-production-agent#27`](https://github.co",
+          "resolution": "unresolved_error"
+        }
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-8",
+          "detail": "heading: \"A read-only `--check-provides` diagnostic for `video-production-agent`\" — IMPLEMENTED 2026-09-06 (Draft PR open)"
+        }
+      ],
+      "isRecommendedNext": false
+    }
+  ],
+  "repositories": [
+    {
+      "slug": "kajisho5/AI-video-production-OS",
+      "name": "AI-video-production-OS",
+      "type": "OS",
+      "role": "Architecture, registry/ library, ecosystem state documents. Describes the others; nothing depends on it at runtime.",
+      "dependsOn": [],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 1,
+        "openIssueCount": 0,
+        "ciConclusion": "UNKNOWN",
+        "maturityLevel": 1
+      },
+      "contractPublished": "UNKNOWN",
+      "providesPublished": "UNKNOWN",
+      "osIntegration": "UNKNOWN",
+      "verifiedEndToEnd": "UNKNOWN",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/AI-video-production-OS"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/video-production-agent",
+      "name": "video-production-agent",
+      "type": "Agent",
+      "role": "Orchestrator: Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance. Consumes all 10 Skills below.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill",
+        "kajisho5/video-editing-skill",
+        "kajisho5/audio-production-skill",
+        "kajisho5/color-grading-skill",
+        "kajisho5/subtitle-skill",
+        "kajisho5/motion-graphics-skill",
+        "kajisho5/thumbnail-skill",
+        "kajisho5/qc-skill",
+        "kajisho5/media-analysis-skill",
+        "kajisho5/transcription-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 1
+      },
+      "contractPublished": "UNKNOWN",
+      "providesPublished": "UNKNOWN",
+      "osIntegration": "UNKNOWN",
+      "verifiedEndToEnd": "documented",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/video-production-agent"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/ffmpeg-skill",
+      "name": "ffmpeg-skill",
+      "type": "Skill",
+      "role": "Execution foundation: 21 base tools wrapping FFmpeg/ffprobe directly. Every delegating Skill depends on it.",
+      "dependsOn": [],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 2,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/ffmpeg-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/video-editing-skill",
+      "name": "video-editing-skill",
+      "type": "Skill",
+      "role": "Editing operations (trim, concat, ...), delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 5
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "documented",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/video-editing-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/audio-production-skill",
+      "name": "audio-production-skill",
+      "type": "Skill",
+      "role": "Audio processing, delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/audio-production-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/color-grading-skill",
+      "name": "color-grading-skill",
+      "type": "Skill",
+      "role": "Colour operations (HDR to SDR, LUT apply, retag, strip Dolby Vision, primary correction), delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 1,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/color-grading-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/subtitle-skill",
+      "name": "subtitle-skill",
+      "type": "Skill",
+      "role": "Subtitle generate/render (SRT/WebVTT); burn-in only delegates to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 1,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/subtitle-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/motion-graphics-skill",
+      "name": "motion-graphics-skill",
+      "type": "Skill",
+      "role": "Titles, lower-thirds, overlays, corner bug/chapter elements. Delegates execution to ffmpeg-skill.",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 1,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/motion-graphics-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/thumbnail-skill",
+      "name": "thumbnail-skill",
+      "type": "Skill",
+      "role": "Thumbnail render/extract. Frame decode delegates to ffmpeg-skill; compositing is in-process (Pillow).",
+      "dependsOn": [
+        "kajisho5/ffmpeg-skill"
+      ],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/thumbnail-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/qc-skill",
+      "name": "qc-skill",
+      "type": "Skill",
+      "role": "Deterministic quality-control / delivery-gate checks. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "dependsOn": [],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 5,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated_as_gate",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/qc-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/media-analysis-skill",
+      "name": "media-analysis-skill",
+      "type": "Skill",
+      "role": "Media measurement/observation. Talks to ffmpeg/ffprobe directly, not through ffmpeg-skill.",
+      "dependsOn": [],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/media-analysis-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    },
+    {
+      "slug": "kajisho5/transcription-skill",
+      "name": "transcription-skill",
+      "type": "Skill",
+      "role": "Speech-to-text via local ASR engines (faster-whisper etc.), not FFmpeg-based.",
+      "dependsOn": [],
+      "liveState": {
+        "defaultBranch": "main",
+        "openPullRequestCount": 0,
+        "openIssueCount": 0,
+        "ciConclusion": "success",
+        "maturityLevel": 4
+      },
+      "contractPublished": true,
+      "providesPublished": true,
+      "osIntegration": "integrated",
+      "verifiedEndToEnd": "unknown",
+      "evidence": [
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/registry.json",
+          "detail": "roster entry for kajisho5/transcription-skill"
+        },
+        {
+          "source": "structured_file",
+          "locator": "docs/ecosystem/capability-status.json",
+          "detail": "documented as of 2026-09-06"
+        },
+        {
+          "source": "generated_snapshot",
+          "locator": "dashboard/web/public/data/ecosystem-snapshot.json",
+          "detail": "live GitHub facts as of 2026-09-05T22:00:00Z"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/video-editing-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/video-editing-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/audio-production-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/audio-production-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/color-grading-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/color-grading-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/subtitle-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/subtitle-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/motion-graphics-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/motion-graphics-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/thumbnail-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/thumbnail-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/qc-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/qc-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/media-analysis-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/media-analysis-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-production-agent",
+      "toSlug": "kajisho5/transcription-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-production-agent depends_on kajisho5/transcription-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/video-editing-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/video-editing-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/audio-production-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/audio-production-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/color-grading-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/color-grading-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/subtitle-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/subtitle-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/motion-graphics-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/motion-graphics-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    },
+    {
+      "fromSlug": "kajisho5/thumbnail-skill",
+      "toSlug": "kajisho5/ffmpeg-skill",
+      "evidence": {
+        "source": "structured_file",
+        "locator": "docs/ecosystem/registry.json",
+        "detail": "kajisho5/thumbnail-skill depends_on kajisho5/ffmpeg-skill"
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "id": "phase-phase-4-blocked-by-phase-3",
+      "description": "Phase 4 depends on Phase 3, which is not yet done (status: UNKNOWN).",
+      "affects": [
+        "Phase 4"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-4",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        },
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-3",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "phase-phase-5-blocked-by-phase-4",
+      "description": "Phase 5 depends on Phase 4, which is not yet done (status: UNKNOWN).",
+      "affects": [
+        "Phase 5"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-5",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        },
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-4",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "phase-phase-6-blocked-by-phase-4",
+      "description": "Phase 6 depends on Phase 4, which is not yet done (status: UNKNOWN).",
+      "affects": [
+        "Phase 6"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-6",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        },
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-4",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    },
+    {
+      "id": "phase-phase-6-blocked-by-phase-5",
+      "description": "Phase 6 depends on Phase 5, which is not yet done (status: UNKNOWN).",
+      "affects": [
+        "Phase 6"
+      ],
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-6",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        },
+        {
+          "source": "doc",
+          "locator": "docs/ROADMAP.md#phase-5",
+          "detail": "Status/Depends-on lines parsed from this phase's own section"
+        }
+      ]
+    }
+  ],
+  "nextExecutableTask": {
+    "taskId": "1",
+    "reason": "Recommendation, not a verified fact: WORK_QUEUE.md item 1 is the first item (in the document's own stated priority order) with no completion marker and no PR opened yet.",
+    "dependencies": [],
+    "blockers": [],
+    "repositorySlug": "UNKNOWN",
+    "evidence": [
+      {
+        "source": "doc",
+        "locator": "docs/ecosystem/WORK_QUEUE.md#item-1",
+        "detail": "heading: \"Investigate: can `video-production-agent`'s registry be *expressed* via `provides`, without a rewrite?\""
+      }
+    ],
+    "isInference": true
+  },
+  "verification": [
+    {
+      "id": "verification-task-7",
+      "subject": "WORK_QUEUE.md item 7: Ecosystem Dashboard (`dashboard/`)",
+      "method": "LIVE 2026-09-06, verified against the real deployed site",
+      "result": "PASS",
+      "evidence": [
+        {
+          "source": "doc",
+          "locator": "docs/ecosystem/WORK_QUEUE.md#item-7",
+          "detail": "heading: \"Ecosystem Dashboard (`dashboard/`)\" — LIVE 2026-09-06, verified against the real deployed site"
+        }
+      ]
+    }
+  ],
+  "systemIntelligence": {
+    "available": false,
+    "snapshotDirectory": null,
+    "reason": "SI_SNAPSHOT_DIR not set -- no System Intelligence snapshot configured",
+    "findings": [],
+    "recommendations": [],
+    "researchCount": 0,
+    "verificationCount": 0
+  },
+  "roadmapDrift": [
+    {
+      "id": "decision-log-duplicate-D7",
+      "summary": "DECISION_LOG.md uses the decision id \"D7\" for 2 different, unrelated decisions.",
+      "sourceA": {
+        "source": "doc",
+        "locator": "docs/ecosystem/DECISION_LOG.md:144",
+        "detail": "first \"D7\" heading"
+      },
+      "sourceB": {
+        "source": "doc",
+        "locator": "docs/ecosystem/DECISION_LOG.md:171",
+        "detail": "second \"D7\" heading"
+      },
+      "detectedAt": "2026-09-06T06:27:49.633Z"
+    }
+  ],
+  "unreachableRepos": []
+}

@@ -12,8 +12,9 @@
     "noEmit": true,
     "isolatedModules": true,
     "paths": {
-      "@ecosystem/types": ["../shared/types.ts"]
+      "@ecosystem/types": ["../shared/types.ts"],
+      "@ecosystem/control-room-types": ["../control-room/src/types.ts"]
     }
   },
-  "include": ["src", "../shared/types.ts"]
+  "include": ["src", "../shared/types.ts", "../control-room/src/types.ts"]
 }

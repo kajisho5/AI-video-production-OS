@@ -1,0 +1,21 @@
+{
+  "name": "@ecosystem-dashboard/control-room",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Server-side (CI-only) generator for the Ecosystem Control Room read model: normalizes docs/ROADMAP.md, docs/ecosystem/*.md and *.json, live GitHub state for PRs cited in those docs, and (optionally) a System Intelligence snapshot directory into one ControlRoomSnapshot JSON file. Never run in a browser. Reuses the OS Dashboard's own generated ecosystem-snapshot.json for per-repo GitHub facts instead of re-fetching them.",
+  "scripts": {
+    "generate": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0"
+  }
+}
