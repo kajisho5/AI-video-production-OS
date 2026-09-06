@@ -17,25 +17,27 @@ one-time report.
 | 2 | Confirm dependent runtime (ffmpeg, Python deps, optional ASR engine) | **IMPLEMENTED** | `video-agent doctor` really probes `ffmpeg`/`ffprobe`/encoders/decoders/filters/fonts/GPU and every registered Skill's own doctor. Ran for real in a fresh Ubuntu sandbox: found ffmpeg/ffprobe missing, installed them (`apt-get install -y --fix-missing ffmpeg fonts-dejavu-core`), doctor then reported them `AVAILABLE`. This step **works and is honest** — it doesn't lie about what's missing. |
 | 3 | Discover Skills | **IMPLEMENTED** | `locate_*()` per Skill (checkout dir via env var, `~/.claude/skills/<name>`, `./vendor/<name>`, `../<name>`, or a console script on `PATH`) really finds installed/checked-out Skills; confirmed for all 10. |
 | 4 | Fetch each Skill's Capability Contract | **IMPLEMENTED** | Each adapter really calls the Skill's own `contract`/`skill --json` and gets a real document back (not mocked). Confirmed for qc-skill, color-grading-skill, subtitle-skill and others by direct invocation. |
-| 5 | OS/Agent recognizes the Capability | **IMPLEMENTED, with two real bugs found and one now fixed** | `capabilities/resolver.py`'s `_finishing_skill()` combines the Skill's own doctor status with a hard version-compatibility gate (`check_contract()`) and a soft drift check (`contract_drift()` against a pinned snapshot) — **either one failing marks the whole Skill `MISSING`, regardless of whether the Skill itself is healthy.** Found and fixed this session: (a) `qc-skill`'s pinned contract snapshot was stale (missing an already-merged, purely additive `delivery_package` kind/7 checks/several findings), forcing `qc` to `MISSING` even though qc-skill's own doctor reports `ok` — fixed and shipped as `video-production-agent` PR #28 (Draft). (b) `color-grading-skill`'s hard version gate (`SUPPORTED_SKILL_VERSIONS = ("0.1.",)`) rejected the real, released 0.2.0 skill — found independently in this session, then discovered `video-production-agent` PR #26 (merged into `main` the same day) already fixes this properly (version gate widened, full `PRIMARY_CORRECTION` operation wired in) — no action needed beyond confirming it. |
+| 5 | OS/Agent recognizes the Capability | **IMPLEMENTED — all 3 real bugs found this session are now fixed and merged** | `capabilities/resolver.py`'s `_finishing_skill()` combines the Skill's own doctor status with a hard version-compatibility gate (`check_contract()`) and a soft drift check (`contract_drift()` against a pinned snapshot) — **either one failing marks the whole Skill `MISSING`, regardless of whether the Skill itself is healthy.** Found and fixed this session: (a) `qc-skill`'s pinned contract snapshot was stale (missing an already-merged, purely additive `delivery_package` kind/7 checks/several findings) — fixed via `video-production-agent` PR #28 (**merged**). (b) `motion-graphics-skill`'s pinned contract snapshot was stale in exactly the same way (missing 4 already-merged element types: `bug`/`chapter`/`countdown`/`progress`) — fixed via PR #29 (**merged**), found by systematically re-checking every Skill after the qc fix. (c) `color-grading-skill`'s hard version gate (`SUPPORTED_SKILL_VERSIONS = ("0.1.",)`) rejected the real, released 0.2.0 skill — found independently in this session, then discovered `video-production-agent` PR #26 (already merged) fixes this properly. All 10 Skills verified `AVAILABLE` together in a real `video-agent doctor` run once all three fixes are in place. |
 | 6 | Agent recognizes which Capabilities it can route to which tool | **IMPLEMENTED** | `SkillRegistry.select_tool()` / `resolve_tools()` is real, tested, and does not depend on this project's own `registry/` package at all — the Agent solved Skill→Tool selection with its own mechanism (see `DECISION_LOG.md` D8). Verified again this session via `video-agent skills`. |
-| 7 | User issues a natural-language request | **PARTIAL** | `video-agent plan --request "<text>"` exists and is real, but **only recognizes a narrow set of pre-defined unambiguous phrases** — a request like "normalize loudness to -16 LUFS" produced an empty plan ("nothing to do"), while the equivalent explicit `--set audio.loudness.target_lufs=-16` worked correctly. Free-text intent recognition is the weakest link between "natural language" (the OS's own stated interface) and what actually executes today. |
+| 7 | User issues a natural-language request | **PARTIAL, one real bug found and fixed this session** | `video-agent plan --request "<text>"` exists and is real, and still only recognizes a narrow, deliberately-scoped set of unambiguous phrases (`agent/requirements.py`'s own docstring: "Phase 1 has no LLM"). The specific bug this session found — "normalize loudness to -16 LUFS" producing an empty plan ("nothing to do") because the numeric target was silently dropped while only the boolean `audio.normalize` intent was captured — is fixed via `video-production-agent` PR #30 (Draft): a second, equally narrow extraction pass now captures an explicit `<number> LUFS`/`<number> dBTP` target from the text. Verified with a real before/after run of the exact same `--request` string. The underlying scope limitation (only a handful of hand-written phrase patterns, no general free-text intent recognition) remains real and is the honest next gap here — see WORK_QUEUE.md if/when broader natural-language support becomes the priority. |
 | 8 | Agent selects the Capability needed | **IMPLEMENTED** (once the request is expressed as a decision, whether via `--set` or a recognized phrase) | Confirmed via a real run: a `--set audio.loudness.target_lufs=-16` plan produced a real `DRAFT`→`APPROVED` decision (`audio.loudness`) with real evidence and a concrete step. |
 | 9 | Execute the Skill/Tool | **IMPLEMENTED** | `video-agent render` on the plan above ran a real `ffmpeg-skill/loudness` invocation against a real generated test video (`ffmpeg lavfi` source, 5s, 640×360) and produced a real output file. Not simulated, not mocked. |
 | 10 | Process real media | **IMPLEMENTED** | Same run: real bytes in, real bytes out, real `sha256`/provenance recorded (`jobs/<id>/provenance.json`). |
 | 11 | Verify/QC the output | **IMPLEMENTED** | Same run: `render` auto-invoked QA, produced a real QC sheet PNG and a real report (`report.md`/`report.json`) — `QA PASS: 5 pass, 0 incident(s)`. |
 | 12 | Return the result to the user | **IMPLEMENTED** | `report.md` is a real, human-readable summary with the plan, decisions (with evidence and confidence), and QA outcome; `deliver` exists to promote the QA-passed artifact. |
 
-**Bottom line**: with the qc (PR #28), motion-graphics (PR #29) and color-grading (already
-merged, #26) fixes all in place, **all 10 Skills report `AVAILABLE`** in a real
-`video-agent doctor` run — verified together, not just individually, via a local three-way
-merge of `main` + both open Draft PRs (transcription needed
+**Bottom line**: with the qc (PR #28, **merged**), motion-graphics (PR #29, **merged**) and
+color-grading (PR #26, **merged**) fixes all in place, **all 10 Skills report `AVAILABLE`**
+in a real `video-agent doctor` run (transcription needed
 `pip install "transcription-skill[faster-whisper]"` — a real, one-line, documented optional
 extra, not a bug), and a full, real Plan→Validate→Render→QA cycle **actually works end to
 end today** for at least the ffmpeg-skill-only path (loudness normalization tested; the
-architecture is the same for every other Skill/tool pair). The weakest link is step 7:
-natural-language request parsing is narrow, so "ユーザーが自然言語で動画制作を依頼する" is only
-partially true today — most real control still goes through `--set key=value`, not free text.
+architecture is the same for every other Skill/tool pair). Step 7 (natural-language request
+parsing) had a real bug of its own — an explicit numeric target named in the request text
+(e.g. "-16 LUFS") was silently dropped — fixed via PR #30 (Draft). The underlying scope
+limitation remains real: this is still a small hand-written phrase list, not general
+free-text understanding, so "ユーザーが自然言語で動画制作を依頼する" is more true than it was but
+still only partially true — most real control still goes through `--set key=value`.
 
 ## Gaps, by priority (per the pivot's own P0–P3 scheme)
 
@@ -49,16 +51,20 @@ partially true today — most real control still goes through `--set key=value`,
   (`video-agent doctor` — see step 2 above).
 
 ### P1 — Skill discovery / Capability registration / Agent routing / execution / verification
-- **Fixed this session**: qc-skill pinned-contract drift (PR #28, Draft) and motion-graphics-skill
-  pinned-contract drift (PR #29, Draft), both in this repo's sibling `video-production-agent`.
-  color-grading-skill version gate (already fixed upstream, PR #26, merged) — confirmed, no
-  action needed. Systematically re-checked all remaining Skills (ffmpeg-skill, media-analysis,
-  transcription, video-editing, audio-production, subtitle, thumbnail) for the same pattern
-  after re-syncing every local checkout to its real `origin/main` — no further instances found.
-  All 10 Skills confirmed `AVAILABLE` together (main + both Draft PRs merged locally for
-  verification only, never pushed).
-- **Real, open**: natural-language request parsing (step 7 above) is narrow. This is the gap
-  most directly blocking "ユーザーが自然言語で動画制作を依頼する" from being fully true.
+- **Fixed this session, merged**: qc-skill pinned-contract drift (PR #28) and
+  motion-graphics-skill pinned-contract drift (PR #29), both in this repo's sibling
+  `video-production-agent`. color-grading-skill version gate (already fixed upstream, PR #26,
+  merged) — confirmed, no action needed. Systematically re-checked all remaining Skills
+  (ffmpeg-skill, media-analysis, transcription, video-editing, audio-production, subtitle,
+  thumbnail) for the same pattern after re-syncing every local checkout to its real
+  `origin/main` — no further instances found. All 10 Skills confirmed `AVAILABLE` together.
+- **Fixed this session, PR #30 (Draft)**: the specific LUFS-target-dropped bug in step 7's
+  free-text parsing (see step 7 above).
+- **Real, open**: natural-language request parsing (step 7 above) is still a small hand-written
+  phrase list by design (`agent/requirements.py`'s own docstring: "Phase 1 has no LLM"), not
+  general free-text understanding. This remains the gap most directly limiting
+  "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
+  underlying scope limitation.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -100,3 +106,8 @@ partially true today — most real control still goes through `--set key=value`,
   reinstalling every Skill editable from its real `/home/user/<skill>` checkout; if `video-agent
   doctor` ever again disagrees with a Skill's own CLI run of `skill --json`, check
   `python3 -c "import <pkg>; print(<pkg>.__file__)"` for exactly this before assuming a code bug.
+- PR #28, #29 and #26 all merged; all 10 Skills confirmed `AVAILABLE` on real `main`, not just
+  in a local test merge.
+- `video-production-agent` PR #30 (Draft): fixed the LUFS-target-dropped bug in step 7's
+  free-text parsing — found via the exact real `--request "normalize loudness to -16 LUFS"`
+  run this document's step 7 row describes, confirmed fixed with the same command afterward.
