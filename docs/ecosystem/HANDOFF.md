@@ -29,24 +29,35 @@ Also load: `docs/ECOSYSTEM_CHANGELOG.md` (factual change log, append-only, newes
 architecture documents assumed. It has a real, tested, working end-to-end production
 pipeline integrating all 9 Skills, and it independently solved the Skill→Tool selection
 problem `docs/ROADMAP.md` Phase 4 describes as future work — with its own mechanism, not
-this project's `provides`/`registry/` system. The two are not connected yet. Don't assume
-Phase 4 is "still to build from scratch" — read `CURRENT_STATE.md` and `WORK_QUEUE.md` item
-1 before planning any registry/discovery work.
+this project's `provides`/`registry/` system. The two are still not connected — and, as of
+2026-09-06's exhaustive investigation (`WORK_QUEUE.md` item 1, `DECISION_LOG.md` D8), that
+is now a confirmed, evidenced conclusion rather than an open question: Phase 4 stays
+scoped as-is (nothing found contradicts it), and the concrete near-term step is a small,
+separate, read-only diagnostic (`WORK_QUEUE.md` item 8) — not a Phase 4 rewrite, and not
+something to build inside `video-production-agent` from this project. Read
+`CURRENT_STATE.md`'s "RESOLVED"/"UNKNOWN" sections before touching registry/discovery work
+again.
 
 ## What's actively in flight right now
 
-- The Phase 2 `provides` rollout: 10 PRs, one per Skill, most merged (live count in
-  `docs/ECOSYSTEM_CHANGELOG.md`'s merge tracker). Standing PR-maintenance rules apply:
-  drive each to green, respond to review comments, don't stop watching until merged/closed.
-- No PR is open against `video-production-agent` from this project. None is planned until
-  `WORK_QUEUE.md` item 1's investigation concludes something concrete and additive.
+- The Phase 2 `provides` rollout: **complete** — all 10 Skills' PRs merged (see
+  `docs/ECOSYSTEM_CHANGELOG.md`'s merge tracker and `CROSS_REPO_STATUS.md`).
+- No PR is open against `video-production-agent` from this project, and per the conclusion
+  above, none is currently planned — `WORK_QUEUE.md` item 8's diagnostic is a proposal for
+  that repository's own maintainers, not a queued task here.
 - **`dashboard/`** (Ecosystem Dashboard, built 2026-09-05): read-only, mobile-first, PWA
-  web dashboard over the ecosystem's real GitHub state. Code, tests (50, all passing),
-  and `.github/workflows/dashboard.yml` are done. **One human-only step remains**:
-  enable GitHub Pages (Settings → Pages → Source: "GitHub Actions") — outside this
-  project's write access, so the deploy step will fail until then. See
+  web dashboard over the ecosystem's real GitHub state. **Live**, not just built: GitHub
+  Pages was manually enabled 2026-09-06 and the deploy workflow has run successfully —
+  `https://kajisho5.github.io/AI-video-production-OS/`. 61 tests, all passing. See
   `dashboard/README.md`, `docs/adr/ADR-011-ecosystem-dashboard.md`,
-  `docs/ecosystem/MATURITY_MODEL.md`, and `WORK_QUEUE.md` item 7.
+  `docs/ecosystem/MATURITY_MODEL.md`, and `WORK_QUEUE.md` item 7 for the small remaining
+  real gaps (PR mergeability check is bounded to 8 per repo, no snapshot history).
+- `registry/` (Phase 1) is now fully complete, including the standalone JSON Schema file
+  (`registry/capability_contract.schema.json`) — see `WORK_QUEUE.md` item 4.
+- `ffmpeg-skill` PR #22 (FFmpeg 8+/Windows caption and color compatibility) merged
+  2026-09-06 after this project reviewed it, found and fixed one remaining issue
+  (`scripts/_common.py`'s install hint still recommended the broken `brew install ffmpeg`
+  command the PR itself proved insufficient), and confirmed CI green on all three OSes.
 
 ## Standing behavioral context (from the user, applies across sessions)
 

@@ -1,4 +1,4 @@
-# Current State — the whole ecosystem, as of 2026-09-05
+# Current State — the whole ecosystem, as of 2026-09-06
 
 **Status: CURRENT / IMPLEMENTED** (this document itself — a snapshot, re-verified against
 real repository state, not carried forward from memory). A fresh session should read this
@@ -18,9 +18,16 @@ contracts, detect collisions, resolve them by a 3-tier policy. Separately, and *
 using either of those**, `video-production-agent` has independently built and shipped its
 own static Skill→Tool selection layer (`SkillRegistry.select_tool`) that already solves the
 "which Provider handles this" problem for the nine Skills it integrates, end-to-end, in a
-real, tested, working pipeline. These two solutions are not yet connected. That gap — not a
-missing capability, but an unconnected one — is this ecosystem's most important open
-question right now (see `WORK_QUEUE.md` item 1).
+real, tested, working pipeline. These two solutions are not connected, and **as of
+2026-09-06's exhaustive investigation (`WORK_QUEUE.md` item 1, `DECISION_LOG.md` D8), that
+is the right state for now**: nothing found contradicts `docs/ROADMAP.md` Phase 4's premise
+that the Agent's real execution routing (`Service.adapter()` → `ToolRouter`) is still
+hardcoded and is what a future registry-driven rewrite would target — the investigation
+found two self-declared (contract-unconfirmed) tool ids and two published-but-unconsumed
+Capabilities, real but non-urgent findings, not evidence that a connection is needed now.
+A small, additive, read-only diagnostic joining the two by Capability id (never tool-id
+string) is proposed as `WORK_QUEUE.md` item 8, to be built inside `video-production-agent`
+itself when its own maintainers choose to.
 
 ## CURRENT / IMPLEMENTED (real, verified, working code)
 
@@ -31,13 +38,23 @@ question right now (see `WORK_QUEUE.md` item 1).
   structured, version-controlled files (`docs/ecosystem/registry.json`,
   `docs/ecosystem/capability-status.json` — structured mirrors of facts already
   recorded in this document set, not a new source of truth) into one normalized
-  snapshot; a static React app (`dashboard/web/`) renders it. 50 tests (38 aggregator +
-  12 UI), all passing, none requiring network access. Deployed via
-  `.github/workflows/dashboard.yml` (hourly + on-demand) to GitHub Pages once that is
-  manually enabled (Settings → Pages → Source: GitHub Actions — not yet done as of this
-  entry). See `docs/ecosystem/MATURITY_MODEL.md` for the maturity ladder it renders.
+  snapshot; a static React app (`dashboard/web/`) renders it. 61 tests (49 aggregator +
+  12 UI), all passing, none requiring network access. **Live**, not just built: GitHub
+  Pages was manually enabled 2026-09-06 and `.github/workflows/dashboard.yml` (hourly +
+  on-demand) has run successfully against the real network at
+  `https://kajisho5.github.io/AI-video-production-OS/`. `MATURITY_MODEL.md` level 6
+  ("Distributed") is also now a real live npm/PyPI registry lookup
+  (`dashboard/aggregator/src/packageRegistry.ts`), not merely a documented claim. See
+  `docs/ecosystem/MATURITY_MODEL.md` for the full ladder.
 - **`ffmpeg-skill`**: 21 base-layer tools, real code, real tests, published to npm. The
   ecosystem's execution foundation; every other Skill delegates media processing to it.
+  A real cross-OS bug fix landed 2026-09-06 (PR #22): `escape_filter_path`'s single-level
+  colon escaping broke every Windows caption/LUT job under FFmpeg 8+ (a filter option
+  value is parsed twice; two escape levels are needed), `overlay.py --image` overshot the
+  video length by up to 2s on FFmpeg 7+, and macOS CI was installing Homebrew's `ffmpeg`
+  formula (no libass/freetype/zimg, hence no subtitles/drawtext/zscale) instead of
+  `ffmpeg-full` — all three real, reproduced, fixed, and verified green on Ubuntu/macOS/
+  Windows CI on the merged head.
 - **9 delegating/self-contained Skills** (`video-editing-skill`, `audio-production-skill`,
   `color-grading-skill`, `subtitle-skill`, `motion-graphics-skill`, `thumbnail-skill`,
   `qc-skill`, `media-analysis-skill`, `transcription-skill`): each independently
@@ -69,9 +86,11 @@ question right now (see `WORK_QUEUE.md` item 1).
   policy, and implements **all 8** of `SKILL_SPEC.md` §8's conformance checks for real
   (3 from a contract document alone; 4 against a live Skill process, verified end-to-end
   against `qc-skill`; 1 — `no_unsafe_shell_out` — via a static AST walk, manually
-  verified PASS against all 9 real Python Skills' source trees). 50 tests, all passing,
-  against real captured data, a real live `qc-skill` process, and synthetic
-  AST-walk fixtures.
+  verified PASS against all 9 real Python Skills' source trees). The full aspirational
+  `CapabilityContract` shape (`docs/SPEC.md` §1) is now also a standalone JSON Schema file
+  (`registry/capability_contract.schema.json`, draft 2020-12) — Phase 1 item 1's last
+  remaining gap, closed 2026-09-06. 62 tests, all passing, against real captured data, a
+  real live `qc-skill` process, synthetic AST-walk fixtures, and the schema itself.
 - **`provides` rollout** (this repo, Phase 2): **complete** — all 10 audited Skills'
   `provides` PRs have merged (see `CROSS_REPO_STATUS.md`) — including the ecosystem's one
   real documented Capability collision (`measure.audio.loudness`/`measure.audio.silence`/
@@ -97,12 +116,13 @@ question right now (see `WORK_QUEUE.md` item 1).
 ## PLANNED (designed, not built)
 
 - `docs/ROADMAP.md` Phase 3 (real Provider-collision resolution) and Phase 4
-  (registry-driven discovery) as originally scoped — **now superseded in part** by the
-  discovery in this document that `video-production-agent` already solved an equivalent
-  problem independently. The remaining real work is connecting the two, not building
-  Phase 4 from scratch (see `WORK_QUEUE.md`).
-- `registry/` item 1 (a standalone JSON Schema file for the CapabilityContract shape).
-  The conformance harness itself (item 3) is **done**: all 8 of `SKILL_SPEC.md` §8's
+  (registry-driven discovery) as originally scoped — **confirmed still the right shape**
+  by 2026-09-06's exhaustive investigation (`DECISION_LOG.md` D8), not superseded: the
+  Agent's real execution routing is still hardcoded (`Service.adapter()` → `ToolRouter`),
+  exactly what Phase 4 targets. The concretely-buildable near-term step is smaller than a
+  Phase 4 rewrite: a separate, additive, read-only diagnostic (`WORK_QUEUE.md` item 8),
+  not a connection of the two selection mechanisms.
+- The `registry/` conformance harness (item 3) is **done**: all 8 of `SKILL_SPEC.md` §8's
   checks are now real functions, including `no_unsafe_shell_out` (a static AST walk,
   manually verified PASS against all 9 real Python Skills' source trees — it does not
   cover `ffmpeg-skill`, a Node.js package). What remains is wiring these checks into an
@@ -137,12 +157,27 @@ language.
   (`subtitle-skill`, `thumbnail-skill`, `transcription-skill` — see `WORK_QUEUE.md` item 1
   for the full table), always deliberately and correctly handled inside each adapter. Any
   future integration must key on Capability id, never on tool-id string equality.
+- **2026-09-06, exhaustive (all 42 `SkillSpec`s against all 10 Skills' real merged
+  `provides[]`):** confirmed only 2 of 10 Skills (`qc-skill`, `subtitle-skill`) have a
+  genuine tool-id string mismatch between what the Agent's adapter hardcodes and what the
+  Skill's real contract declares (self-declared, not a live bug — see `WORK_QUEUE.md` item
+  1); `thumbnail-skill` has the same *package*-id mismatch shape but its tool ids already
+  match, proving that mismatch table alone doesn't predict a tool-id drift. The Agent's
+  three two-way "candidate" `SkillSpec`s (`media_probe`, `silence_analysis`,
+  `loudness_analysis`) are **not** Capability collisions — each candidate maps to a
+  genuinely different Capability id, an Agent-internal fallback mechanism unrelated to
+  `registry/`'s collision-resolution policy. `video-editing-skill`'s `video.trim` and 5 of
+  `audio-production-skill`'s capabilities are published with no consuming `SkillSpec` at
+  all yet — real, additive future work, not a defect.
 
 ## UNKNOWN
 
 - Whether `video-production-agent`'s static Skill→Tool registration model should ever be
   replaced by dynamic `provides`-based discovery, or whether the static model is in fact the
   right long-term architecture for a system that values "no shortcuts, no plugin manager"
-  as strongly as this Agent's own ADRs do. This is a real open architectural question, not
-  a gap to silently close — see `DECISION_LOG.md` for the reasoning so far and
-  `WORK_QUEUE.md` item 1 for the investigation this implies.
+  as strongly as this Agent's own ADRs do. **Partially resolved, not fully**: `DECISION_LOG.md`
+  D8 (2026-09-06) concludes the near-term answer is "don't replace it yet, add a read-only
+  diagnostic instead" — but whether a full registry-driven Phase 4 rewrite should ever
+  actually happen, versus the static model being kept permanently, remains a genuinely
+  open architectural question this investigation deliberately did not settle (per
+  `WORK_QUEUE.md` item 1's own Boundary).

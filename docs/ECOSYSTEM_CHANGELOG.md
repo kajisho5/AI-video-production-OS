@@ -38,6 +38,106 @@ noteworthy.
 
 ---
 
+### 2026-09-06 — `docs/ecosystem`: bring `CURRENT_STATE.md` and `HANDOFF.md` current
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: (pushed to `claude/ai-video-production-os-arch-fck6fy`)
+- **What changed**: `CURRENT_STATE.md` and `HANDOFF.md` were re-verified against real
+  state and updated to reflect all four entries below: dashboard live (Pages enabled,
+  npm/PyPI lookup real), `registry/`'s JSON Schema file and test count (62, was 50),
+  `ffmpeg-skill` PR #22 merged, and WORK_QUEUE item 1's investigation concluded
+  (`DECISION_LOG.md` D8). Both files previously described these as still-open or
+  not-yet-done.
+- **Why**: `HANDOFF.md`'s own stated purpose is letting a fresh session pick up without
+  chat history; a stale orientation page defeats that purpose regardless of how current
+  the underlying facts actually are.
+- **Status**: pushed directly to the branch.
+
+---
+
+### 2026-09-06 — WORK_QUEUE item 1: exhaustive `video-production-agent` tool-candidate mapping
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: https://github.com/kajisho5/AI-video-production-OS/pull/5
+- **What changed**: ran every one of `video-production-agent`'s 42 registered
+  `SkillSpec.tools` candidates against all 10 Skills' real `capability_provides()`
+  (executed live from a detached worktree per repo's merged `main`), completing the
+  2026-09-05 spot-check now that all 10 `provides` rollout PRs are merged. Confirmed 2 of
+  10 Skills (`qc-skill`, `subtitle-skill`) have a self-declared (contract-unconfirmed)
+  tool id in the Agent's adapter — not a live bug, but proof a `provides`-based diagnostic
+  must join on Capability id, never tool-id string; confirmed the Agent's two-way
+  "candidate" `SkillSpec`s are not Capability collisions (each side maps to a different
+  Capability id); found `video-editing-skill`'s `video.trim` and 5 of
+  `audio-production-skill`'s capabilities are published with no consuming `SkillSpec` yet.
+  Recorded the conclusion in `DECISION_LOG.md` D8: `docs/ROADMAP.md` Phase 4 stays as
+  scoped; a new, separate, read-only diagnostic is proposed as `WORK_QUEUE.md` item 8 for
+  `video-production-agent`'s own repository to build.
+- **Why**: `WORK_QUEUE.md` item 1's own question ("is Phase 4 as scoped still needed?"),
+  answerable only once real `provides` data existed for all 10 Skills.
+- **Status**: merged.
+
+---
+
+### 2026-09-06 — `registry/`: formalize the `CapabilityContract` shape as a JSON Schema file
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: https://github.com/kajisho5/AI-video-production-OS/pull/4
+- **What changed**: `registry/capability_contract.schema.json` (draft 2020-12) formalizes
+  the full aspirational `CapabilityContract` shape `docs/SPEC.md` section 1 sketches —
+  `docs/ROADMAP.md` Phase 1 item 1's last remaining gap. `required` stays deliberately
+  narrow (a skill identity plus `provides[].{id, lifecycle, tool_id}` — what every real
+  Skill's contract already carries), so the schema documents the richer target shape in
+  full while still validating today's real, minimal contracts. `registry/schema.py`'s
+  `load_schema()` is stdlib-only, keeping the package dependency-free; 12 new tests
+  (`registry/tests/test_schema.py`) use the `jsonschema` package as an optional,
+  skip-if-absent test dependency.
+- **Why**: `docs/ROADMAP.md` Phase 1 item 1 explicitly asked for a standalone
+  `.schema.json`, not just the Python-level validation `registry/contract.py` already had.
+- **Status**: merged.
+
+---
+
+### 2026-09-06 — Dashboard: real live npm/PyPI lookup for `MATURITY_MODEL.md` level 6
+
+- **Repo(s)**: `kajisho5/AI-video-production-OS`
+- **PR(s)**: https://github.com/kajisho5/AI-video-production-OS/pull/3
+- **What changed**: `dashboard/aggregator/src/packageRegistry.ts` replaces the
+  "documented distribution claim = level 6 met" shortcut with a real, live lookup against
+  npm's/PyPI's own public registry API. `capability-status.json` still names which
+  registry/package to check, but a documented claim the live lookup cannot confirm now
+  reports `UNKNOWN`, never a silent pass. 9 new tests (8 mocked, 1 real unmocked network
+  call against the real npm registry for `ffmpeg-skill`). Separately in this PR: GitHub
+  Pages was manually enabled by the user and the deploy workflow's first real run
+  succeeded — the Dashboard is now live at
+  `https://kajisho5.github.io/AI-video-production-OS/`.
+- **Why**: closes the "no live npm/PyPI version lookup yet" gap `dashboard/README.md` and
+  `WORK_QUEUE.md` item 7 both listed as a known limitation.
+- **Status**: merged.
+
+---
+
+### 2026-09-06 — `ffmpeg-skill`: reviewed, fixed, and merged PR #22 (FFmpeg 8+/Windows compatibility)
+
+- **Repo(s)**: `kajisho5/ffmpeg-skill`
+- **PR(s)**: https://github.com/kajisho5/ffmpeg-skill/pull/22
+- **What changed**: at the user's request, reviewed `ffmpeg-skill#22` (a Windows
+  drive-letter filter-path escaping fix, an `overlay.py --image` duration overshoot fix
+  on FFmpeg 7+, and a macOS CI fix to install `ffmpeg-full` instead of the filter-less
+  plain `ffmpeg` formula) against its current head, CI, and PR #24's merged `provides`
+  work. Found the PR's `CHANGELOG.md` merge conflict against `main` (resolved by another
+  session before this review's fixes were pushed) and one remaining real inconsistency:
+  `scripts/_common.py`'s `INSTALL_HINTS["Darwin"]` still recommended the plain
+  `brew install ffmpeg` command the PR itself proved insufficient (missing
+  subtitles/drawtext/zscale filters) — README.md and `bin/install.js` had already been
+  fixed to say `ffmpeg-full`, this was the one remaining location. Fixed it, confirmed CI
+  green on Ubuntu/macOS/Windows on the new head, then marked the PR ready for review and
+  merged it.
+- **Why**: explicit user request to review, then to proceed once the review's two
+  required changes were resolved.
+- **Status**: merged.
+
+---
+
 ### 2026-09-05 — Add the Ecosystem Dashboard (`dashboard/`)
 
 - **Repo(s)**: `kajisho5/AI-video-production-OS`
