@@ -478,3 +478,38 @@ step silently does nothing for the most common request), not a nice-to-have. Pri
 should follow Mission > User value ordering accordingly once someone picks up the actual
 implementation — this item exists so the next session doesn't have to re-derive the
 `ARTIFACT_OUTSIDE_WORKSPACE` dead end from scratch.
+
+## 10. `video-production-agent`: spurious "exceeds asset duration" on real, untrimmed footage — RESOLVED 2026-09-06 (PR #37)
+
+**Found and fixed 2026-09-06** while searching for the next real gap after closing item 9.
+A generic-profile plan against a real, untrimmed clip (no leading/trailing silence for the
+profile to trim away — a screen recording, B-roll, anything that starts/ends mid-sound)
+failed outright on both `plan` (validates immediately, exit 2) and `render` (job `FAILED`):
+`temporal scope {'start': 0.0, 'end': 8.486} exceeds asset duration 8.485986`.
+
+**Root cause, confirmed by reading**: a step/event/context scope meant to cover an asset's
+*entire* duration is built via `round(dur, 3)` in several places (`agent/planner.py`'s
+loudness/delivery/audio-cut scopes). `round(x, 3)` can round *up* by as much as `5e-4`
+seconds versus the raw, unrounded probe duration. That rounded value is then checked by
+`TimeRange.within()` (`models/__init__.py`), which used `TIME_EPS` (`1e-6`) as its
+tolerance — 500× tighter than the rounding error that produced the value being checked in
+the first place. Not a synthetic-media artifact: an exact multiple of 0.001s is essentially
+never the true length of a real recording, so any asset whose duration's 4th decimal digit
+is `>= 5` hits this — roughly half of all real, untrimmed footage. Every asset tested
+earlier this session happened to either have an exactly round `lavfi`-generated duration, or
+leading/trailing silence whose trim shifted the scope below the raw duration, incidentally
+masking the bug both times.
+
+**Fixed** (`video-production-agent` PR #37, merged): `TimeRange.within()` now uses a
+dedicated `DURATION_EPS = 0.01` instead of `TIME_EPS` — matching `project/validator.py`'s
+own, independently-chosen `0.01`s tolerance already used for the same class of check
+(`video.trim`, `audio.cut`, `video.concat` range validation). `within()`'s only callers (5
+call sites, confirmed via `grep`) are exactly this "does this range exceed the source
+duration" check — no overlap/adjacency/precedes logic uses it, so `TIME_EPS` itself is
+untouched everywhere else. Verified by reproducing the exact failure directly
+(`TimeRange(0, round(8.485986, 3)).within(8.485986)`: `False` before, `True` after) and via
+a full plan+validate+render regression with `FakeAdapter(duration=20.485986)` (confirmed
+failing before the fix by stashing it and re-running, passing after). New regression tests
+added. `tests/test_unit.py`: 187 passed (4 known environmental failures, unrelated);
+`tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class, 0
+regressions.
