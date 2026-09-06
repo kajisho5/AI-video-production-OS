@@ -231,3 +231,18 @@ fixed via PR #31 (**merged**): see step 9.
   (after ffmpeg-skill/loudness, color-grading, qc, motion-graphics, thumbnail, audio-production)
   confirmed genuinely executable end to end in this session, closing the last "not yet verified
   for real" gap this document was tracking.
+- `video-production-agent` PR #33 (**merged**): while re-verifying PR #32's fix for real (a
+  `--set motion.text=...` no-preset render), noticed the newly-registered `MASTER` Artifact's
+  `operations`, `decision_ids` and `step_id` were all empty/`None` — as if nothing had produced
+  or decided it, even though it is the direct, real output of a real motion-graphics operation.
+  Root cause: `_register_artifacts()`'s producing-op lookup matched purely by id
+  (`logical in o.outputs or logical in o.inputs`), which a no-preset deliverable never satisfies
+  because `compiler.py`'s `delivery()` aliases its path to "the last processed intermediate's"
+  own path rather than any op naming the delivery id itself. Fixed by also matching an operation
+  whose own output resolves (via `paths`) to the same on-disk path, and by always crediting the
+  delivery target's own `decision_ids` (already available from the planner) regardless of match.
+  `tool`/`tool_version` are left empty on purpose for this case (no dedicated export op exists to
+  attribute the file to) — a real, narrower, lower-priority gap, not addressed here. Verified for
+  real: the same render now reports the real op id and both decisions involved instead of `[]`/
+  `[]`. New regression test extends #32's own test. Full suite: 308 passed, same 4 pre-existing
+  environmental failures, 0 new regressions.
