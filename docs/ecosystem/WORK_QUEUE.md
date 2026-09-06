@@ -513,3 +513,49 @@ failing before the fix by stashing it and re-running, passing after). New regres
 added. `tests/test_unit.py`: 187 passed (4 known environmental failures, unrelated);
 `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class, 0
 regressions.
+
+## 11. `video-production-agent`: an explicit loudness-normalization request on audio-less input silently disappears — RESOLVED 2026-09-06 (PR #38)
+
+**Found and fixed 2026-09-06** while searching for the next real gap after item 10.
+`video-agent plan noaudio.mp4 --profile generic --set audio.normalize=true --set
+audio.loudness.target_lufs=-16` on a real, audio-less clip (muted b-roll, a screen recording
+without a mic) planned and rendered cleanly to `COMPLETED`/QA PASS, but the printed
+"Decisions:" list, `explain --decision audio.loudness` ("no such decision"), and the final
+`report.md` all showed **zero** mention of loudness or audio anywhere — the user's explicit
+request simply vanished with no explanation anywhere a normal workflow would look.
+
+**Root cause, confirmed by reading**: `agent/decision.py`'s entire `audio.loudness` decision
+block was gated on `asset.technical.get("audio")` — when false, the whole `if` was skipped
+and no `Decision` object was ever created at all. Inconsistent with `audio.production`'s
+analogous case a few lines above, which explicitly emits `BLOCK: {asset} has no audio
+stream` when audio production is requested on a video-only input. Same class of "user
+request silently no-ops" bug as item 9, but for loudness normalization on any real-world
+audio-less clip.
+
+**Fixed** (`video-production-agent` PR #38, merged): split the gating condition so a
+loudness request on an audio-less asset now emits an explicit `SKIP` decision explaining why
+(`"{asset} has no audio stream; loudness normalization needs one (unsupported input, not
+guessed)"`), matching `audio.production`'s existing pattern; the rest of the decision logic
+(silent/ambient/off-target/keep cases) is untouched. Verified for real: reproduced the exact
+silent disappearance on a generated audio-less clip before the fix (confirmed empty in
+`plan`, `explain`, and `report.md`), confirmed all three now show the `skip` decision and
+reason after the fix. New regression test using `FakeAdapter(audio=False)`.
+`tests/test_unit.py`: 188 passed (4 known environmental failures, unrelated);
+`tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class, 0
+regressions.
+
+**Also investigated and ruled out this session**: a caption-burn-in "oversized text on
+portrait/reels video" hypothesis. Initial visual inspection of a burned-in caption on a
+1080x1920 clip looked dramatically oversized compared to landscape, and an initial fix
+(`ffmpeg-skill caption.py`'s `subtitles=` filter given an explicit `original_size` reference)
+was drafted and even seemed to visually resolve it. Rigorous per-line pixel measurement
+(isolating individual wrapped lines, then re-testing with single-word, unwrappable cue text
+across a dozen resolutions and aspect ratios from 200x1920 to 1920x200) proved the
+"oversized" appearance was **entirely explained by ordinary text wrapping**: the caption text
+used in testing didn't fit the narrower portrait frame's width at the same font size, so it
+correctly wrapped to two lines — which, measured as one combined block, looked ~2-3x taller
+than a single line, but each individual line's height was proportionally identical to the
+landscape case (within ~2% across every resolution tested). There is no font-scaling defect;
+the draft fix (which would have changed default caption sizing/wrapping behavior for every
+existing caller, on a false premise) was reverted before commit. Recorded here so a future
+session doesn't have to re-investigate the same false lead.
