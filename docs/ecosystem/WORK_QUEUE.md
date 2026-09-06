@@ -290,13 +290,12 @@ extend (its `AI Provider contract`, ADR-018, already defines the boundary — "A
 never executes"), not something this project should implement unilaterally inside another
 repository. Track it here as the thing to watch for, not a task to start.
 
-## 8. ~~A read-only `--check-provides` diagnostic for `video-production-agent`~~ — IMPLEMENTED 2026-09-06 (Draft PR open)
+## 8. ~~A read-only `--check-provides` diagnostic for `video-production-agent`~~ — DONE 2026-09-06
 
 **Built, in `video-production-agent` itself** (not this repository — see this item's own
 original scoping below, still the right call):
 [`kajisho5/video-production-agent#27`](https://github.com/kajisho5/video-production-agent/pull/27)
-(kept Draft, not merged — the user's own standing boundary for this work: no merge, no
-Draft→Ready, no force-push/history-rewrite across any repository touched this session).
+(merged 2026-09-06).
 `src/video_agent/skills/diagnostics.py`'s `check_provides()`/`check_all()` join a Skill's
 real `provides[]` against this Agent's registered `SkillPackage`/`SkillSpec` data by
 Capability id, reporting `PROVIDES_VALID` / `PROVIDES_MISMATCH` / `CAPABILITY_UNCONSUMED`
