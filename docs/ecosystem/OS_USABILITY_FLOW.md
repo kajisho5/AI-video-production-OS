@@ -70,30 +70,28 @@ fixed via PR #31 (**merged**): see step 9.
   general free-text understanding. This remains the gap most directly limiting
   "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
   underlying scope limitation.
-- **Real, open, found and investigated this session — genuinely needs a design decision, not a
-  quick patch**: for the generic-profile "deliver as-is, no preset" case — the most common real
-  request, and the one this session's PR #31 just made stop crashing — the render's own
-  `report.md`/`report.json` shows `"artifacts": []` even on `COMPLETED`. Nothing is ever
-  delivered: `execution/compiler.py`'s `delivery()` only sets a path for the deliverable when a
-  preset re-encode ran or something upstream changed the file; with neither, no path is ever
-  recorded for it. The identical `not t.get("preset")` guard in `qc_gate()` and in
-  `service.py`'s `_register_artifacts()` means that even if a path existed, no QC op would be
-  compiled and no Artifact would be registered for it either — so `--set qc=true` can promise a
-  QC gate that silently never runs. **Tried the obvious one-line fix** (make the no-preset
-  branch point the deliverable at the subject's current — possibly untouched — media, and drop
-  the `not t.get("preset")` guards) and it made things *worse*: the artifact store's own
-  security boundary (`artifacts/store.py`'s `check_path()`, ADR-022) correctly rejects it with
-  `ARTIFACT_OUTSIDE_WORKSPACE`, because an untouched source asset lives at its original path,
-  outside `<workspace>`, and every registered Artifact must be a real file the compiler wrote
-  inside the workspace. Reverted that attempt (confirmed clean: `git diff origin/main` empty)
-  rather than ship a "fix" that turns a silent gap into a hard `FAILED` job for the single most
-  common request shape. **The real fix** needs an actual materialize/passthrough operation —
-  most likely a stream-copy remux (`ffmpeg -c copy`, no re-encode) that writes the source into
-  the job's `artifacts/` directory — which does not exist today: `ffmpeg-skill`'s own
-  `export.py` `PRESETS` dict has no copy/passthrough entry (`youtube`/`youtube4k`/`reels`/`x`/
-  `prores`/`h265`/`gif` only), so this is cross-repo work (`ffmpeg-skill` needs the preset;
-  `video-production-agent` needs to route to it and materialize the artifact) or a genuinely new
-  in-agent operation kind, not a same-file bug fix. Flagged here rather than rushed.
+- **Fixed this session, merged (PR #32), for the processed case; genuinely open for the
+  untouched case — see WORK_QUEUE.md item 9 for the full history**: for a generic-profile,
+  no-preset delivery, the render's own `report.md`/`report.json` was showing `"artifacts": []`
+  even on `COMPLETED` — nothing was ever delivered, and `--set qc=true` never ran a QC check
+  either. Split into two cases while investigating: (1) **something real was processed**
+  (a motion-graphics overlay, or the always-on technical silence trim) — `compiler.py`'s
+  `delivery()` already resolved a real, in-workspace, QA-verified path for it; only
+  `service.py`'s `_register_artifacts()`'s `not t.get("preset")` guard was silently dropping it.
+  Fixed by dropping that guard (PR #32, **merged**) — this deliverable is now correctly
+  registered as a `MASTER` Artifact. Tried dropping the identical guard in `compiler.py`'s
+  `qc_gate()` too and reverted it: `agent/planner.py`'s `qc_steps()` only creates a qc step
+  alongside a `delivery_export` step (preset-only), so compiling a qc op for this case would
+  reference a tool selection that was never planned and crash with `CompileError` — a second,
+  worse hole this session chose not to open while closing the first. The QA layer's own ADR-032
+  fail-closed check already covers the gap safely on its own: verified for real that
+  `--set qc=true` on this exact case now registers the artifact but correctly marks it QA
+  `FAIL` / stage `NOT_READY` with a precise `fix_hint` ("the QC gate was planned but no report
+  exists for this artifact") — honest, not a crash, not a false pass. (2) **nothing was
+  processed at all** (the plain "nothing to do" case) — still genuinely unregistered; a real fix
+  needs an actual stream-copy/remux operation materializing the passthrough deliverable inside
+  the workspace, which does not exist today in `ffmpeg-skill`, so this is real cross-repo work,
+  not a same-file patch. Tracked as `WORK_QUEUE.md` item 9.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -166,4 +164,18 @@ fixed via PR #31 (**merged**): see step 9.
   (`git diff origin/main` empty) before moving on. This needs an actual stream-copy/remux
   operation that writes the passthrough deliverable into the workspace — `ffmpeg-skill`'s own
   `export.py` has no such preset today — so it's real, cross-repo work for a future session, not
-  a same-file patch. See the P1 item above for the full writeup.
+  a same-file patch.
+- Split that finding in two and fixed the safely-fixable half. `video-production-agent` PR #32
+  (**merged**): the "two compounding gaps" framing above was one gap too coarse — a no-preset
+  delivery that something *actually processed* (motion-graphics text overlay tested for real,
+  and the always-on technical silence trim) already has a real, in-workspace, QA-verified path
+  from `compiler.py`'s own `delivery()`; only `_register_artifacts()`'s guard was dropping it.
+  Fixed that one function (kept `qc_gate()`'s guard untouched after confirming dropping it too
+  would crash — `planner.py`'s `qc_steps()` never plans a qc step for a no-preset target, so
+  `_step_tools()` has no tool selection for the compiler to find). Verified for real: this case
+  now registers a proper `MASTER` Artifact, and `--set qc=true` on it correctly comes back QA
+  `FAIL`/`NOT_READY` with an honest `fix_hint` (ADR-032's existing fail-closed check already
+  handles it) rather than crashing or silently passing. New regression test added. Full suite:
+  308 passed, same 4 pre-existing environmental failures, 0 new regressions. The genuinely
+  unprocessed "nothing to do" case is unaffected and remains WORK_QUEUE.md item 9 — updated that
+  item to record what's now fixed vs. what's still open.
