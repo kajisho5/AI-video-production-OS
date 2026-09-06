@@ -366,3 +366,27 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   regression tests added. `tests/test_unit.py`: 187 passed (4 known environmental failures,
   unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class,
   0 regressions. Tracked as `WORK_QUEUE.md` item 10, now resolved.
+- Continuing the search: a burned-in caption on a portrait (1080x1920) clip looked
+  dramatically oversized versus landscape on visual inspection, and a fix was drafted
+  (`ffmpeg-skill caption.py`'s `subtitles=` filter given an explicit `original_size`). Before
+  committing, rigorous per-line pixel measurement (isolating individual wrapped lines, then
+  retesting with single-word unwrappable text across a dozen resolutions/aspect ratios)
+  proved this was **not a real bug**: the test caption text simply didn't fit the narrower
+  portrait width at the given font size and correctly wrapped to two lines, which measured as
+  one combined block looked ~2-3x taller — but each individual line's height was
+  proportionally identical to landscape (within ~2%) everywhere. The draft fix was reverted
+  before commit; recorded in `WORK_QUEUE.md` item 11 so this false lead isn't re-investigated.
+- The same search surfaced a real one: an explicit `--set audio.normalize=true --set
+  audio.loudness.target_lufs=-16` request on a real, audio-less clip (muted b-roll, a screen
+  recording without a mic) planned and rendered cleanly, but `plan`'s decision list, `explain
+  --decision audio.loudness`, and the final `report.md` all showed zero mention of loudness
+  anywhere — the request simply vanished. Root cause: `agent/decision.py`'s entire
+  `audio.loudness` block was gated on `asset.technical.get("audio")`, so no `Decision` was
+  ever created when false — unlike `audio.production`'s analogous case, which explicitly
+  `BLOCK`s with a reason. Fixed via `video-production-agent` PR #38 (**merged**): an explicit
+  `SKIP` decision now explains why, matching `audio.production`'s pattern. Verified for real
+  (reproduced the exact silent disappearance before the fix, confirmed the decision now
+  appears in `plan`/`explain`/`report.md` after). New regression test with
+  `FakeAdapter(audio=False)`. `tests/test_unit.py`: 188 passed (4 known environmental
+  failures, unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every
+  real-Skill class, 0 regressions. Tracked as `WORK_QUEUE.md` item 11, now resolved.
