@@ -813,3 +813,65 @@ execution failure recorded and empty `output_artifact_ids`; the receipt reads ba
 passed (4 known environmental failures, unrelated). `tests/test_integration.py` (real
 ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**. `ROADMAP.md`'s Phase 6
 status updated to IMPLEMENTED.
+
+## 19. `video-production-agent`: the ffmpeg-skill version gate was dead code, and 6 Skill locators silently ignored an explicit "not here" override — RESOLVED 2026-09-06 (PR #46)
+
+`ROADMAP.md`'s Phase 6 (item 18) had closed out the roadmap as the user asked. What
+this item answers is a different, harder question the user asked right after: "given
+all that work, how far along is this really, and what does it need next?" The user
+rejected evaluating this OS against their own (unrelated) production business, and
+instead supplied 5 real, non-synthetic video sample files with the single word
+"サンプル" — the answer to "what should happen next" delivered as data rather than
+words: actually exercise the pipeline against real footage instead of the entirely
+synthetic (ffmpeg-generated) media every prior test in this ecosystem had used.
+
+That real-data pass immediately found a genuine bug in `ffmpeg-skill`'s `join.py`
+(joining 2+ audio-less clips crashed on an out-of-range filtergraph index — every
+prior test used at most one audio-less clip per join; the 5 real samples are all
+audio-less), fixed and merged upstream as `ffmpeg-skill` PR #41. Cleaning up after
+that merge (`git reset --hard origin/main` onto the now-released ffmpeg-skill 0.10.0)
+surfaced two further, independent findings in `video-production-agent` itself:
+
+1. **The version safety gate was never wired in.** `tools/ffmpeg_skill/locate.py`
+   declares `FfmpegSkill.version_supported()` with a range (`0.8.4 <= v < 0.10`, comment:
+   "0.10 is not verified") that reads like a real enforced safety check. It is not:
+   `grep -rn "version_supported" src/` showed it called only from tests. `video-agent
+   skills` reported the real 0.10.0 checkout as plain `AVAILABLE`, no warning, no
+   distinction from a verified version. `tools/ffmpeg_skill/package.py` carried a
+   *third*, independently stale copy of the same range as a hand-written display
+   string (`"0.8.4 <= v < 0.9"`) — three sources of truth, none of them agreeing, and
+   the one that mattered at runtime enforcing nothing.
+2. **Six Skill locators silently ignored an explicit "not here" override.**
+   `locate_ffmpeg_skill`/`locate_media_analysis`/`locate_transcription`/
+   `locate_video_editing`/`locate_audio_production` and the shared
+   `skill_process.locate_cli_skill` (subtitle/thumbnail/color-grading/motion-graphics/qc)
+   all appended an explicit dir or `*_DIR` env var to the front of a candidate list, but
+   still fell through to `~/.claude/skills/<name>` / `./vendor/<name>` / `../<name>`
+   guesses on a miss. This ecosystem's own intended layout — every Skill checked out as
+   a sibling of `video-production-agent`, exactly this session's sandbox — makes that a
+   live bug, not a hypothetical: an explicit "not here" override silently resolves to
+   an unrelated real checkout instead of failing loudly. This was the actual, previously
+   uninvestigated cause of 4 `tests/test_unit.py` failures that items 16/17/18 (PR
+   #43/#44/#45) had each logged as "known environmental failures, unrelated" — real,
+   reproducible bugs mislabeled as environment noise across three prior PRs, because
+   nobody had gone looking. A related independent bug in the same family:
+   `media_analysis/locate.py`'s final PATH fallback never passed `path=env.get("PATH")`,
+   so faking away `PATH` in a test still found the real interpreter's `PATH`.
+
+**Fixed** (`video-production-agent` PR #46, merged): `capabilities/resolver.py` now
+calls `version_supported()` and reports `DEGRADED` (not `MISSING` — construction stays
+unguarded per `ARCHITECTURE_REVIEW.md` §1.7, nothing actually breaks) for an
+out-of-range version; `package.py`'s display string is now derived from `locate.py`'s
+real constants so the two can't drift apart again. All six locators now treat an
+explicit/env override as authoritative — no fallthrough to the guess candidates on a
+miss (the final PATH console-script fallback is unchanged: a different installation
+shape, not another guess). Verified ffmpeg-skill 0.10.0 against the full real-Skill
+integration suite before bumping the pin (matching this repo's existing "verify then
+pin" discipline): all 7 failures on 0.10.0 were hardcoded `"ffmpeg-skill/probe@0.9"`
+string assertions, zero behavioral — bumped `SUPPORTED_MAX_EXCLUSIVE` to `(0, 11, 0)`
+and switched those assertions to compare against the located skill's real version.
+`tests/test_unit.py`: **210 passed, 0 known-environmental failures remaining** (new
+`LocateAuthoritativeOverrideTests`, 7 tests, cover all six locators with synthetic
+sibling checkouts so the regression test itself doesn't depend on this machine's
+layout). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
+passed, 0 failed**. ADR-041 added.
