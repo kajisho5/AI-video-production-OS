@@ -390,6 +390,23 @@ reference as new input, not new verdict semantics beyond PASS/WARN/FAIL/UNKNOWN.
 
 ## Phase 6 — Provenance/ProductionReceipt
 
+**Status: IMPLEMENTED as of 2026-09-06** (`video-production-agent` PR #45). Resolves both
+questions `OPEN_ARCHITECTURAL_QUESTIONS.md` named as requiring this phase's decision: **I5**
+(emission timing) — a receipt is emitted whenever `Executor.run()` reaches any terminal
+status (`COMPLETED`/`FAILED`/`BLOCKED`/`CANCELLED`), matching `PROVENANCE.md` §4's own
+wording ("the Plan finished running," not that it fully passed); never emitted for a Plan
+that never reached execution (rejected/blocked/pending-approval gates before execution
+starts) since nothing ran. **I7** (warnings/failures shape) — free-text strings, exactly
+`SPEC.md` §6's literal shape, since `PROVENANCE.md` itself calls a more structured
+alternative non-blocking. Implemented as `Artifact.type = "PRODUCTION_RECEIPT"`, registered
+through the same identity/store path as every other Artifact — "not a new subsystem," per
+both design docs. `qc_report_ids` stays honestly empty: qc-skill's reports are not
+registered as independent Artifacts anywhere in this codebase today, so naming an artifact
+id nothing owns would be worse than the honest gap (their verdict already reaches
+`warnings`/`failures` via the QA items that admit them). Verified: full unit suite 199
+passed (4 pre-existing environment-only failures, unrelated) and full real-Skill
+integration suite (real ffmpeg + all 9 Skills, no mocks) 48 passed, 0 failed.
+
 **Delivers:** implements the `ProductionReceipt` artifact type from `SPEC.md` §6 — the
 final, emitted-once Artifact answering "what happened, why, with what tools, did it pass
 verification" for one completed Plan, composing `input_artifact_ids`/`output_artifact_ids`,
