@@ -237,6 +237,28 @@ not a technical risk.
 
 ## Phase 3 — Fix the qc-skill/media-analysis-skill collision + real Provider resolution
 
+**Status: CURRENT / IMPLEMENTED as of 2026-09-06, for items 1-2.** Item 1 (both
+`qc-skill` and `media-analysis-skill` registering as Providers of
+`measure.audio.loudness` / `measure.audio.silence` / `measure.audio.integrity`) was
+already done as part of each Skill's Phase 2 contract retrofit — confirmed by reading
+both Skills' `contract.py`, not assumed. Item 2 (the three-tier collision-resolution
+policy replacing `SkillRegistry.select_tool()`'s hardcoded first-match-wins) is
+implemented in `video-production-agent` PR #42: `select_tool(name, caps, supports,
+explicit=None, default=None)` now applies, only when 2+ Providers are actually usable
+(the 4 real collisions confirmed live: `media_probe` / `silence_analysis` /
+`loudness_analysis` between ffmpeg-skill and media-analysis-skill, `silence_cleanup`
+between ffmpeg-skill and video-editing-skill), an explicit `--set
+provider.<skill>=<package>` requirement (Tier 1) → a workspace `providers.json`
+overriding the OS's own baked-in default, which reproduces today's ffmpeg-skill-wins
+behavior with zero configuration (Tier 2) → loud refusal naming the candidates and how
+to resolve it, never an arbitrary pick (Tier 3). Verified against the re-established
+baseline this roadmap's own risk note called for, not the unverified self-reported
+99/99: full unit suite (197 passed; 4 pre-existing environment-only failures, confirmed
+identical on `main` before this change) and the full real-Skill integration suite —
+real ffmpeg, ffmpeg-skill, media-analysis-skill, video-editing-skill,
+audio-production-skill, subtitle/thumbnail/color-grading/motion-graphics/qc-skill, no
+mocks — 48 passed, 0 failed (up from 45, +3 covering the real collision end-to-end).
+
 **Delivers:**
 1. `qc-skill` and `media-analysis-skill` both register as Providers of
    `measure.audio.loudness`, `measure.audio.silence`, and `measure.audio.integrity` (the

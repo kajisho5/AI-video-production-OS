@@ -481,3 +481,31 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   sessions: before writing "still open" about a gap this document itself tracks, check the
   actual repository state, not just this document's own prior wording about it — a P0 item's
   status can go stale exactly the way any other claim in this document can.
+- Asked directly whether to keep gap-hunting or follow `ROADMAP.md`'s own defined next step,
+  read the roadmap in full: Phase 3 ("fix the qc-skill/media-analysis-skill collision + real
+  Provider resolution") is the current, not-yet-complete phase, with item 1 (both Skills
+  registering as Providers of the colliding Capability ids) already confirmed done in Phase 2,
+  and item 2 (the `CAPABILITY_MODEL.md` three-tier collision policy replacing
+  `SkillRegistry.select_tool()`'s hardcoded first-match-wins) confirmed **not** done by reading
+  the source directly. Confirmed this was a real, live gap — not hypothetical — by reinstalling
+  all 10 Skills fresh and running `video-agent skills`: with both packages genuinely installed,
+  `media_probe` / `silence_analysis` / `loudness_analysis` / `silence_cleanup` all silently and
+  unconditionally resolved to `ffmpeg-skill/*`, with zero way for a user to choose otherwise.
+  Implemented the full three-tier policy (explicit `--set provider.<skill>=<package>` → a new
+  `skills/providers.py`'s OS-level default, overridable via a workspace `providers.json` → loud
+  refusal naming the real candidates) via `video-production-agent` PR #42 (**merged**),
+  preserving zero-config backward compatibility (the OS-level default reproduces today's
+  ffmpeg-skill-wins choice exactly) while genuinely closing the "silent, hardcoded,
+  unconfigurable" gap the roadmap named. Three pre-existing tests that relied on declared-order
+  mutation to force a selection were updated to use the new explicit mechanism instead — the
+  point of this fix is precisely that declaration order should no longer be how a real
+  collision gets resolved. `tests/test_unit.py`: 197 passed (4 known environmental failures,
+  unrelated, confirmed identical on `main` before this change via `git stash`).
+  `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48 passed, 0
+  failed** (up from 45, +3 new covering the real collision end-to-end), directly answering this
+  roadmap phase's own risk note to re-verify against a real baseline rather than the unverified
+  self-reported count. Also verified live via manual CLI/Python checks against a real
+  bootstrapped environment (default unchanged, explicit override works, unknown provider name
+  fails loudly with the real candidate list, workspace `providers.json` default works).
+  `ROADMAP.md` updated to CURRENT/IMPLEMENTED for both Phase 3 items; tracked as
+  `WORK_QUEUE.md` item 15, now resolved.

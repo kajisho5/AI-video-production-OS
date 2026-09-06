@@ -661,3 +661,48 @@ works) but stale in that document's own wording (it still said "no single bootst
 after the script had already shipped). Fixed the actual, narrower gap that remained — the
 script wasn't linked from `README.md`'s Quick Start — rather than re-building something that
 already existed; see `OS_USABILITY_FLOW.md`'s own correction note for the full account.
+
+## 15. `video-production-agent`: `SkillRegistry.select_tool()`'s hardcoded first-match-wins Provider selection — RESOLVED 2026-09-06 (PR #42)
+
+**Found and fixed 2026-09-06**, directly following `ROADMAP.md`'s own defined phase
+sequence rather than continuing ad hoc gap-hunting past item 14's diminishing returns (the
+user explicitly asked "aren't you going to proceed to the next step according to the
+roadmap?"). `ROADMAP.md` Phase 3 has two deliverables: item 1 (`qc-skill` and
+`media-analysis-skill` both registering as Providers of `measure.audio.loudness` /
+`measure.audio.silence` / `measure.audio.integrity`) was confirmed already done — grep of
+both Skills' `contract.py` shows the `provides[]` entries from their Phase 2 retrofit. Item
+2 (the three-tier collision-resolution policy from `CAPABILITY_MODEL.md`, replacing
+`SkillRegistry.select_tool()`'s hardcoded ordered-candidate-list) was confirmed **not** done
+by reading `select_tool()`'s source directly, and confirmed to be a real, currently-live gap
+(not hypothetical): with all 10 Skills genuinely installed (the state a user reaches after
+`bootstrap.sh`), `video-agent skills` silently and unconditionally always picked
+`ffmpeg-skill/*` over the equally-available `media-analysis/*` (for `media_probe` /
+`silence_analysis` / `loudness_analysis`) and `video-editing/cut` (for `silence_cleanup`)
+candidates, with the user having zero mechanism to express a preference — exactly the "silent
+default this OS replaces with an explicit, provenance-recorded choice" `CAPABILITY_MODEL.md`
+names.
+
+**Fixed** (`video-production-agent` PR #42, merged): `select_tool(name, caps, supports,
+explicit=None, default=None)` now applies, only when 2+ candidates are actually usable in
+this environment (a real collision — the overwhelming majority of skills have exactly one
+candidate and are completely unaffected): (1) `explicit` — a `provider.<skill>=<package>`
+requirement via the same `--set key=value` mechanism every other requirement already uses,
+always wins if it names a usable candidate, and fails loudly (naming the real candidates) if
+it doesn't; (2) `default` — a new `skills/providers.py` resolves the OS's own baked-in
+default (the package each of the 4 known collisions already resolved to, so an unconfigured
+workspace behaves exactly as before — zero regression) overridden per skill by a
+`<workspace>/providers.json` file; (3) refusal — names the candidates and how to resolve it,
+never an arbitrary pick. `agent/decision.py`'s `decide()` and `Service.tools_for()` share the
+same resolved choices, so a plan step's tool and its BLOCK/no-BLOCK gating never disagree.
+Three pre-existing unit tests that mutated a skill's declared tool order to force a specific
+selection (relying on the exact "first-match-wins" behavior this PR replaces) were updated to
+use the new `provider.<skill>=<package>` mechanism instead — their actual intent (tool-id
+propagation through the full pipeline; a new package needing zero core-code changes) is
+unchanged and still verified. New regression tests for all three tiers, both at the
+`SkillRegistry` level and end-to-end against the real ffmpeg-skill/media-analysis-skill
+collision. `tests/test_unit.py`: 197 passed (4 known environmental failures, unrelated,
+confirmed identical on `main` before this change). `tests/test_integration.py` (real
+ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed** (up from 45, +3 new), matching
+this roadmap phase's own risk note to re-verify against a real baseline rather than trust the
+unverified self-reported count. `ROADMAP.md`'s Phase 3 status updated to CURRENT/IMPLEMENTED
+for both items.
