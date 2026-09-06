@@ -70,15 +70,30 @@ fixed via PR #31 (**merged**): see step 9.
   general free-text understanding. This remains the gap most directly limiting
   "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
   underlying scope limitation.
-- **Real, open, found this session**: `--set qc=true` produces a `qc.check` decision and a plan
-  line promising a QC gate, but `execution/compiler.py`'s `qc_gate()` only ever compiles an
-  actual QC op for a delivery target that has a preset (`if art_id not in paths or not
-  t.get("preset"): continue`). For the generic-profile "deliver as-is, no preset" case — the
-  most common real request — the QC check silently never runs even though the plan/decision
-  text implies it will. Not yet confirmed whether this is intentional (nothing changed, so
-  nothing to QC) or a real gap between what the plan promises and what execution does; needs
-  its own investigation before deciding whether it's a bug to fix or the plan wording needs to
-  stop promising a gate that only conditionally applies.
+- **Real, open, found and investigated this session — genuinely needs a design decision, not a
+  quick patch**: for the generic-profile "deliver as-is, no preset" case — the most common real
+  request, and the one this session's PR #31 just made stop crashing — the render's own
+  `report.md`/`report.json` shows `"artifacts": []` even on `COMPLETED`. Nothing is ever
+  delivered: `execution/compiler.py`'s `delivery()` only sets a path for the deliverable when a
+  preset re-encode ran or something upstream changed the file; with neither, no path is ever
+  recorded for it. The identical `not t.get("preset")` guard in `qc_gate()` and in
+  `service.py`'s `_register_artifacts()` means that even if a path existed, no QC op would be
+  compiled and no Artifact would be registered for it either — so `--set qc=true` can promise a
+  QC gate that silently never runs. **Tried the obvious one-line fix** (make the no-preset
+  branch point the deliverable at the subject's current — possibly untouched — media, and drop
+  the `not t.get("preset")` guards) and it made things *worse*: the artifact store's own
+  security boundary (`artifacts/store.py`'s `check_path()`, ADR-022) correctly rejects it with
+  `ARTIFACT_OUTSIDE_WORKSPACE`, because an untouched source asset lives at its original path,
+  outside `<workspace>`, and every registered Artifact must be a real file the compiler wrote
+  inside the workspace. Reverted that attempt (confirmed clean: `git diff origin/main` empty)
+  rather than ship a "fix" that turns a silent gap into a hard `FAILED` job for the single most
+  common request shape. **The real fix** needs an actual materialize/passthrough operation —
+  most likely a stream-copy remux (`ffmpeg -c copy`, no re-encode) that writes the source into
+  the job's `artifacts/` directory — which does not exist today: `ffmpeg-skill`'s own
+  `export.py` `PRESETS` dict has no copy/passthrough entry (`youtube`/`youtube4k`/`reels`/`x`/
+  `prores`/`h265`/`gif` only), so this is cross-repo work (`ffmpeg-skill` needs the preset;
+  `video-production-agent` needs to route to it and materialize the artifact) or a genuinely new
+  in-agent operation kind, not a same-file bug fix. Flagged here rather than rushed.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -137,5 +152,18 @@ fixed via PR #31 (**merged**): see step 9.
   before changing it — see the PR body). Re-ran the real repro commands after the fix: both
   cases now `render` to `COMPLETED`. Full suite: 307 passed, same 4 pre-existing environmental
   failures, 0 new regressions. While verifying this, noticed the QC gate itself silently never
-  compiles an op for a no-preset delivery (see the P1 "real, open" item above) — flagged, not
-  yet fixed, as the next real gap to investigate.
+  compiles an op for a no-preset delivery.
+- Investigated that finding fully (no PR — nothing shipped, on purpose). Confirmed via a real
+  render's `report.json` (`"artifacts": []` on a `COMPLETED` no-preset job) that it's actually
+  two compounding gaps, not one: no Artifact is ever registered for a no-preset delivery either,
+  so "deliver as-is" completes having delivered nothing at all. Traced both to the same
+  `not t.get("preset")` guard pattern repeated in `compiler.py`'s `delivery()`/`qc_gate()` and
+  `service.py`'s `_register_artifacts()`. Tried the direct fix (point the deliverable at the
+  subject's current media, drop the guards); it made a real render of the plain "nothing to
+  change" case fail with `ARTIFACT_OUTSIDE_WORKSPACE` — the artifact store's own security
+  boundary (ADR-022) correctly refuses to register a path outside `<workspace>`, which is
+  exactly where an untouched source asset lives. Confirmed the revert is clean
+  (`git diff origin/main` empty) before moving on. This needs an actual stream-copy/remux
+  operation that writes the passthrough deliverable into the workspace — `ffmpeg-skill`'s own
+  `export.py` has no such preset today — so it's real, cross-repo work for a future session, not
+  a same-file patch. See the P1 item above for the full writeup.

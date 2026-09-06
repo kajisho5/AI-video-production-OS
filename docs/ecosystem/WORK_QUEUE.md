@@ -354,3 +354,47 @@ Capability-id join methodology the diagnostic depends on, exactly as `docs/ROADM
 Phase 1's registry library was scoped to be consumed by, not built into, another
 repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
 behavior — diagnostic output only.
+
+## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — needs a real passthrough operation, not a same-file patch
+
+**Found 2026-09-06** while verifying `video-production-agent` PR #31 (the zero-step
+render-crash fix) end to end. A generic-profile plan with no delivery preset — "deliver
+'main' as processed (no platform preset)", the single most common real request this
+session's testing kept landing on — completes (`status: COMPLETED`) with `"artifacts": []`
+in its own `report.json`. Nothing is actually delivered to the user; the source file just
+sits wherever it originally was, unregistered, unhashed-as-delivered, un-QC'd.
+
+**Root cause, confirmed by reading (not guessing)**: `execution/compiler.py`'s
+`delivery()` only records a path for the deliverable when a preset re-encode ran or an
+earlier operation already changed the subject's current media; with neither, no path is
+ever set for it. The same `not t.get("preset")` condition is repeated independently in
+`qc_gate()` (so `--set qc=true` never compiles a QC op for this case, silently) and in
+`service.py`'s `_register_artifacts()` (so even a path that did exist would still never
+become a registered Artifact).
+
+**Tried the direct fix and it made things worse, on purpose reverted**: pointing the
+no-preset deliverable at the subject's current media and dropping the three guards is a
+one-line-per-site change, but a real render of the plain "nothing to change" plan then
+failed with `ARTIFACT_OUTSIDE_WORKSPACE` — `artifacts/store.py`'s `check_path()` (ADR-022)
+correctly refuses to register a path outside `<workspace>`, and an untouched source asset
+lives at its own original path, never inside the job's workspace. That's a real security
+boundary, not a bug to route around. Confirmed the revert left `git diff origin/main`
+empty before moving on — nothing shipped from this attempt.
+
+**What an actual fix needs**: a real stream-copy/remux operation (`ffmpeg -c copy`, no
+re-encode, same bytes semantically) that writes the passthrough deliverable into the job's
+own `artifacts/` directory, so it satisfies the workspace boundary like every other
+delivered artifact. This does not exist today — `ffmpeg-skill`'s `scripts/export.py`
+`PRESETS` dict has only `youtube` / `youtube4k` / `reels` / `x` / `prores` / `h265` / `gif`,
+no copy/passthrough entry. So this is real, cross-repo work: `ffmpeg-skill` needs the new
+preset (or `video-production-agent` needs its own local materialize-into-workspace
+operation, if avoiding the extra Skill round-trip for a byte-identical copy is preferred),
+plus `video-production-agent`'s compiler/registry/executor wiring to route to it. Not
+attempted without that decision — see `OS_USABILITY_FLOW.md`'s P1 section for the same
+writeup in the usability-flow document.
+
+**Boundary**: this is a real product gap (the OS's own "return the result to the user"
+step silently does nothing for the most common request), not a nice-to-have. Priority
+should follow Mission > User value ordering accordingly once someone picks up the actual
+implementation — this item exists so the next session doesn't have to re-derive the
+`ARTIFACT_OUTSIDE_WORKSPACE` dead end from scratch.
