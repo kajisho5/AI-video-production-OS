@@ -294,6 +294,28 @@ truth going in.
 
 ## Phase 4 — Cross-Skill Execution/Artifact model (real registry-driven discovery)
 
+**Status: PARTIALLY IMPLEMENTED as of 2026-09-06** (`video-production-agent` PR #43) —
+deliberately scoped down from this phase's full "moderate-to-high risk" vision after
+cross-checking `ARTIFACT_MODEL.md`'s `produced_by` shape against the actual `Artifact`
+dataclass first: `skill_version`/`operation_id` already existed as `tool_version`/
+`operations`, so only the genuinely-missing `capability_id` (producing skill name) and
+`provider_id` (executing package) fields were added, both additive with no migration.
+`derived_from` is implemented exactly as `ARTIFACT_MODEL.md` §3 itself scopes it — "a
+projection of information the Plan/Operation model already has," not the traversal/query
+API that section explicitly defers. `Service.adapter()`'s remaining four hardcoded
+per-Skill branches were unified into the same capability-driven table already used for
+five other Skills, with `ffmpeg-skill` (the Reference Skill) deliberately kept as a
+special first case rather than folded into a false uniformity that would change its
+fail-fast behavior. **Not done, and explicitly deferred**, consistent with this section's
+own framing of a generic third-party-loadable adapter interface and an OS-level
+`capability_id` taxonomy as Phase 7 concerns: the Executor still does not resolve
+adapters from a registry at execution time (`Service.adapter()` is still called once per
+Service, still Skill-aware code, just table-shaped instead of branch-shaped); `Operation`
+does not yet carry `capability_id`/`provider_id` itself (only the registered `Artifact`
+does, after the fact). Verified: full unit suite 198 passed (4 pre-existing environment-
+only failures, unrelated) and full real-Skill integration suite (real ffmpeg + all 9
+Skills, no mocks) 48 passed, 0 failed — byte-for-byte behavior-preserving.
+
 **Delivers:** the generalized `Artifact` identity/derived-from graph (`ARTIFACT_MODEL.md`,
 per `SPEC.md` §2 — content-hash identity, `produced_by`, `derived_from` links) and
 idempotent `Operation` execution (`SPEC.md` §4) running against the Phase 1–3 registry,
