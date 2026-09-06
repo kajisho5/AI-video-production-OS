@@ -225,27 +225,34 @@ actual CI job in any Skill's own repository — each is a real, callable functio
 not yet an automated gate anywhere. That would be a per-Skill PR (adding a conformance
 CI step), a different and separate piece of work from building the checks themselves.
 
-## 7. Ecosystem Dashboard (`dashboard/`) — IMPLEMENTED 2026-09-05, one manual step remaining
+## 7. ~~Ecosystem Dashboard (`dashboard/`)~~ — LIVE 2026-09-06, verified against the real deployed site
 
 Built per an explicit user request: a read-only, mobile-first, PWA-ready web dashboard
 over the ecosystem's real GitHub state. See `dashboard/README.md` and
 `docs/adr/ADR-011-ecosystem-dashboard.md` for the architecture, `docs/ecosystem/
-MATURITY_MODEL.md` for the maturity ladder it renders. 50 tests, all passing, no network
+MATURITY_MODEL.md` for the maturity ladder it renders. 61 tests, all passing, no network
 access required by any of them.
 
-**Remaining, human-only step**: enable GitHub Pages for this repository (Settings →
-Pages → Source: "GitHub Actions") — outside this project's write access. Until that's
-done, `.github/workflows/dashboard.yml` will build and test successfully but the deploy
-step will fail. Not a code gap.
+**GitHub Pages is enabled and the site is genuinely live**, confirmed by fetching
+`https://kajisho5.github.io/AI-video-production-OS/data/ecosystem-snapshot.json`
+directly (2026-09-06) and finding data this session never fed it: a real open PR count
+and a real PR-body detail on `video-production-agent` (a merge conflict on a real,
+specific PR number about multi-source sync) neither present in, nor derivable from, the
+fixture snapshot committed to this repository, plus a `generatedAt` timestamp
+independently later than that committed fixture's own commit time. Not a hypothesis —
+directly observed.
 
-**Real gaps worth revisiting, in rough priority order**:
-- The committed `dashboard/web/public/data/ecosystem-snapshot.json` was produced by
-  running the real aggregator pipeline against real-as-of-2026-09-05 fixture facts (this
-  development sandbox's own GitHub access is MCP-tool-only; raw `api.github.com` calls
-  are blocked by its egress policy — see `dashboard/README.md`'s "Known gaps"). The
-  workflow's first real scheduled/dispatched run will overwrite it with genuinely live
-  data — worth confirming this actually happens once Pages is enabled, rather than
-  assuming it silently.
+**Correcting this item's own earlier assumption**: the previous text here expected "the
+workflow's first real run will overwrite [the committed fixture] with genuinely live
+data." That was wrong about the mechanism, not just unconfirmed: `.github/workflows/
+dashboard.yml` only builds a snapshot in-memory during the run and uploads it straight to
+GitHub Pages via `actions/upload-pages-artifact` — it never commits anything back to this
+repository. **The committed `dashboard/web/public/data/ecosystem-snapshot.json` will
+correctly stay a development-time fixture forever**, by design (it exists only so
+`dashboard/web` has something to render locally and in its own tests) — this is not a gap
+to watch for, and no future check should expect that file to start reflecting live state.
+
+**Remaining real gaps, in rough priority order**:
 - ~~No live npm/PyPI version lookup yet~~ — DONE 2026-09-06: `dashboard/aggregator/src/
   packageRegistry.ts` performs a real live lookup; see `docs/ecosystem/MATURITY_MODEL.md`
   level 6 and `dashboard/README.md`.

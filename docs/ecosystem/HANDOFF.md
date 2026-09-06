@@ -12,6 +12,15 @@ video-processing Skill repositories plus one orchestrating Agent
 (`video-production-agent`). See the main `README.md` and `docs/ARCHITECTURE.md` for the
 full design; this `docs/ecosystem/` directory is operational state, not architecture.
 
+**A related, separate project**: `kajisho5/system-intelligence` (pre-alpha, Phase 1 in
+progress as of 2026-09-06) is a general-purpose AI system-intelligence layer for
+discovering/auditing/improving arbitrary software systems — explicitly **not**
+video-production-specific. Its own docs name this project as a *planned* reference target
+used to validate its architecture, not a source of core assumptions — no real integration
+exists yet, and nothing in this repository currently depends on or references it. Noted
+here only so a fresh session recognizes the name if it comes up; do not assume any
+connection beyond what is written here without checking that repository directly.
+
 ## Read in this order
 
 1. **This file** — orientation.
