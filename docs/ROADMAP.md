@@ -345,6 +345,24 @@ behavior (187 unit / 90 adapter tests, self-reported) that must not regress.
 
 ## Phase 5 — QC/Verification extension: verify against declared Plan intent
 
+**Status: IMPLEMENTED as of 2026-09-06** (`video-production-agent` PR #44). Before writing
+code, `qa/checks.py`'s `run_qa()` was read directly against `QC_ARCHITECTURE.md` §5's
+proposal — and the substantive plan-conformance check it describes ("does duration match
+the Plan's trim/concat steps' intended output length," not a fixed rule) turned out to
+already exist: expected duration is computed from the plan's own kept-ranges/concat-
+timeline/speed-factor chain (not measured), and expected loudness from the plan's own
+normalization target, both compared against real measurements. §5.1/§5.2 name exactly two
+things as genuinely still missing — a link from a finding to which Artifact it verified,
+and the threshold's provenance ("plan" vs "rule") visible on the finding itself — and
+those two, only, are what this phase added: `QAItem.subject_artifact_id` (computed with
+the same `artifact_id()` function used at registration) and `QAItem.threshold_source`
+("plan" on the two checks that compare against IR-derived values, "rule" by default
+elsewhere). `qc-skill`'s own external `QCReport` contract was deliberately left untouched
+(its internal checks aren't individually knowable from this side as plan- vs rule-derived
+without a contract change in that separate repo). Verified: full unit suite 198 passed (4
+pre-existing environment-only failures, unrelated) and full real-Skill integration suite
+(real ffmpeg + all 9 Skills, no mocks) 48 passed, 0 failed.
+
 **Delivers:** extends `qc-skill`'s existing verification (already the reference
 implementation for the OS's QCReport shape, per `SPEC.md` §5) to validate a completed
 `ProductionPlan`'s outputs against that Plan's **declared intent** — not only inspect a

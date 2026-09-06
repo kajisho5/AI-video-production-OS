@@ -531,3 +531,18 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**, byte-for-byte
   behavior-preserving. `ROADMAP.md` updated to PARTIALLY IMPLEMENTED for Phase 4, naming
   exactly what remains; tracked as `WORK_QUEUE.md` item 16.
+- Continued to `ROADMAP.md` Phase 5. Read `qa/checks.py`'s `run_qa()` directly against
+  `QC_ARCHITECTURE.md` §5's proposal before writing anything, rather than trusting the
+  roadmap's "nothing in the audited ecosystem does this kind of check anywhere" framing at
+  face value — and found the actual plan-conformance check (duration compared against the
+  plan's own kept-ranges/concat/speed timeline, loudness against the plan's own
+  normalization target, both real PASS/FAIL judgments already) already existed. The design
+  doc itself names only two things as genuinely missing: a link from a finding to which
+  Artifact it verified, and the threshold's provenance ("plan" vs "rule") visible on the
+  finding. Added exactly those two (`QAItem.subject_artifact_id`, `QAItem.threshold_source`)
+  and nothing else — no new check logic, no `qc-skill` contract change (its internal checks
+  aren't individually knowable from this side as plan- vs rule-derived). `video-production-
+  agent` PR #44 (**merged**). `tests/test_unit.py`: 198 passed (4 known environmental
+  failures, unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no
+  mocks): **48 passed, 0 failed**. `ROADMAP.md` updated to IMPLEMENTED for Phase 5; tracked
+  as `WORK_QUEUE.md` item 17.

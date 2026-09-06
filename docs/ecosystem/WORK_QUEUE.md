@@ -745,3 +745,36 @@ population and both the empty and populated `derived_from` cases. `tests/test_un
 ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**, byte-for-byte behavior-
 preserving. `ROADMAP.md`'s Phase 4 status updated to PARTIALLY IMPLEMENTED, naming exactly
 what remains.
+
+## 17. `video-production-agent`: Phase 5 — the plan-conformance check already existed; only its provenance was invisible — RESOLVED 2026-09-06 (PR #44)
+
+**Investigated 2026-09-06**, continuing the roadmap after Phase 4. `ROADMAP.md`'s Phase 5
+asks to extend QC to "verify against declared Plan intent" (`QC_ARCHITECTURE.md` §5),
+citing as a named real gap: "duration matches the sum of this Plan's trim/concat steps'
+intended output length... nothing in the audited ecosystem does the second kind of check
+anywhere." Before writing any code, read `qa/checks.py`'s `run_qa()` directly rather than
+trusting that framing at face value — and found the check itself already existed: expected
+duration is computed from the plan's own kept-ranges/concat-timeline/speed-factor chain
+(not a fixed rule), and expected loudness from the plan's own normalization target, both
+already compared against real measurements as PASS/FAIL `QAItem`s. `QC_ARCHITECTURE.md`
+§5.1/§5.2 name, precisely, only two things as genuinely missing: a link from a finding
+back to which Artifact it verified, and the threshold's provenance ("plan" vs "rule")
+visible on the finding itself rather than only implicit in code structure.
+
+**Fixed** (`video-production-agent` PR #44, merged): added exactly those two things —
+`QAItem.subject_artifact_id` (computed with the same `artifact_id()` function
+`_register_artifacts()` uses later, so it resolves correctly before registration even
+happens) and `QAItem.threshold_source` (`"plan"` on the two checks that actually compare
+against IR-derived values — duration, loudness — `"rule"` by default everywhere else:
+video stream presence, HDR/CFR/FPS consistency, delivery platform checks, true peak). A
+missing/unreadable file degrades `subject_artifact_id` to empty rather than crashing QA —
+traceability is a nicety, not a correctness gate. Deliberately left untouched: `qc-skill`'s
+own external `QCReport` contract (its 36 internal checks aren't individually knowable from
+this side as plan- vs rule-derived without a contract change in that separate repo), and
+any new plan-conformance check dimensions beyond the two that already existed. New
+regression test: a real end-to-end render's `duration` item asserts `threshold_source ==
+"plan"` and `subject_artifact_id` equal to the actually registered Artifact's real id; a
+`video_stream` item on the same render asserts `threshold_source == "rule"` with the same
+`subject_artifact_id`. `tests/test_unit.py`: 198 passed (4 known environmental failures,
+unrelated). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
+passed, 0 failed**. `ROADMAP.md`'s Phase 5 status updated to IMPLEMENTED.
