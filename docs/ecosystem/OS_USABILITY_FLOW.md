@@ -19,9 +19,9 @@ one-time report.
 | 4 | Fetch each Skill's Capability Contract | **IMPLEMENTED** | Each adapter really calls the Skill's own `contract`/`skill --json` and gets a real document back (not mocked). Confirmed for qc-skill, color-grading-skill, subtitle-skill and others by direct invocation. |
 | 5 | OS/Agent recognizes the Capability | **IMPLEMENTED — all 3 real bugs found this session are now fixed and merged** | `capabilities/resolver.py`'s `_finishing_skill()` combines the Skill's own doctor status with a hard version-compatibility gate (`check_contract()`) and a soft drift check (`contract_drift()` against a pinned snapshot) — **either one failing marks the whole Skill `MISSING`, regardless of whether the Skill itself is healthy.** Found and fixed this session: (a) `qc-skill`'s pinned contract snapshot was stale (missing an already-merged, purely additive `delivery_package` kind/7 checks/several findings) — fixed via `video-production-agent` PR #28 (**merged**). (b) `motion-graphics-skill`'s pinned contract snapshot was stale in exactly the same way (missing 4 already-merged element types: `bug`/`chapter`/`countdown`/`progress`) — fixed via PR #29 (**merged**), found by systematically re-checking every Skill after the qc fix. (c) `color-grading-skill`'s hard version gate (`SUPPORTED_SKILL_VERSIONS = ("0.1.",)`) rejected the real, released 0.2.0 skill — found independently in this session, then discovered `video-production-agent` PR #26 (already merged) fixes this properly. All 10 Skills verified `AVAILABLE` together in a real `video-agent doctor` run once all three fixes are in place. |
 | 6 | Agent recognizes which Capabilities it can route to which tool | **IMPLEMENTED** | `SkillRegistry.select_tool()` / `resolve_tools()` is real, tested, and does not depend on this project's own `registry/` package at all — the Agent solved Skill→Tool selection with its own mechanism (see `DECISION_LOG.md` D8). Verified again this session via `video-agent skills`. |
-| 7 | User issues a natural-language request | **PARTIAL, one real bug found and fixed this session** | `video-agent plan --request "<text>"` exists and is real, and still only recognizes a narrow, deliberately-scoped set of unambiguous phrases (`agent/requirements.py`'s own docstring: "Phase 1 has no LLM"). The specific bug this session found — "normalize loudness to -16 LUFS" producing an empty plan ("nothing to do") because the numeric target was silently dropped while only the boolean `audio.normalize` intent was captured — is fixed via `video-production-agent` PR #30 (Draft): a second, equally narrow extraction pass now captures an explicit `<number> LUFS`/`<number> dBTP` target from the text. Verified with a real before/after run of the exact same `--request` string. The underlying scope limitation (only a handful of hand-written phrase patterns, no general free-text intent recognition) remains real and is the honest next gap here — see WORK_QUEUE.md if/when broader natural-language support becomes the priority. |
+| 7 | User issues a natural-language request | **PARTIAL, one real bug found and fixed this session** | `video-agent plan --request "<text>"` exists and is real, and still only recognizes a narrow, deliberately-scoped set of unambiguous phrases (`agent/requirements.py`'s own docstring: "Phase 1 has no LLM"). The specific bug this session found — "normalize loudness to -16 LUFS" producing an empty plan ("nothing to do") because the numeric target was silently dropped while only the boolean `audio.normalize` intent was captured — is fixed via `video-production-agent` PR #30 (**merged**): a second, equally narrow extraction pass now captures an explicit `<number> LUFS`/`<number> dBTP` target from the text. Verified with a real before/after run of the exact same `--request` string. The underlying scope limitation (only a handful of hand-written phrase patterns, no general free-text intent recognition) remains real and is the honest next gap here — see WORK_QUEUE.md if/when broader natural-language support becomes the priority. |
 | 8 | Agent selects the Capability needed | **IMPLEMENTED** (once the request is expressed as a decision, whether via `--set` or a recognized phrase) | Confirmed via a real run: a `--set audio.loudness.target_lufs=-16` plan produced a real `DRAFT`→`APPROVED` decision (`audio.loudness`) with real evidence and a concrete step. |
-| 9 | Execute the Skill/Tool | **IMPLEMENTED, verified for two independent Skill/tool pairs** | `video-agent render` on the plan above ran a real `ffmpeg-skill/loudness` invocation against a real generated test video (`ffmpeg lavfi` source, 5s, 640×360) and produced a real output file. Not simulated, not mocked. Separately re-verified with `--set color.target=bt709` against `color-grading-skill` (one of the three Skills fixed this session) end to end: real `color-grading/run` invocation, `Job ... COMPLETED`, `QA PASS: 5 pass, 0 incident(s)` — confirming the pinned-contract fix didn't just make the Skill report `AVAILABLE`, it made it genuinely executable. |
+| 9 | Execute the Skill/Tool | **IMPLEMENTED, verified for two independent Skill/tool pairs — plus one crash found and fixed** | `video-agent render` on the plan above ran a real `ffmpeg-skill/loudness` invocation against a real generated test video (`ffmpeg lavfi` source, 5s, 640×360) and produced a real output file. Not simulated, not mocked. Separately re-verified with `--set color.target=bt709` against `color-grading-skill` (one of the three Skills fixed this session) end to end: real `color-grading/run` invocation, `Job ... COMPLETED`, `QA PASS: 5 pass, 0 incident(s)` — confirming the pinned-contract fix didn't just make the Skill report `AVAILABLE`, it made it genuinely executable. Trying to verify qc-skill the same way (real execution, not just a healthy `doctor`) surfaced a real crash: **any** plan with zero edit steps — the plain "nothing to change, just deliver" case, and the qc-only case — made `render` exit with a raw `error: 'pending'` instead of completing. Root-caused to `plan_status()` returning `DRAFT` forever whenever `plan.steps` was empty, even with every decision already resolved; fixed via `video-production-agent` PR #31 (**merged**). Re-verified with the exact real repro commands afterward: both the bare "nothing to do" plan and the `--set qc=true` plan now `render` to `COMPLETED`. |
 | 10 | Process real media | **IMPLEMENTED** | Same run: real bytes in, real bytes out, real `sha256`/provenance recorded (`jobs/<id>/provenance.json`). |
 | 11 | Verify/QC the output | **IMPLEMENTED** | Same run: `render` auto-invoked QA, produced a real QC sheet PNG and a real report (`report.md`/`report.json`) — `QA PASS: 5 pass, 0 incident(s)`. |
 | 12 | Return the result to the user | **IMPLEMENTED** | `report.md` is a real, human-readable summary with the plan, decisions (with evidence and confidence), and QA outcome; `deliver` exists to promote the QA-passed artifact. |
@@ -34,10 +34,13 @@ extra, not a bug), and a full, real Plan→Validate→Render→QA cycle **actual
 end today** for at least the ffmpeg-skill-only path (loudness normalization tested; the
 architecture is the same for every other Skill/tool pair). Step 7 (natural-language request
 parsing) had a real bug of its own — an explicit numeric target named in the request text
-(e.g. "-16 LUFS") was silently dropped — fixed via PR #30 (Draft). The underlying scope
+(e.g. "-16 LUFS") was silently dropped — fixed via PR #30 (**merged**). The underlying scope
 limitation remains real: this is still a small hand-written phrase list, not general
 free-text understanding, so "ユーザーが自然言語で動画制作を依頼する" is more true than it was but
-still only partially true — most real control still goes through `--set key=value`.
+still only partially true — most real control still goes through `--set key=value`. Trying to
+push qc-skill's fix (step 5) through a *real* render (not just `doctor`) also caught a
+render-time crash on the single most common plan shape — "nothing to change, just deliver" —
+fixed via PR #31 (**merged**): see step 9.
 
 ## Gaps, by priority (per the pivot's own P0–P3 scheme)
 
@@ -58,13 +61,24 @@ still only partially true — most real control still goes through `--set key=va
   (ffmpeg-skill, media-analysis, transcription, video-editing, audio-production, subtitle,
   thumbnail) for the same pattern after re-syncing every local checkout to its real
   `origin/main` — no further instances found. All 10 Skills confirmed `AVAILABLE` together.
-- **Fixed this session, PR #30 (Draft)**: the specific LUFS-target-dropped bug in step 7's
-  free-text parsing (see step 7 above).
+- **Fixed this session, merged**: the specific LUFS-target-dropped bug in step 7's
+  free-text parsing (PR #30, see step 7 above), and a render-time crash on any zero-edit-step
+  plan (PR #31, see step 9 above) — found by pushing verification past `doctor`/`plan` into a
+  real `render` run.
 - **Real, open**: natural-language request parsing (step 7 above) is still a small hand-written
   phrase list by design (`agent/requirements.py`'s own docstring: "Phase 1 has no LLM"), not
   general free-text understanding. This remains the gap most directly limiting
   "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
   underlying scope limitation.
+- **Real, open, found this session**: `--set qc=true` produces a `qc.check` decision and a plan
+  line promising a QC gate, but `execution/compiler.py`'s `qc_gate()` only ever compiles an
+  actual QC op for a delivery target that has a preset (`if art_id not in paths or not
+  t.get("preset"): continue`). For the generic-profile "deliver as-is, no preset" case — the
+  most common real request — the QC check silently never runs even though the plan/decision
+  text implies it will. Not yet confirmed whether this is intentional (nothing changed, so
+  nothing to QC) or a real gap between what the plan promises and what execution does; needs
+  its own investigation before deciding whether it's a bug to fix or the plan wording needs to
+  stop promising a gate that only conditionally applies.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -108,6 +122,20 @@ still only partially true — most real control still goes through `--set key=va
   `python3 -c "import <pkg>; print(<pkg>.__file__)"` for exactly this before assuming a code bug.
 - PR #28, #29 and #26 all merged; all 10 Skills confirmed `AVAILABLE` on real `main`, not just
   in a local test merge.
-- `video-production-agent` PR #30 (Draft): fixed the LUFS-target-dropped bug in step 7's
+- `video-production-agent` PR #30 (**merged**): fixed the LUFS-target-dropped bug in step 7's
   free-text parsing — found via the exact real `--request "normalize loudness to -16 LUFS"`
   run this document's step 7 row describes, confirmed fixed with the same command afterward.
+- `video-production-agent` PR #31 (**merged**): tried to verify qc-skill's PR #28 fix with a
+  real `render`, not just `doctor`. Both the plain "nothing to change" plan and the
+  `--set qc=true` plan crashed identically with `error: 'pending'`. Root-caused through
+  `plan_status()` (returned `DRAFT` forever for any zero-step plan, even fully-resolved ones)
+  → `service.render()` (its `WAITING_FOR_APPROVAL` result for that case has no `"pending"` key)
+  → `cli.py`'s `cmd_render()` (indexes `out["pending"]` unconditionally). Fixed `plan_status()`
+  to only return `DRAFT` when there are neither steps nor decisions, and hardened
+  `cmd_render()`'s dict access defensively. Caught and fixed one test (`test_case5_...`) whose
+  assertion had only been passing because of this same bug (traced with a standalone repro
+  before changing it — see the PR body). Re-ran the real repro commands after the fix: both
+  cases now `render` to `COMPLETED`. Full suite: 307 passed, same 4 pre-existing environmental
+  failures, 0 new regressions. While verifying this, noticed the QC gate itself silently never
+  compiles an op for a no-preset delivery (see the P1 "real, open" item above) — flagged, not
+  yet fixed, as the next real gap to investigate.
