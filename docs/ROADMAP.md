@@ -74,10 +74,16 @@ no stray files outside the declared workspace, no change to the input fixture's 
 draft produced two real false positives against actual ecosystem source (a comment in
 `qc-skill` merely mentioning "eval()/exec()"; the safe, explicit `shell=False` several
 Skills use), fixed by switching to a full AST walk, which cannot mistake a string
-literal's *contents* for executable code. Not yet built: a formal JSON Schema *file* for
-the CapabilityContract shape (item 1's "not just the prose shape already written" — the
-Python-level validation in `registry.contract` exists and is real, but is not
-additionally expressed as a standalone `.schema.json`); wiring any of the 8 checks into
+literal's *contents* for executable code. **Update, 2026-09-06:** item 1's remaining gap
+is now closed — `registry/capability_contract.schema.json` formalizes the full
+aspirational `CapabilityContract` shape below as an actual JSON Schema (draft 2020-12)
+document, with `required` deliberately narrow (only what every real Skill's `contract`
+output already carries: a skill identity plus `provides[].{id, lifecycle, tool_id}`) so
+the schema documents the target shape in full while still validating every one of
+`registry/tests/fixtures/*.provides.json`'s real captured contracts without rejecting
+any of them (`registry/tests/test_schema.py`, skipped when the optional `jsonschema`
+package is not installed — the registry package itself stays dependency-free, per
+`registry/README.md`). Still not built: wiring any of the 8 conformance checks into
 an actual CI job per-Skill (each check is a real, callable function today, not yet an
 automated gate anywhere).
 

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kajisho5/AI-video-production-OS/registry/capability_contract.schema.json",
+  "title": "CapabilityContract",
+  "description": "The full shape docs/SPEC.md section 1 sketches, as an actual JSON Schema document (docs/ROADMAP.md Phase 1, item 1's 'not just the prose shape already written'). This is the ASPIRATIONAL shape: no Skill in the ecosystem publishes every field below yet (see docs/ROADMAP.md Phase 2 and registry/README.md's 'What this deliberately is not'). `required` below is deliberately narrow -- only what every real Skill's `contract --json` / `<skill> contract --json` output already carries today, per registry/contract.py and registry/tests/fixtures/*.provides.json -- so this schema both documents the target shape in full AND validates today's real, minimal contracts without rejecting any of them. The richer per-`provides`-entry fields stay optional until a real Skill publishes them (VISION, per registry/README.md), at which point they become checkable, not just described.",
+  "type": "object",
+  "properties": {
+    "skill_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Existing: flat top-level skill identity, used by 8 of 10 audited Skills (docs/SPEC.md section 1; docs/POC_CAPABILITY_CONTRACT.md Finding 9). One of skill_id / id / skill.id must be present -- see this schema's top-level anyOf."
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Existing: transcription-skill's outlier flat identity field (no skill_id at all). Not part of docs/SPEC.md's original sketch, but real (registry/contract.py's skill_identity())."
+    },
+    "skill": {
+      "type": "object",
+      "description": "Existing: ffmpeg-skill's nested skill-metadata shape (docs/POC_CAPABILITY_CONTRACT.md Finding 7) instead of flat top-level fields.",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      },
+      "required": ["id"]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Existing: every repo's own version field. Renamed from an earlier 'skill_version' draft -- no real Skill uses that name, they all say 'version' (docs/SPEC.md section 1; docs/POC_CAPABILITY_CONTRACT.md Finding 1)."
+    },
+    "contract_version": {
+      "description": "Existing, inconsistently typed today (e.g. \"1.0\" for ffmpeg-skill, 1 for qc-skill). docs/VERSIONING.md deliberately does not mandate a version-string format.",
+      "oneOf": [{ "type": "string" }, { "type": "number" }]
+    },
+    "provides": {
+      "type": "array",
+      "description": "The Capability ids this Skill publishes (docs/SPEC.md section 1; named 'provides', not 'capabilities', to avoid colliding with several Skills' pre-existing environment-capability-detection field of that name -- see docs/SPEC.md section 1's naming note).",
+      "items": { "$ref": "#/$defs/ProvidesEntry" }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Existing pattern: every delegating Skill's adapter.py declares this against another Skill's contract_version (docs/VERSIONING.md), e.g. depends on ffmpeg-skill >=0.9.1,<1.0.0.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "skill_id": { "type": "string", "minLength": 1 },
+          "version_range": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A contract_version range (e.g. '>=1.0,<2.0'), never an exact pin -- docs/VERSIONING.md section 3. No mandated format (not necessarily SemVer)."
+          }
+        },
+        "required": ["skill_id", "version_range"]
+      }
+    },
+    "not_provided": {
+      "type": "array",
+      "description": "Existing: ffmpeg-skill's manifest of self-declared non-responsibilities.",
+      "items": { "type": "string" }
+    }
+  },
+  "anyOf": [
+    { "required": ["skill_id"] },
+    { "required": ["id"] },
+    { "required": ["skill"] }
+  ],
+  "additionalProperties": true,
+  "$defs": {
+    "Lifecycle": {
+      "type": "string",
+      "enum": ["PROPOSED", "EXPERIMENTAL", "STABLE", "DEPRECATED", "RETIRED"],
+      "description": "docs/SPEC.md section 1; docs/CAPABILITY_MODEL.md."
+    },
+    "CapabilityId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The dotted `<domain>.<verb>` namespace docs/CAPABILITY_MATRIX.md section 1 proposes, e.g. 'edit.trim', 'color.primary_correction'. Not machine-enforced beyond non-empty: real ids also include Skill-name-prefixed forms like 'ffmpeg-skill.audio' -- no single regex covers every real id in the ecosystem today without either rejecting a real one or accepting nonsense, so this stays a plain non-empty string rather than a guessed pattern."
+    },
+    "ArtifactType": {
+      "type": "string",
+      "enum": [
+        "video", "audio", "image", "subtitle_document", "project_ir", "qc_report",
+        "analysis_result", "thumbnail", "production_receipt", "timeline"
+      ],
+      "description": "docs/SPEC.md section 2."
+    },
+    "ProvidesEntry": {
+      "type": "object",
+      "description": "One published Capability. `id`, `lifecycle` and `tool_id` are required because every real Skill's provides[] entry already carries exactly these three (registry/contract.py's validate_provides_entry()) -- the richer fields below are docs/SPEC.md section 1's aspirational per-capability shape, PROPOSED, not yet published by any Skill in the ecosystem (registry/README.md).",
+      "properties": {
+        "id": { "$ref": "#/$defs/CapabilityId" },
+        "lifecycle": { "$ref": "#/$defs/Lifecycle" },
+        "tool_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Existing: every real Skill's provides[] entry also carries this, bridging the Capability id to the underlying CLI tool it maps to (e.g. 'qc/run', 'ffmpeg-skill/audio') -- not in docs/SPEC.md's original sketch by this name, but universal in practice."
+        },
+        "input_schema": {
+          "type": "object",
+          "description": "PROPOSED (docs/SPEC.md section 1): typed params, closed vocabulary. Existing in every repo's contract.py in some form, but not yet expressed per-Capability in this exact shape by any Skill."
+        },
+        "output_schema": {
+          "type": "object",
+          "description": "PROPOSED (docs/SPEC.md section 1): existing in ffmpeg-skill's ToolSpec output_schema, not yet universal."
+        },
+        "input_artifact_types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ArtifactType" },
+          "description": "PROPOSED (docs/SPEC.md section 1): generalizes each Skill's existing but differently-shaped inputs/outputs fields."
+        },
+        "output_artifact_types": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ArtifactType" },
+          "description": "PROPOSED (docs/SPEC.md section 1)."
+        },
+        "mutates_input": {
+          "type": "boolean",
+          "description": "Existing: ffmpeg-skill + others already publish this, always false today, everywhere."
+        },
+        "deterministic_inputs": {
+          "type": "boolean",
+          "description": "Existing: ffmpeg-skill ToolSpec field."
+        },
+        "idempotency_hint": {
+          "type": "string",
+          "description": "Existing: ffmpeg-skill ToolSpec field, e.g. \"cached\"."
+        },
+        "verification": {
+          "type": "object",
+          "description": "Existing: ffmpeg-skill ToolSpec field.",
+          "properties": {
+            "required": { "type": "boolean" },
+            "tools": { "type": "array", "items": { "$ref": "#/$defs/CapabilityId" } }
+          }
+        },
+        "security": {
+          "type": "object",
+          "description": "PROPOSED (docs/SPEC.md section 1): today reimplemented ad hoc per repo, not yet published under this exact key by any Skill.",
+          "properties": {
+            "forbidden_keys": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["id", "lifecycle", "tool_id"],
+      "additionalProperties": true
+    }
+  }
+}

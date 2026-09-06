@@ -14,6 +14,15 @@ python3 -m unittest discover -s registry/tests -t .
 - `contract.py` — `skill_identity(doc)` (resolves the ecosystem's three real
   skill-identity shapes: flat `skill_id`, flat `id` only, or nested `skill.id`),
   `validate_provides_entry(entry)`, `extract_provides(doc)`.
+- `capability_contract.schema.json` / `schema.py` — the full aspirational
+  `CapabilityContract` shape `docs/SPEC.md` section 1 sketches, formalized as an actual
+  JSON Schema (draft 2020-12) document (`docs/ROADMAP.md` Phase 1, item 1). `required` is
+  deliberately narrow — only a skill identity plus `provides[].{id, lifecycle, tool_id}`,
+  the subset every real Skill's `contract` output already carries — so it documents the
+  richer per-Capability shape (`input_schema`, `security.forbidden_keys`, ...) in full
+  while still validating today's real, minimal contracts. `load_schema()` is stdlib-only;
+  see "What this deliberately is not" below for why nothing here validates a document
+  against it at runtime.
 - `registry.py` — `CapabilityRegistry`: `register_contract(doc)`, `providers_of(id)`,
   `is_collision(id)`, `collisions()`, `resolve(id, explicit_skill_id=, default_skill_id=)`
   (raises `CollisionError` — registry refusal — only when neither an explicit nor a
@@ -44,7 +53,7 @@ python3 -m unittest discover -s registry/tests -t .
   actually use). Manually verified PASS against all 9 real Python Skills' source trees;
   does not cover `ffmpeg-skill` (Node.js, not Python — a language-appropriate lint-rule
   equivalent is future work).
-- `tests/` — 50 tests: 21 against real captured `provides` data (`tests/fixtures/`,
+- `tests/` — 62 tests: 21 against real captured `provides` data (`tests/fixtures/`,
   trimmed excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
   `transcription-skill` and `ffmpeg-skill`'s actual `contract`/`skill --json` output
   after their `provides` field was added — see `docs/ECOSYSTEM_CHANGELOG.md`), including
@@ -55,22 +64,29 @@ python3 -m unittest discover -s registry/tests -t .
   synthetic sanity check proving it can actually FAIL (not just always PASS); 18 more
   (`tests/test_no_unsafe_shell_out.py`) exercise the AST-walk check's logic against
   synthetic fixtures — every real unsafe pattern, plus regression tests for the two
-  false positives found against real ecosystem source.
+  false positives found against real ecosystem source; 12 more (`tests/test_schema.py`)
+  cover `capability_contract.schema.json` — always: the file is valid JSON and
+  `load_schema()` reads it; skipped when the optional `jsonschema` package is absent:
+  the schema is itself a valid draft 2020-12 document, every real fixture in
+  `tests/fixtures/` validates against it (all three skill-identity shapes included), and
+  it actually rejects broken documents (a missing identity, a missing/invalid
+  `lifecycle`, a missing `tool_id`) rather than accepting anything handed to it.
 
 ## What this deliberately is not
 
 - **Not a live registry.** No process execution, no network, no persistence. A caller
   (an Agent, a future CLI) is responsible for fetching each Skill's `contract --json`
   output and calling `register_contract()` with it.
-- **Not the full aspirational `CapabilityContract` shape.** `docs/SPEC.md` section 1
+- **Not runtime validation against the full aspirational shape.** `docs/SPEC.md` section 1
   sketches a much richer per-capability shape (`input_schema`, `output_schema`,
-  `input_artifact_types`, `security.forbidden_keys`, ...). No Skill in the ecosystem
-  publishes that shape today — only `{id, lifecycle, tool_id}` plus a few Skill-specific
-  extra fields (`operation`, `element_type`, `kind`, `checks`). Validating against the
-  richer shape here would reject every real contract in the ecosystem, so this library
-  validates only what is actually real (**EXPERIMENTAL**, matching every Capability's own
-  published lifecycle). The richer shape stays **VISION** until a Skill actually
-  publishes it.
+  `input_artifact_types`, `security.forbidden_keys`, ...), now formally documented in
+  `capability_contract.schema.json`. No Skill in the ecosystem publishes that richer shape
+  today — only `{id, lifecycle, tool_id}` plus a few Skill-specific extra fields
+  (`operation`, `element_type`, `kind`, `checks`). `contract.py`'s own Python-level
+  validation still checks only what is actually real (**EXPERIMENTAL**, matching every
+  Capability's own published lifecycle) — the richer fields stay **VISION** until a Skill
+  actually publishes them, at which point the schema already describes the shape they'd
+  need to match.
 - **Not Phase 3.** This library can *apply* an explicit or default-provider choice once
   one is given; deciding what a deployment's default-provider policy should be, and
   where it is configured, is `docs/ROADMAP.md` Phase 3's job, not this library's.
