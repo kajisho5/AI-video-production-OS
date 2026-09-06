@@ -88,8 +88,10 @@ export interface DistributionStatus {
 }
 
 /** Evidence tag distinguishing what the aggregator verified live vs. what it read
- * from docs/ecosystem/capability-status.json (see MATURITY_MODEL.md). */
-export type EvidenceSource = "github_api" | "documented" | Unknown;
+ * from docs/ecosystem/capability-status.json (see MATURITY_MODEL.md). `package_registry`
+ * is a live lookup against npm/PyPI's own API (see aggregator/src/packageRegistry.ts) --
+ * distinct from `documented` (capability-status.json merely claims a package exists). */
+export type EvidenceSource = "github_api" | "documented" | "package_registry" | Unknown;
 
 export interface EvidencedBoolean {
   value: boolean | Unknown;

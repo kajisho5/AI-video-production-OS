@@ -73,7 +73,7 @@ describe("computeMaturity", () => {
     expect(result.level).toBe(5);
   });
 
-  it("reaches level 6 only with a real npm/pypi distribution entry", () => {
+  it("does not reach level 6 on a documented distribution claim alone -- a live lookup must actually resolve a version", () => {
     const status: CapabilityStatusRepoEntry = {
       contract_published: true,
       provides_published: true,
@@ -82,7 +82,50 @@ describe("computeMaturity", () => {
       distribution: { kind: "npm", package: "ffmpeg-skill" },
     };
     const result = computeMaturity({ repoType: "Skill", github: githubFacts(), status });
+    expect(result.level).toBe(5);
+    expect(result.evidence.find((e) => e.level === 6)?.met).toBe("UNKNOWN");
+  });
+
+  it("reaches level 6 when the live npm/pypi lookup actually resolves a version", () => {
+    const status: CapabilityStatusRepoEntry = {
+      contract_published: true,
+      provides_published: true,
+      os_integration: "integrated",
+      verified_e2e: "documented",
+      distribution: { kind: "npm", package: "ffmpeg-skill" },
+    };
+    const result = computeMaturity({
+      repoType: "Skill",
+      github: githubFacts(),
+      status,
+      distributionLookup: { version: "0.9.2" },
+    });
     expect(result.level).toBe(6);
+    const level6 = result.evidence.find((e) => e.level === 6);
+    expect(level6?.met).toBe(true);
+    expect(level6?.source).toBe("package_registry");
+    expect(level6?.detail).toContain("0.9.2");
+  });
+
+  it("does not reach level 6, but still reports UNKNOWN (not false), when the live lookup fails", () => {
+    const status: CapabilityStatusRepoEntry = {
+      contract_published: true,
+      provides_published: true,
+      os_integration: "integrated",
+      verified_e2e: "documented",
+      distribution: { kind: "npm", package: "some-renamed-package" },
+    };
+    const result = computeMaturity({
+      repoType: "Skill",
+      github: githubFacts(),
+      status,
+      distributionLookup: { version: "UNKNOWN", lookupError: "npm registry lookup failed: HTTP 404" },
+    });
+    expect(result.level).toBe(5);
+    const level6 = result.evidence.find((e) => e.level === 6);
+    expect(level6?.met).toBe("UNKNOWN");
+    expect(level6?.source).toBe("package_registry");
+    expect(level6?.detail).toContain("404");
   });
 
   it("caps repo types OS and Agent at level 1, marking higher levels not applicable rather than guessing", () => {

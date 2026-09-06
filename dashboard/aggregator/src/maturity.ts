@@ -4,7 +4,8 @@
  * documented (a CapabilityStatusRepoEntry), so it is fully unit-testable without a real
  * GitHub connection (see aggregator/test/maturity.test.ts).
  */
-import type { EvidenceSource, MaturityAssessment, MaturityLevel, RepoType } from "../../shared/types.js";
+import type { EvidenceSource, MaturityAssessment, MaturityLevel, RepoType, Unknown } from "../../shared/types.js";
+import { UNKNOWN } from "../../shared/types.js";
 import type { CapabilityStatusRepoEntry } from "./config.js";
 import type { RepoGithubFacts } from "./github.js";
 
@@ -12,6 +13,13 @@ export interface MaturityInput {
   repoType: RepoType;
   github: Pick<RepoGithubFacts, "exists" | "ci"> & { sizeKb: number | undefined };
   status: CapabilityStatusRepoEntry | undefined;
+  /** Result of a live npm/PyPI registry lookup for `status.distribution`'s package, when
+   * one was attempted (see aggregator/src/packageRegistry.ts). Undefined when no lookup
+   * was attempted at all (no documented distribution to look up); `version: UNKNOWN`
+   * with a `lookupError` when attempted but failed (network, 404, ...) -- distinct from
+   * "never documented" so level 6 can tell "we don't know it's distributed" apart from
+   * "it claims to be, but we could not verify that live." */
+  distributionLookup?: { version: string | Unknown; lookupError?: string };
 }
 
 /** MATURITY_MODEL.md's ladder is defined in terms of a Skill's own Capability Contract,
@@ -98,16 +106,27 @@ export function computeMaturity(input: MaturityInput): MaturityAssessment {
   else return { level, evidence };
 
   const distKind = input.status?.distribution?.kind;
-  const distributed = distKind === "npm" || distKind === "pypi";
-  evidence.push({
-    level: 6,
-    met: distKind === undefined ? ("UNKNOWN" as const) : distributed,
-    detail: input.status?.distribution
-      ? `distribution.kind=${distKind}, package=${input.status.distribution.package}`
-      : "Not documented in capability-status.json",
-    source: "documented",
-  });
-  if (distributed) level = 6;
+  const documentedAsDistributed = distKind === "npm" || distKind === "pypi";
+  let level6Met: boolean | "UNKNOWN" = "UNKNOWN";
+  let level6Detail = "Not documented in capability-status.json";
+  let level6Source: EvidenceSource = "UNKNOWN";
+
+  if (!documentedAsDistributed) {
+    // level6Met/Detail/Source already set to the "not documented" defaults above
+  } else if (!input.distributionLookup) {
+    level6Detail = `distribution.kind=${distKind}, package=${input.status?.distribution?.package} (documented, live lookup not attempted)`;
+    level6Source = "documented";
+  } else if (input.distributionLookup.version !== UNKNOWN) {
+    level6Met = true;
+    level6Detail = `distribution.kind=${distKind}, package=${input.status?.distribution?.package}, live version=${input.distributionLookup.version}`;
+    level6Source = "package_registry";
+  } else {
+    level6Detail = `distribution.kind=${distKind}, package=${input.status?.distribution?.package} documented, but the live registry lookup failed: ${input.distributionLookup.lookupError ?? "unknown reason"}`;
+    level6Source = "package_registry";
+  }
+
+  evidence.push({ level: 6, met: level6Met, detail: level6Detail, source: level6Source });
+  if (level6Met === true) level = 6;
 
   return { level, evidence };
 }

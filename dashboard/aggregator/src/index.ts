@@ -16,7 +16,8 @@ import { detectBottlenecks } from "./bottlenecks.js";
 import { loadCapabilityStatus, loadRegistry } from "./config.js";
 import { fetchRateLimit, fetchRepoFacts, makeOctokit } from "./github.js";
 import { buildGraph, buildOverview, buildRepoStatus } from "./normalize.js";
-import type { EcosystemSnapshot } from "../../shared/types.js";
+import { fetchLatestVersion } from "./packageRegistry.js";
+import type { EcosystemSnapshot, Unknown } from "../../shared/types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_OUTPUT = path.resolve(__dirname, "../../web/public/data/ecosystem-snapshot.json");
@@ -42,7 +43,15 @@ async function main() {
       unreachableRepos.push({ slug: entry.slug, reason: facts.fetchErrors.join("; ") || "unknown reason" });
       continue;
     }
-    repos.push(buildRepoStatus(entry, facts, capabilityStatus.repos[entry.slug], fetchedAt));
+    const status = capabilityStatus.repos[entry.slug];
+    let distributionLookup: { version: string | Unknown; lookupError?: string } | undefined;
+    const distKind = status?.distribution?.kind;
+    if ((distKind === "npm" || distKind === "pypi") && status?.distribution?.package) {
+      process.stderr.write(`  Looking up live ${distKind} version for ${status.distribution.package}...\n`);
+      const result = await fetchLatestVersion(distKind, status.distribution.package);
+      distributionLookup = { version: result.version, lookupError: result.error };
+    }
+    repos.push(buildRepoStatus(entry, facts, status, fetchedAt, distributionLookup));
   }
 
   const bottlenecks = detectBottlenecks(repos);

@@ -155,28 +155,17 @@ illustration or marketing chrome. See `src/styles/tokens.css`.
 
 ## Known gaps (real, not hidden)
 
-- **This development sandbox could not run the aggregator against the live network.**
-  Its own GitHub access is restricted to an internal MCP tool channel; raw HTTPS calls
-  to `api.github.com` (what `@octokit/rest` makes) return "GitHub access is not enabled
-  for this session" from the sandbox's own egress proxy. This is a constraint of the
-  sandbox this Dashboard was built in, unrelated to how it runs once deployed (a real
-  GitHub Actions workflow has a genuine ambient token and unrestricted egress). To
-  compensate: (a) `dashboard/aggregator`'s logic is fully unit-tested with fixture/mock
-  Octokit objects (`test/github.test.ts` et al., 38 tests, no network); (b) the example
-  snapshot committed at `dashboard/web/public/data/ecosystem-snapshot.json` was produced
-  by running the **real** aggregator pipeline (`buildRepoStatus`/`buildOverview`/
-  `detectBottlenecks`/`buildGraph` — not hand-typed JSON) against real facts about every
-  repo, verified via the GitHub MCP tool on 2026-09-05
-  (`dashboard/aggregator/scripts/generate-example-snapshot.ts`). The first real run of
-  `.github/workflows/dashboard.yml` will overwrite it with a genuinely live-fetched
-  snapshot — this is expected and correct, not a bug.
-- **GitHub Pages must be enabled manually once**: Settings → Pages → Source: "GitHub
-  Actions". This project's own write access does not extend to repository settings.
+- **Resolved 2026-09-06: live and deployed.** `.github/workflows/dashboard.yml` has run
+  for real against the live network (this development sandbox itself could not — its own
+  GitHub access is restricted to an internal MCP tool channel, so `dashboard/aggregator`
+  was verified with fixture/mock Octokit objects there instead, `test/github.test.ts` et
+  al. — but the real CI environment has a genuine ambient token and unrestricted egress,
+  and its first run succeeded once GitHub Pages was enabled). Live at
+  `https://kajisho5.github.io/AI-video-production-OS/`, refreshed hourly and on every
+  push to `main` that touches `dashboard/**` or the ecosystem state JSON files.
 - **PR `mergeable_state` is only fetched for the first 8 open PRs per repo** (a bounded
   per-PR API call, to avoid an unbounded request count on a repo with many open PRs) —
   see `MAX_MERGEABILITY_CHECKS_PER_REPO` in `aggregator/src/github.ts`.
-- **No npm/PyPI live version lookup yet** — `MATURITY_MODEL.md` level 6 relies entirely
-  on `capability-status.json`'s documented `distribution` field today.
 - **No snapshot history** — each run overwrites the previous one; no trend/velocity view
   exists yet (deliberately out of scope for v1, see `MATURITY_MODEL.md`'s "deliberately
   not part of this model").

@@ -26,9 +26,9 @@
       "counts": [
         0,
         0,
-        4,
         0,
-        5,
+        0,
+        9,
         1,
         0
       ],
@@ -300,17 +300,17 @@
       "distribution": {
         "kind": "npm",
         "package": "ffmpeg-skill",
-        "latestVersion": "UNKNOWN"
+        "latestVersion": "0.9.0"
       },
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
-        "value": false,
+        "value": true,
         "source": "documented",
-        "detail": "PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch"
+        "detail": "PR #24 merged 2026-09-06"
       },
       "osIntegration": {
         "status": "integrated",
@@ -323,7 +323,7 @@
         "detail": "documented"
       },
       "maturity": {
-        "level": 2,
+        "level": 4,
         "evidence": [
           {
             "level": 0,
@@ -345,8 +345,20 @@
           },
           {
             "level": 3,
+            "met": true,
+            "detail": "PR #24 merged 2026-09-06",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent depends on this Skill for all 9 other Skills' delegated execution; not a single named adapter, it is the shared execution substrate",
+            "source": "documented"
+          },
+          {
+            "level": 5,
             "met": false,
-            "detail": "PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch",
+            "detail": "Not documented in capability-status.json",
             "source": "documented"
           }
         ]
@@ -389,7 +401,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -449,7 +461,7 @@
             "level": 6,
             "met": "UNKNOWN",
             "detail": "Not documented in capability-status.json",
-            "source": "documented"
+            "source": "UNKNOWN"
           }
         ]
       },
@@ -491,7 +503,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -597,12 +609,12 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
-        "value": false,
+        "value": true,
         "source": "documented",
-        "detail": "PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending."
+        "detail": "PR #4 merged 2026-09-06 after a real merge conflict against PR #5 (PRIMARY_CORRECTION, merged first): both sides had independently claimed ADR-15, and PRIMARY_CORRECTION had no Capability id assigned in CAPABILITY_IDS -- resolved by renumbering the provides ADR to ADR-16 and adding a provisional id (color.primary_correction, following the matrix's own <domain>.<verb> convention) so contract.capability_provides() doesn't KeyError."
       },
       "osIntegration": {
         "status": "integrated",
@@ -615,7 +627,7 @@
         "detail": "documented"
       },
       "maturity": {
-        "level": 2,
+        "level": 4,
         "evidence": [
           {
             "level": 0,
@@ -637,8 +649,20 @@
           },
           {
             "level": 3,
+            "met": true,
+            "detail": "PR #4 merged 2026-09-06 after a real merge conflict against PR #5 (PRIMARY_CORRECTION, merged first): both sides had independently claimed ADR-15, and PRIMARY_CORRECTION had no Capability id assigned in CAPABILITY_IDS -- resolved by renumbering the provides ADR to ADR-16 and adding a provisional id (color.primary_correction, following the matrix's own <domain>.<verb> convention) so contract.capability_provides() doesn't KeyError.",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(), package id color-grading matches SKILL_ID exactly",
+            "source": "documented"
+          },
+          {
+            "level": 5,
             "met": false,
-            "detail": "PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending.",
+            "detail": "Not documented in capability-status.json",
             "source": "documented"
           }
         ]
@@ -691,12 +715,12 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
-        "value": false,
+        "value": true,
         "source": "documented",
-        "detail": "PR #2 open (draft) as of 2026-09-05 -- not yet on default branch"
+        "detail": "PR #2 merged 2026-09-06"
       },
       "osIntegration": {
         "status": "integrated",
@@ -709,7 +733,7 @@
         "detail": "documented"
       },
       "maturity": {
-        "level": 2,
+        "level": 4,
         "evidence": [
           {
             "level": 0,
@@ -731,8 +755,20 @@
           },
           {
             "level": 3,
+            "met": true,
+            "detail": "PR #2 merged 2026-09-06",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent registry.py default_registry(); agent's internal package id is 'subtitle', deliberately different from this Skill's own SKILL_ID 'subtitle-skill' (commented in adapter.py) -- join by Capability id, never tool-id string, per WORK_QUEUE.md item 1's finding",
+            "source": "documented"
+          },
+          {
+            "level": 5,
             "met": false,
-            "detail": "PR #2 open (draft) as of 2026-09-05 -- not yet on default branch",
+            "detail": "Not documented in capability-status.json",
             "source": "documented"
           }
         ]
@@ -785,7 +821,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -881,7 +917,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -1021,12 +1057,12 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
-        "value": false,
+        "value": true,
         "source": "documented",
-        "detail": "PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill)."
+        "detail": "PR #5 merged 2026-09-06 after a real merge conflict against 4 stacked feature PRs (#2/#3/#4/#6, delivery_package/cross_artifact/timeline_integrity/luminance checks, merged first): both sides had independently claimed ADR-009, and the 4 PRs' 7 new checks were unaccounted for in UNGROUPED_CHECKS -- resolved by renumbering the provides ADR to ADR-014 and adding the 7 checks to UNGROUPED_CHECKS (test_contract_completeness.py's own completeness invariant correctly caught this, not silently passed). This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill)."
       },
       "osIntegration": {
         "status": "integrated_as_gate",
@@ -1039,7 +1075,7 @@
         "detail": "documented"
       },
       "maturity": {
-        "level": 2,
+        "level": 4,
         "evidence": [
           {
             "level": 0,
@@ -1061,8 +1097,20 @@
           },
           {
             "level": 3,
+            "met": true,
+            "detail": "PR #5 merged 2026-09-06 after a real merge conflict against 4 stacked feature PRs (#2/#3/#4/#6, delivery_package/cross_artifact/timeline_integrity/luminance checks, merged first): both sides had independently claimed ADR-009, and the 4 PRs' 7 new checks were unaccounted for in UNGROUPED_CHECKS -- resolved by renumbering the provides ADR to ADR-014 and adding the 7 checks to UNGROUPED_CHECKS (test_contract_completeness.py's own completeness invariant correctly caught this, not silently passed). This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
+            "source": "documented"
+          },
+          {
+            "level": 4,
+            "met": true,
+            "detail": "video-production-agent ADR-032: qc-skill is connected as the final promotion gate, never as an alternative per-measurement Provider to media-analysis-skill -- confirmed deliberate, not a gap",
+            "source": "documented"
+          },
+          {
+            "level": 5,
             "met": false,
-            "detail": "PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
+            "detail": "Not documented in capability-status.json",
             "source": "documented"
           }
         ]
@@ -1103,7 +1151,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -1197,7 +1245,7 @@
       "capabilityContractPublished": {
         "value": true,
         "source": "documented",
-        "detail": "as of 2026-09-05"
+        "detail": "as of 2026-09-06"
       },
       "providesPublished": {
         "value": true,
@@ -1280,36 +1328,7 @@
       "detail": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance"
     }
   },
-  "bottlenecks": [
-    {
-      "kind": "capability_not_declared",
-      "repoSlug": "kajisho5/ffmpeg-skill",
-      "summary": "Capability Contract has no `provides` field yet (PR #24 open (draft, CI green, mergeable_state clean) as of 2026-09-05 -- not yet on default branch)",
-      "evidenceUrl": "UNKNOWN",
-      "detectedAt": "2026-09-05T22:00:24.915Z"
-    },
-    {
-      "kind": "capability_not_declared",
-      "repoSlug": "kajisho5/color-grading-skill",
-      "summary": "Capability Contract has no `provides` field yet (PR #4 open (draft) as of 2026-09-05 -- not yet on default branch. Unrelated PR #5 (PRIMARY_CORRECTION operation) merged the same day; provides itself is still pending.)",
-      "evidenceUrl": "UNKNOWN",
-      "detectedAt": "2026-09-05T22:00:24.915Z"
-    },
-    {
-      "kind": "capability_not_declared",
-      "repoSlug": "kajisho5/subtitle-skill",
-      "summary": "Capability Contract has no `provides` field yet (PR #2 open (draft) as of 2026-09-05 -- not yet on default branch)",
-      "evidenceUrl": "UNKNOWN",
-      "detectedAt": "2026-09-05T22:00:24.915Z"
-    },
-    {
-      "kind": "capability_not_declared",
-      "repoSlug": "kajisho5/qc-skill",
-      "summary": "Capability Contract has no `provides` field yet (PR #5 open (draft) as of 2026-09-05 -- not yet on default branch. This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).)",
-      "evidenceUrl": "UNKNOWN",
-      "detectedAt": "2026-09-05T22:00:24.915Z"
-    }
-  ],
+  "bottlenecks": [],
   "graph": {
     "nodes": [
       {
