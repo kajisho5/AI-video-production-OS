@@ -355,7 +355,34 @@ Phase 1's registry library was scoped to be consumed by, not built into, another
 repository's tooling. **Never** changes `SkillRegistry.select_tool()`'s actual selection
 behavior — diagnostic output only.
 
-## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — QC RESOLVED 2026-09-06 (PR #34); only Artifact registration for a genuinely untouched deliverable remains, needs a real passthrough operation
+## 9. `video-production-agent`: a no-preset delivery ("deliver as-is") produces no Artifact and skips QC — RESOLVED 2026-09-06 (`ffmpeg-skill` PR #27 + `video-production-agent` PR #36)
+
+**Update 2026-09-06 (`ffmpeg-skill` PR #27 + `video-production-agent` PR #36, both merged) — fully resolved**:
+closes the last remaining gap from the PR #34 update below: Case B's Artifact registration
+(a genuinely untouched, no-preset deliverable). `ffmpeg-skill` gained a real stream-copy
+preset (`export.py --preset copy`: `-c:v copy -c:a copy`, no re-encode, keeps the source's own
+extension and colour tags, skips the CFR-conforming/BT.709-retagging steps and the HDR
+warning every re-encoding preset applies since neither is meaningful without decoding the
+picture) — this is the cross-repo work the PR #32 update below said didn't exist yet.
+`video-production-agent` then routes exactly the previously-unregistrable case through it:
+`execution/compiler.py`'s `delivery()` now materializes a genuinely untouched subject (still
+its own raw source asset, with a video stream) into the job's `artifacts/` directory via a
+real `delivery_export` op instead of doing nothing, and `agent/planner.py`'s
+`delivery_steps()` plans the matching step so the compiler has a tool selection to compile
+against (ADR-021 — same shape as the PR #34 fix needed for the QC gate). The processed
+no-preset case (PR #32/#33/#35's alias fix) is unchanged. A genuinely untouched *pure-audio*
+subject on the audio-production path is deliberately excluded (`export.py --preset copy`
+requires a video stream) — that narrower edge case still falls through to the pre-existing
+(unregistered) behavior rather than crashing, and is not otherwise known to be reachable
+today; a future item if it turns out to be. Verified for real: `IntegratedPipelineRealTests`
+Scenario 11 now runs against real ffmpeg-skill, motion-graphics-skill and qc-skill and
+asserts a genuinely untouched no-preset request gets one real stream-copy export, a real
+registered Artifact (`MASTER`/`source`/`PASS`, credited to `ffmpeg-skill/export`), and a real
+QC gate against the delivered (copied) bytes. New fake-adapter unit test added for fast
+regression coverage. `tests/test_unit.py`: 188 passed (the by-now-familiar 2-4 environmental
+failures depending on cwd, unrelated — see the running log below); `tests/test_integration.py`:
+**45 passed, 0 skipped**, every real-Skill class, 0 regressions. This item is now fully closed
+on both halves of its own title.
 
 **Update 2026-09-06 (PR #34, merged)**: the QC half of the finding below is now fully
 fixed, for both cases A and B — this reverses the "left `qc_gate()` untouched" call made in

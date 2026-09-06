@@ -40,7 +40,12 @@ free-text understanding, so "ユーザーが自然言語で動画制作を依頼
 still only partially true — most real control still goes through `--set key=value`. Trying to
 push qc-skill's fix (step 5) through a *real* render (not just `doctor`) also caught a
 render-time crash on the single most common plan shape — "nothing to change, just deliver" —
-fixed via PR #31 (**merged**): see step 9.
+fixed via PR #31 (**merged**): see step 9. Since then, real end-to-end execution has been
+confirmed for 8 Skill/tool pairs (ffmpeg-skill/loudness, color-grading, qc, motion-graphics,
+thumbnail, audio-production, subtitle [generate + burn-in], video-editing/concat), and the
+single most common no-preset "deliver as-is" request path — previously silently producing no
+Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg-skill` PR #27,
+`video-production-agent` PR #36, all **merged**): see step 9 and `WORK_QUEUE.md` item 9.
 
 ## Gaps, by priority (per the pivot's own P0–P3 scheme)
 
@@ -70,9 +75,9 @@ fixed via PR #31 (**merged**): see step 9.
   general free-text understanding. This remains the gap most directly limiting
   "ユーザーが自然言語で動画制作を依頼する" — the LUFS fix closes one concrete bug in it, not the
   underlying scope limitation.
-- **QC gate fully fixed this session (PRs #32, #33, #34, all merged); only Artifact
-  registration for a genuinely untouched deliverable remains open — see WORK_QUEUE.md item 9
-  for the full history**: for a generic-profile, no-preset delivery, the render's own
+- **Fully fixed this session (PRs #32, #33, #34, #35, and finally `ffmpeg-skill` PR #27 +
+  `video-production-agent` PR #36 — see WORK_QUEUE.md item 9 for the full history)**: for a
+  generic-profile, no-preset delivery, the render's own
   `report.md`/`report.json` was showing `"artifacts": []` even on `COMPLETED` — nothing was
   ever delivered, and `--set qc=true` never ran a QC check either. Split into two cases while
   investigating: (1) **something real was processed** (a motion-graphics overlay, or the
@@ -89,11 +94,24 @@ fixed via PR #31 (**merged**): see step 9.
   correctly — verified for real that both an untouched and a processed no-preset request now get
   a genuine qc-skill check (admitted, real verdict, surfaced in the QA summary; a processed
   artifact now correctly promotes to `approved` instead of the false FAIL that PR #32 left as an
-  honest but incomplete stand-in). **What's left**: registering an Artifact for a genuinely
-  untouched deliverable (case 1 only when literally nothing processed the subject) — that needs
+  honest but incomplete stand-in). **Now also fully closed**: registering an Artifact for a
+  genuinely untouched deliverable (case 1 when literally nothing processed the subject) needed
   an actual stream-copy/remux operation materializing the passthrough deliverable inside the
-  workspace, which does not exist today in `ffmpeg-skill`, so it's real cross-repo work, not a
-  same-file patch. Tracked as `WORK_QUEUE.md` item 9.
+  workspace, which didn't exist in `ffmpeg-skill` — the real cross-repo work this item had been
+  waiting on. `ffmpeg-skill` gained `export.py --preset copy` (PR #27, merged: a genuine stream
+  copy, no re-encode, source codecs/container/colour tags unchanged), and
+  `video-production-agent` PR #36 (merged) routes exactly this case through it —
+  `compiler.py`'s `delivery()` now materializes a genuinely untouched, video-capable subject
+  into the job's `artifacts/` directory via a real `delivery_export` op, with `planner.py`
+  planning the matching step so the compiler has a tool selection (same ADR-021 shape as the
+  PR #34 QC fix). Verified for real: `IntegratedPipelineRealTests` Scenario 11 now gets a real
+  stream-copy export, a real registered `MASTER`/`source`/`PASS` Artifact credited to
+  `ffmpeg-skill/export`, and a real QC gate against the delivered bytes — against real
+  ffmpeg-skill, motion-graphics-skill and qc-skill. `tests/test_integration.py`: 45 passed, 0
+  skipped. A genuinely untouched *pure-audio* subject on the audio-production path is
+  deliberately excluded (the copy preset needs a video stream) and is not otherwise known to be
+  reachable today; a future item if it turns out to be. Tracked as `WORK_QUEUE.md` item 9,
+  now fully resolved.
 - Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
   real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
@@ -289,3 +307,36 @@ fixed via PR #31 (**merged**): see step 9.
   same 4 pre-existing failures; real-Skill classes (from inside the checkout, unaffected):
   `VideoEditingRealTests` 2/2, `AudioProductionRealTests` 5/5, `IntegratedPipelineRealTests`
   11/11 — 0 regressions across every scenario touching concat, video or audio.
+- The one remaining piece of `WORK_QUEUE.md` item 9 — registering an Artifact for a genuinely
+  untouched (nothing processed at all) no-preset deliverable — needed real cross-repo work,
+  since `ArtifactStore.check_path()` (ADR-022) correctly refuses to register an untouched
+  source's own external path, and no operation existed to materialize it into the workspace
+  without a needless re-encode. `ffmpeg-skill` PR #27 (**merged**) added exactly that: a real
+  `export.py --preset copy` (`-c:v copy -c:a copy`, no re-encode; keeps the source's own
+  extension when `-o` doesn't name one; skips the CFR-conforming and BT.709-retagging steps
+  every re-encoding preset applies, and never issues the HDR SDR-flattening warning, since
+  neither is meaningful without decoding the picture; `-movflags +faststart` still applies
+  when the resolved output is `.mp4`). Verified for real: codec/resolution/audio-presence/
+  frame-count (via `ffprobe -count_frames`, which a re-encode could silently drop/duplicate)
+  and HDR tags all stay byte-for-byte the source's across three real scenarios (video+audio,
+  video-only, HDR `.mov`). Full ffmpeg-skill suite: 71 passed, 1 skipped; contract suite: 32
+  passed, 1 skipped.
+- `video-production-agent` PR #36 (**merged**): wired the new preset in. `compiler.py`'s
+  `delivery()` now materializes a genuinely untouched, video-capable subject into the job's
+  `artifacts/` directory via a real `delivery_export` op (`preset="copy"`) instead of doing
+  nothing, and `planner.py`'s `delivery_steps()` plans the matching `ProductionStep` so the
+  compiler has a tool selection to compile against (same ADR-021 shape the PR #34 QC fix
+  needed). The already-fixed processed no-preset case (PR #32/#33/#35's alias) is untouched.
+  A genuinely untouched *pure-audio* subject on the audio-production path is deliberately
+  excluded — `export.py --preset copy` requires a video stream, so that narrower edge case
+  still falls through to the pre-existing (unregistered) behavior rather than crashing, and
+  isn't otherwise known to be reachable today. Verified for real: rewrote
+  `IntegratedPipelineRealTests` Scenario 11 to assert a genuinely untouched no-preset request
+  now gets one real stream-copy `delivery_export`, a real registered Artifact
+  (`MASTER`/`source`/`PASS`, credited to `ffmpeg-skill/export`), and a real qc-skill gate
+  against the delivered (copied) bytes rather than the untouched source directly — against
+  real ffmpeg-skill, motion-graphics-skill and qc-skill. New fake-adapter unit test for fast
+  regression coverage. `tests/test_unit.py`: 188 passed (2-4 environmental failures depending
+  on cwd, unrelated, unchanged from before); `tests/test_integration.py`: **45 passed, 0
+  skipped**, every real-Skill class, 0 regressions. `WORK_QUEUE.md` item 9 is now fully
+  closed — both halves of its own title ("produces no Artifact" and "skips QC") are fixed.
