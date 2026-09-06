@@ -626,3 +626,35 @@ silently no-opping. New regression test. `tests/test_unit.py` + `tests/test_requ
 that every other requirement key (`edit.precision`, `audio.loudness.*`, `silence.*`,
 `delivery.targets`, `edit.trim_leading/trailing_silence`, `audio.normalize`) traces cleanly
 to a real consumer — no further dead keys found.
+
+## 14. `video-production-agent`: dead `semantic_deletion` field in `generic.json` — RESOLVED 2026-09-06 (PR #41)
+
+**Found and fixed 2026-09-06**, applying the same "grep every field, verify a real consumer"
+method items 12/13 used to `profiles/*.json` instead of requirement keys.
+`profiles/generic.json` carried a bare top-level `"semantic_deletion": "CONFIRM"` scalar.
+`profiles/loader.py` merges every top-level key except `"rules"` into `Profile.data`, but
+nothing in the codebase ever reads `semantic_deletion` from it — never converted to a `Rule`,
+never resolved through `decision.py`'s `APPROVAL_KEYS` (no `semantic_deletion` entry exists),
+never surfaces in `plan`/`explain`/`project.json`. `conference.json` expresses the identical
+safety intent *correctly*, as a real `Rule` in its own `rules` array
+(`edit.semantic_deletion.approval`, `CONSTRAINT`, `BLOCK_UNLESS_EXPLICIT`) — the field in
+`generic.json` was a leftover from an earlier schema draft (`ARCHITECTURE_REVIEW.md`'s
+original design used a nested `"decisions"` map) that was flattened during implementation of
+the real `rules`-array mechanism and never migrated or removed. Lower severity than items 12
+and 13 since nothing lets a user set this via `--set` (it's profile config, not a CLI-accepted
+key) — it never misleads a live request, but sits in every `project.json` of the default
+profile every fresh install uses.
+
+**Fixed** (`video-production-agent` PR #41, merged): `edit.semantic_deletion` is a Phase 4,
+not-yet-selectable Skill (`skills/registry.py`'s `available=False`), so there's no live
+decision for a rule to resolve against yet — removed rather than migrated. New regression
+test. `tests/test_unit.py` + `tests/test_requirements.py`: 198 passed (4 known environmental
+failures, unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill
+class, 0 regressions.
+
+**Session note**: after five consecutive rounds of real hands-on gap-hunting (items 9-14),
+round 5 surfaced only this one minor, inert config field — a sharp drop from rounds 1-4's
+substantive execution/decision bugs. This is the expected signal that gap-hunting has hit
+diminishing returns for now; the next highest-value work per this document's own priority
+ordering is the still-open P0 (no single bootstrap/install script for the ecosystem, see the
+Gaps section below), not further speculative discovery rounds.

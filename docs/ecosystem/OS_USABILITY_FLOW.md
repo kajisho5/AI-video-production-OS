@@ -435,3 +435,20 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   skipped**, every real-Skill class, 0 regressions. The same audit confirmed every other
   requirement key traces cleanly to a real consumer — no further dead keys found. Tracked as
   `WORK_QUEUE.md` item 13, now resolved.
+- Applying the same "grep every field, verify a consumer" method to `profiles/*.json` instead
+  of requirement keys, this round (the 5th consecutive gap-hunting pass) found one more, minor
+  item: `generic.json` carried a dead top-level `"semantic_deletion": "CONFIRM"` scalar that
+  `profiles/loader.py` merges into `Profile.data` but nothing ever reads — `conference.json`
+  expresses the same safety intent correctly as a real `Rule`
+  (`edit.semantic_deletion.approval`). A leftover from an earlier schema draft, never migrated.
+  Lower severity than the two requirement-key bugs above since nothing lets a user set this via
+  `--set` — it never misleads a live request, just sits unused in every `project.json` of the
+  default profile. Fixed via `video-production-agent` PR #41 (**merged**): removed (not
+  migrated, since the underlying Phase 4 Skill isn't selectable yet). New regression test.
+  `tests/test_unit.py` + `tests/test_requirements.py`: 198 passed (4 known environmental
+  failures, unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill
+  class, 0 regressions. Tracked as `WORK_QUEUE.md` item 14, now resolved. Five consecutive
+  rounds of gap-hunting (items 9-14) found progressively smaller issues, with round 5 down to
+  one minor inert config field — the expected diminishing-returns signal; the next session
+  should shift to the still-open P0 (no single bootstrap/install script) rather than running
+  further discovery rounds.
