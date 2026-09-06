@@ -269,3 +269,23 @@ fixed via PR #31 (**merged**): see step 9.
   `AudioProductionRealTests` 5/5, `IntegratedPipelineRealTests` 11/11, 0 regressions. The only
   piece of this whole finding still open is registering an Artifact for a genuinely untouched
   deliverable — `WORK_QUEUE.md` item 9, now scoped to exactly that and nothing else.
+- Personally drove `video-editing-skill`'s `concat` end to end for the first time this session
+  (the automated suite already covered it, but not a live run) — two generated clips,
+  `--set edit.concat=true`, generic profile, no delivery preset. A real `video-editing/concat`
+  call completed, but `report.json` still showed `"artifacts": []`: the same bug PR #32 fixed,
+  back again for a concat programme specifically. `video-production-agent` PR #35 (**merged**):
+  root cause was one level more specific than PR #32's fix reaches — `compiler.py`'s
+  `delivery()` decided whether to alias the deliverable by comparing
+  `state[subject]["current"] != subject`, which correctly detects "untouched" for a single
+  source (current stays the raw asset id) but is never true for a concat/`audio_concat`
+  programme, whose subject id *is* the id of a real op output from the moment concat runs — so
+  the alias (and therefore Artifact registration, and the PR #34 QC gate) never fired for a
+  programme, no matter what processed it. Fixed by checking `st["current"] not in d["assets"]`
+  instead (true exactly when current isn't one of the original raw sources), which correctly
+  covers both cases. Verified for real: the same concat render now registers a `MASTER`
+  artifact crediting the real `video-editing/concat` op and decision, and adding `qc=true`
+  now runs a genuine qc-skill check against the real concatenated file, correctly promoting the
+  artifact to `approved`. New fast unit regression test. Full suite (from `/tmp`): 309 passed,
+  same 4 pre-existing failures; real-Skill classes (from inside the checkout, unaffected):
+  `VideoEditingRealTests` 2/2, `AudioProductionRealTests` 5/5, `IntegratedPipelineRealTests`
+  11/11 — 0 regressions across every scenario touching concat, video or audio.
