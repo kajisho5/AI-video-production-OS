@@ -509,3 +509,25 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   fails loudly with the real candidate list, workspace `providers.json` default works).
   `ROADMAP.md` updated to CURRENT/IMPLEMENTED for both Phase 3 items; tracked as
   `WORK_QUEUE.md` item 15, now resolved.
+- Continued to `ROADMAP.md` Phase 4 next. Before touching code, scoped it (an Explore agent
+  read `ARTIFACT_MODEL.md`, `SPEC.md`, and the real `video-production-agent` code rather than
+  assuming a green field): most of `produced_by`'s shape already existed under different field
+  names, and several real design questions (on-disk JSON compatibility, per-adapter
+  constructor-argument variance, an OS-level `capability_id` taxonomy, `derived_from`'s
+  population policy) had no answer in the docs. Given the roadmap itself rates this phase
+  "moderate-to-high risk... the largest single code-change phase," surfaced this to the user
+  rather than inventing every answer silently; asked to proceed and make the calls. Implemented
+  a deliberately scoped-down slice: only the two genuinely-missing `produced_by` fields
+  (`capability_id`, `provider_id`, both additive, no migration), `derived_from` exactly as
+  `ARTIFACT_MODEL.md` §3 itself scopes it (a plain projection, not the traversal API it defers),
+  and a mechanical, behavior-preserving unification of `Service.adapter()`'s remaining four
+  hardcoded per-Skill branches into the same capability-driven table already used for five other
+  Skills (`ffmpeg-skill` kept deliberately special since its construction failure is uniquely
+  uncaught). Deliberately left undone: a generic third-party-loadable adapter interface, an
+  OS-level `capability_id` taxonomy beyond this agent's own skill names, and `Operation`-level
+  provider tracking — all consistent with the roadmap's own Phase 7 framing, not silently
+  smuggled in as "done." `video-production-agent` PR #43 (**merged**). `tests/test_unit.py`:
+  198 passed (4 known environmental failures, unrelated). `tests/test_integration.py` (real
+  ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**, byte-for-byte
+  behavior-preserving. `ROADMAP.md` updated to PARTIALLY IMPLEMENTED for Phase 4, naming
+  exactly what remains; tracked as `WORK_QUEUE.md` item 16.

@@ -706,3 +706,42 @@ ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed** (up from 45, +3 n
 this roadmap phase's own risk note to re-verify against a real baseline rather than trust the
 unverified self-reported count. `ROADMAP.md`'s Phase 3 status updated to CURRENT/IMPLEMENTED
 for both items.
+
+## 16. `video-production-agent`: Phase 4 scoped down — `Artifact.produced_by`/`derived_from` + capability-driven `Service.adapter()` — PARTIALLY RESOLVED 2026-09-06 (PR #43)
+
+**Investigated 2026-09-06**, continuing the roadmap after Phase 3. `ROADMAP.md`'s Phase 4
+asks for the generalized `Artifact` identity/derived-from graph (`ARTIFACT_MODEL.md`) and
+registry-driven execution discovery, and rates itself "moderate-to-high risk... the largest
+single code-change phase in the roadmap." Before writing any code, a scoping pass (an
+Explore-agent read of `ARTIFACT_MODEL.md`, `SPEC.md` §2/§4, and the actual
+`video-production-agent` code) found the honest picture is more nuanced than the roadmap
+text alone suggests: most of `produced_by`'s shape already existed under different field
+names (`Artifact.tool_version` = `skill_version`, `Artifact.operations` = `operation_id`),
+and several real, unanswered design questions exist (on-disk Artifact JSON backward
+compatibility, per-adapter constructor-argument variance, an OS-level `capability_id`
+taxonomy for this agent's own skills, `derived_from` population policy) that the roadmap
+and `ARTIFACT_MODEL.md` do not resolve. Asked the user how to proceed given the scope step-up
+from Phase 3; told to make the design calls and implement.
+
+**Fixed (partially, deliberately)** (`video-production-agent` PR #43, merged): added only
+the two genuinely-missing `produced_by` fields (`capability_id`, `provider_id`), both
+additive with defaults (no migration, matching the codebase's own established "additive
+schema" convention from ADR-034/036); implemented `derived_from` exactly as
+`ARTIFACT_MODEL.md` §3 itself scopes it — a plain projection (`source` entries that are
+themselves already-registered Artifacts, checked via `ArtifactStore.get()`), not the
+traversal/query API that section explicitly defers as unbuilt anywhere. Unified
+`Service.adapter()`'s remaining four hardcoded per-Skill `if` branches into the same
+capability-driven table already used for five other Skills — a mechanical, behavior-
+preserving refactor (`ffmpeg-skill`, the Reference Skill, deliberately kept as a special
+first case since its construction failure is not caught the way every other adapter's is,
+and folding it into the loop would silently change that). **Deliberately left undone**,
+consistent with the roadmap's own Phase 7 framing: a generic third-party-loadable adapter
+interface, an OS-level `capability_id` taxonomy beyond this agent's own production-skill
+names, and `Operation`-level `capability_id`/`provider_id` (only the registered `Artifact`
+carries them today, after the fact — the Executor still does not resolve adapters from a
+registry at execution time). New regression tests for `capability_id`/`provider_id`
+population and both the empty and populated `derived_from` cases. `tests/test_unit.py`:
+198 passed (4 known environmental failures, unrelated). `tests/test_integration.py` (real
+ffmpeg + all 9 real Skills, no mocks): **48 passed, 0 failed**, byte-for-byte behavior-
+preserving. `ROADMAP.md`'s Phase 4 status updated to PARTIALLY IMPLEMENTED, naming exactly
+what remains.
