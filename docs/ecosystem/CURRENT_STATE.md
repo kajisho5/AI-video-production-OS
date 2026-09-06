@@ -10,8 +10,9 @@ snapshot those two feed into.
 
 ## The one-paragraph version
 
-Ten Skill repositories now publish a `provides` field (Capability ids) in their machine-
-readable contracts — the `AI-video-production-OS` Phase 2 rollout, mostly merged. A real,
+All ten Skill repositories now publish a `provides` field (Capability ids) in their
+machine-readable contracts — the `AI-video-production-OS` Phase 2 rollout, **complete as
+of 2026-09-06**. A real,
 tested `registry/` library (Phase 1) exists in this repo to consume that field: register
 contracts, detect collisions, resolve them by a 3-tier policy. Separately, and **without
 using either of those**, `video-production-agent` has independently built and shipped its
@@ -71,11 +72,11 @@ question right now (see `WORK_QUEUE.md` item 1).
   verified PASS against all 9 real Python Skills' source trees). 50 tests, all passing,
   against real captured data, a real live `qc-skill` process, and synthetic
   AST-walk fixtures.
-- **`provides` rollout** (this repo, Phase 2): all 10 audited Skills have a PR adding
-  `provides`; as of this snapshot most are merged (see `CROSS_REPO_STATUS.md` for the live
-  count) — including the ecosystem's one real documented Capability collision
-  (`measure.audio.loudness`/`measure.audio.silence`/`measure.audio.integrity`, shared by
-  `qc-skill` and `media-analysis-skill`, now published under identical ids by both).
+- **`provides` rollout** (this repo, Phase 2): **complete** — all 10 audited Skills'
+  `provides` PRs have merged (see `CROSS_REPO_STATUS.md`) — including the ecosystem's one
+  real documented Capability collision (`measure.audio.loudness`/`measure.audio.silence`/
+  `measure.audio.integrity`, shared by `qc-skill` and `media-analysis-skill`, now
+  published under identical ids by both).
 
 ## EXPERIMENTAL (real code, but young / unproven at scale)
 

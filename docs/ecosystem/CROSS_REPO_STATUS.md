@@ -30,12 +30,15 @@ Agent knows how to use."
 ## `provides` rollout PR tracker (Phase 2)
 
 See `docs/ECOSYSTEM_CHANGELOG.md`'s own running "`provides` rollout: merge tracker" entry
-for the live, continuously-updated count — do not duplicate it here by hand. As of this
-document's last edit: `media-analysis-skill#4`, `audio-production-skill#3`,
-`transcription-skill#5`, `video-editing-skill#2` merged; `subtitle-skill#2`,
-`thumbnail-skill#2`, `color-grading-skill#4`, `motion-graphics-skill#2`, `qc-skill#5`,
-`ffmpeg-skill#24` still open (all CI-green as of last check; `ffmpeg-skill#24` needed one
-merge-conflict resolution against `main` after `ffmpeg-skill#23` landed, resolved).
+for the full detail. **Complete as of 2026-09-06: all 10 Skills' `provides` PRs have
+merged.** Two of the last four (`color-grading-skill#4`, `qc-skill#5`) needed a real
+merge-conflict resolution — not just a mechanical `git merge` — because sibling feature
+PRs in those same repos merged first: both cases involved an ADR-numbering collision
+(resolved by renumbering) and a real gap in the new PR's own logic (a missing Capability
+id for `color-grading-skill`'s `PRIMARY_CORRECTION` operation; 7 unaccounted-for checks
+in `qc-skill`'s completeness test) that had to be fixed, not just merged around. See
+`docs/ecosystem/DECISION_LOG.md` and `docs/ecosystem/capability-status.json` for the
+full evidence trail.
 
 ## `AI-video-production-OS` itself
 

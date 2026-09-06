@@ -133,13 +133,21 @@ noteworthy.
   merges don't each need their own entry).
 - **Merged**: `media-analysis-skill#4` (2026-09-05T20:57Z), `audio-production-skill#3`
   (2026-09-05T20:57Z), `transcription-skill#5` (2026-09-05T20:58Z), `video-editing-skill#2`
-  (2026-09-05T20:59Z)
-- **Still open**: `subtitle-skill#2`, `thumbnail-skill#2`, `color-grading-skill#4`,
-  `motion-graphics-skill#2`, `qc-skill#5`, `ffmpeg-skill#24` (had a merge conflict with
-  `main` after ffmpeg-skill#23 landed — a `main` merge resolved it, `CHANGELOG.md` was
-  the only manual resolution needed; verified `provides` and #23's new colour-correction
-  capabilities both intact after the merge)
-- **Status**: in progress
+  (2026-09-05T20:59Z), `thumbnail-skill#2` (2026-09-05T21:12Z), `motion-graphics-skill#2`
+  (2026-09-05T21:08Z), `subtitle-skill#2` (2026-09-06, no conflict), `ffmpeg-skill#24`
+  (2026-09-06, had an earlier merge conflict with `main` after ffmpeg-skill#23 landed — a
+  `main` merge resolved it, `CHANGELOG.md` was the only manual resolution needed),
+  `color-grading-skill#4` (2026-09-06, real merge conflict against `color-grading-skill#5`
+  — PRIMARY_CORRECTION — which merged first: both PRs independently claimed ADR-15, and
+  PRIMARY_CORRECTION had no Capability id; resolved by renumbering to ADR-16 and adding a
+  provisional `color.primary_correction` id), `qc-skill#5` (2026-09-06, real merge
+  conflict against 4 stacked feature PRs — `qc-skill#2/#3/#4/#6` — which merged first:
+  both PRs independently claimed ADR-009, and their 7 new checks were unaccounted for in
+  `UNGROUPED_CHECKS`, correctly caught by `test_contract_completeness.py`'s own
+  completeness invariant; resolved by renumbering to ADR-014 and adding the 7 checks to
+  `UNGROUPED_CHECKS`)
+- **Still open**: none
+- **Status**: complete — all 10 Skills in the ecosystem now publish `provides`.
 
 ---
 
