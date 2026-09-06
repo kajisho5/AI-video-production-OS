@@ -595,3 +595,34 @@ omitted (`cli.py`'s `cmd_explain` called `load_ir(args.project)` unconditionally
 `--artifact` mode). Fixed with an explicit upfront check. `tests/test_unit.py` +
 `tests/test_requirements.py`: 196 passed (4 known environmental failures, unrelated);
 `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill class, 0 regressions.
+
+## 13. `video-production-agent`: the `delivery.preserve_source` requirement key duplicated a hardcoded security constraint and did nothing — RESOLVED 2026-09-06 (PR #40)
+
+**Found and fixed 2026-09-06**, via the same systematic method item 12 used: grep every key
+`agent/requirements.py`'s `KEYWORDS`/`NUMERIC_KEYWORDS`/`defaults` can produce, and check each
+has a real consumer. `delivery.preserve_source` was added to every plan's requirements
+(`defaults` dict, value always `True`), and since `delivery.` is an accepted `--set` prefix, a
+user could also explicitly set `--set delivery.preserve_source=false` — with zero effect
+either way. `grep -rn preserve_source src/` shows the only real thing by this name is
+`policy/rules.py`'s hardcoded, non-overridable `sys.preserve_source` **CONSTRAINT** ("never
+write to the source path", ADR-022's workspace boundary, structurally enforced by
+`ArtifactStore.check_path()` regardless of any requirement). `delivery.preserve_source` was a
+vestigial duplicate under a different key that nothing ever consumed — worse than merely
+dead, since a user could reasonably believe `--set delivery.preserve_source=false` disables a
+real safety guarantee it never actually touched.
+
+**Fixed** (`video-production-agent` PR #40, merged): unlike item 12's `delivery.platform`
+(a real per-request signal worth wiring up), this key duplicates a deliberately
+non-negotiable system constraint, so wiring it to actually do something would be the wrong
+fix — it would mean building a way to weaken ADR-022's boundary. Instead: dropped the
+always-present default (it no longer appears in every `project.json`), and an explicit
+`--set delivery.preserve_source=...` is now rejected with the same "unknown requirement key"
+error used for any other unsupported key, via a small `DEAD_REQUIREMENT_KEYS` deny-list
+checked alongside the existing prefix validation. Verified for real: a default plan no
+longer lists the key; `--set delivery.preserve_source=false` now fails clearly instead of
+silently no-opping. New regression test. `tests/test_unit.py` + `tests/test_requirements.py`:
+197 passed (4 known environmental failures, unrelated); `tests/test_integration.py`:
+**45 passed, 0 skipped**, every real-Skill class, 0 regressions. Confirmed via the same audit
+that every other requirement key (`edit.precision`, `audio.loudness.*`, `silence.*`,
+`delivery.targets`, `edit.trim_leading/trailing_silence`, `audio.normalize`) traces cleanly
+to a real consumer — no further dead keys found.

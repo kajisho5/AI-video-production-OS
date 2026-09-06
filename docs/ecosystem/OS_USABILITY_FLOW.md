@@ -415,3 +415,23 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   (4 known environmental failures, unrelated); `tests/test_integration.py`: **45 passed, 0
   skipped**, every real-Skill class, 0 regressions. Tracked as `WORK_QUEUE.md` item 12, now
   resolved.
+- The same systematic method (grep every key `agent/requirements.py`'s
+  `KEYWORDS`/`NUMERIC_KEYWORDS`/`defaults` can produce, check each has a real consumer) found
+  one more: `delivery.preserve_source` was added to every plan (`defaults` dict, always
+  `True`), and a user could also explicitly `--set delivery.preserve_source=false` — with zero
+  effect either way. `grep -rn preserve_source src/` shows the only real thing by this name is
+  `policy/rules.py`'s hardcoded, non-overridable `sys.preserve_source` CONSTRAINT ("never
+  write to the source path", ADR-022's workspace boundary, enforced structurally by
+  `ArtifactStore.check_path()`). Unlike `delivery.platform`, this key duplicates a
+  deliberately non-negotiable safety constraint, so wiring it to do something would be the
+  wrong fix (it would mean building a way to weaken ADR-022's boundary) — worse than merely
+  dead, since a user could believe the `--set` disables a real guarantee it never touched.
+  Fixed via `video-production-agent` PR #40 (**merged**): dropped the always-present default,
+  and an explicit `--set delivery.preserve_source=...` is now rejected with the same "unknown
+  requirement key" error as any other unsupported key. Verified for real: a default plan no
+  longer lists the key; the explicit `--set` now fails clearly instead of silently no-opping.
+  New regression test. `tests/test_unit.py` + `tests/test_requirements.py`: 197 passed (4
+  known environmental failures, unrelated); `tests/test_integration.py`: **45 passed, 0
+  skipped**, every real-Skill class, 0 regressions. The same audit confirmed every other
+  requirement key traces cleanly to a real consumer — no further dead keys found. Tracked as
+  `WORK_QUEUE.md` item 13, now resolved.
