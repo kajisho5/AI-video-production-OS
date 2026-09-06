@@ -26,8 +26,10 @@ one-time report.
 | 11 | Verify/QC the output | **IMPLEMENTED** | Same run: `render` auto-invoked QA, produced a real QC sheet PNG and a real report (`report.md`/`report.json`) — `QA PASS: 5 pass, 0 incident(s)`. |
 | 12 | Return the result to the user | **IMPLEMENTED** | `report.md` is a real, human-readable summary with the plan, decisions (with evidence and confidence), and QA outcome; `deliver` exists to promote the QA-passed artifact. |
 
-**Bottom line**: with the qc/color-grading fixes in place, **all 10 Skills report
-`AVAILABLE`** in a real `video-agent doctor` run (transcription needed
+**Bottom line**: with the qc (PR #28), motion-graphics (PR #29) and color-grading (already
+merged, #26) fixes all in place, **all 10 Skills report `AVAILABLE`** in a real
+`video-agent doctor` run — verified together, not just individually, via a local three-way
+merge of `main` + both open Draft PRs (transcription needed
 `pip install "transcription-skill[faster-whisper]"` — a real, one-line, documented optional
 extra, not a bug), and a full, real Plan→Validate→Render→QA cycle **actually works end to
 end today** for at least the ffmpeg-skill-only path (loudness normalization tested; the
@@ -47,16 +49,18 @@ partially true today — most real control still goes through `--set key=value`,
   (`video-agent doctor` — see step 2 above).
 
 ### P1 — Skill discovery / Capability registration / Agent routing / execution / verification
-- **Fixed this session**: qc-skill pinned-contract drift (PR #28, Draft, this repo's sibling
-  `video-production-agent`). color-grading-skill version gate (already fixed upstream, PR #26,
-  merged) — confirmed, no action needed.
+- **Fixed this session**: qc-skill pinned-contract drift (PR #28, Draft) and motion-graphics-skill
+  pinned-contract drift (PR #29, Draft), both in this repo's sibling `video-production-agent`.
+  color-grading-skill version gate (already fixed upstream, PR #26, merged) — confirmed, no
+  action needed. Systematically re-checked all remaining Skills (ffmpeg-skill, media-analysis,
+  transcription, video-editing, audio-production, subtitle, thumbnail) for the same pattern
+  after re-syncing every local checkout to its real `origin/main` — no further instances found.
+  All 10 Skills confirmed `AVAILABLE` together (main + both Draft PRs merged locally for
+  verification only, never pushed).
 - **Real, open**: natural-language request parsing (step 7 above) is narrow. This is the gap
   most directly blocking "ユーザーが自然言語で動画制作を依頼する" from being fully true.
-- Not yet checked this session: whether any of the remaining 8 Skills have a similar
-  stale-pinned-contract or version-gate issue waiting to surface the next time any of them
-  ships a real, additive contract change (subtitle-skill and others were previously found to
-  have *different*, deliberately-not-fixed issues — see `DECISION_LOG.md` D9 — that are wide
-  blast-radius renames, not silent-MISSING bugs like the two above).
+- Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
+  real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
 
 ### P2 — System Intelligence → OS runtime connection
 - Not evaluated this session (correctly out of scope per the pivot: "System Intelligence自身を
@@ -78,3 +82,21 @@ partially true today — most real control still goes through `--set key=value`,
   installing it, `video-agent doctor` reports `transcription: AVAILABLE`.
 - Ran a real, non-simulated Plan→Validate→Render→QA cycle against a freshly generated test
   video, proving the full execution/verification pipeline is real, not just claimed.
+- `video-production-agent` PR #29 (Draft): found and fixed the identical stale-pinned-contract
+  bug in `motion-graphics-skill`'s adapter (4 new element types — `bug`/`chapter`/`countdown`/
+  `progress` — closing that Skill's own already-merged feature arc), the same class of bug as
+  the qc-skill fix. Systematically re-checked the remaining 7 Skills (ffmpeg-skill,
+  media-analysis, transcription, video-editing, audio-production, subtitle, thumbnail) for the
+  same pattern after re-syncing every local checkout to its real `origin/main` (several had
+  drifted onto stale merged feature branches) — found no further instances.
+- Verified all three fixes together (a local, unpushed merge of `main` + PR #28 + PR #29) make
+  **all 10 Skills report `AVAILABLE`** in a real `video-agent doctor` run — the ecosystem's
+  first fully-green real-environment doctor result this session found.
+- Lesson for future sessions in this sandbox: testing `scripts/bootstrap.sh` against a scratch
+  clone directory left several Skills' `pip install -e .` pointing at that scratch directory
+  instead of `/home/user/<skill>` (Python's editable-install meta-path finder wins over
+  `PYTHONPATH`/env-var-based checkout discovery, so this silently fed stale contract data into
+  otherwise-correct adapter code and briefly looked like a real regression). Fixed by
+  reinstalling every Skill editable from its real `/home/user/<skill>` checkout; if `video-agent
+  doctor` ever again disagrees with a Skill's own CLI run of `skill --json`, check
+  `python3 -c "import <pkg>; print(<pkg>.__file__)"` for exactly this before assuming a code bug.
