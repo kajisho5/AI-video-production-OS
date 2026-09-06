@@ -162,9 +162,26 @@ yet, and this README does not pretend otherwise.
 
 **This repository is architecture and contracts, not an installable application** —
 there is no `npm install ai-video-production-os`, because that package doesn't exist
-and this README will not invent one. The real, working entry points today are the
-individual Skill repositories. For example, `ffmpeg-skill` is genuinely published and
-installable right now:
+and this README will not invent one. What this repository *does* ship is a real
+bootstrap script for the ecosystem it describes, because "clone 11 repos, `pip install
+-e .` nine of them, and wire up sibling-directory discovery by hand" is not a real
+onboarding path:
+
+```bash
+git clone https://github.com/kajisho5/AI-video-production-OS
+cd AI-video-production-OS
+./scripts/bootstrap.sh                 # target dir defaults to ./ai-video-os-workspace
+```
+
+This clones `video-production-agent` and all 10 Skill repos as siblings, `pip install
+-e .`s the Python ones, checks `ffmpeg`/`ffprobe` are on `PATH` (prints the right
+`apt`/`brew` command if not — it never installs system packages itself), and finishes
+by running a real `video-agent doctor` so you see exactly what's usable, not a claim
+about it. Safe to interrupt and re-run — it skips anything already cloned. See the
+script's own header comment for the full breakdown of what it does and doesn't do.
+
+If you only want one piece rather than the whole ecosystem, the Skills are also usable
+standalone. `ffmpeg-skill` is genuinely published and installable on its own:
 
 ```bash
 npm install -g ffmpeg-skill
@@ -179,9 +196,10 @@ like today.)
 
 The other nine Skills are Python packages (`pip install`-able from source per each
 repo's own `pyproject.toml` — none are currently published to PyPI, marked `UNKNOWN`
-rather than assumed). `video-production-agent` is the closest thing to a full
-end-to-end entry point — see its own README for the current CLI. To understand the
-architecture behind all of them, the path is:
+rather than assumed; `bootstrap.sh` above does this step for all of them at once).
+`video-production-agent` is the closest thing to a full end-to-end entry point — see
+its own README for the current CLI. To understand the architecture behind all of them,
+the path is:
 
 ```
 This README → docs/ARCHITECTURE.md → docs/REPOSITORY_MAP.md → the repo you care about

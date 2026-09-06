@@ -13,7 +13,7 @@ one-time report.
 
 | # | Step | Status | Evidence |
 |---|------|--------|----------|
-| 1 | Clone/install the OS | **PARTIAL** | No single bootstrap script for the ecosystem (11 repos: this one + `video-production-agent` + 10 Skills). Each repo has its own `pip install -e .`; some Skills run un-installed from a checkout via `VIDEO_AGENT_*_DIR` env vars instead. A fresh user gets no single command — see P0 gap below. |
+| 1 | Clone/install the OS | **IMPLEMENTED** | `scripts/bootstrap.sh` (this repo) really clones `video-production-agent` + all 10 Skill repos as siblings, `pip install -e .`s the Python ones, checks ffmpeg/ffprobe, and runs a real `video-agent doctor` — one command, no env vars needed (sibling-directory discovery). Verified for real in a genuinely fresh scratch directory: all 10 Skills report `AVAILABLE`. Was previously not linked from this README's own Quick Start (a user reading the README top-to-bottom would never find it) — fixed, see the P0 section below. |
 | 2 | Confirm dependent runtime (ffmpeg, Python deps, optional ASR engine) | **IMPLEMENTED** | `video-agent doctor` really probes `ffmpeg`/`ffprobe`/encoders/decoders/filters/fonts/GPU and every registered Skill's own doctor. Ran for real in a fresh Ubuntu sandbox: found ffmpeg/ffprobe missing, installed them (`apt-get install -y --fix-missing ffmpeg fonts-dejavu-core`), doctor then reported them `AVAILABLE`. This step **works and is honest** — it doesn't lie about what's missing. |
 | 3 | Discover Skills | **IMPLEMENTED** | `locate_*()` per Skill (checkout dir via env var, `~/.claude/skills/<name>`, `./vendor/<name>`, `../<name>`, or a console script on `PATH`) really finds installed/checked-out Skills; confirmed for all 10. |
 | 4 | Fetch each Skill's Capability Contract | **IMPLEMENTED** | Each adapter really calls the Skill's own `contract`/`skill --json` and gets a real document back (not mocked). Confirmed for qc-skill, color-grading-skill, subtitle-skill and others by direct invocation. |
@@ -50,11 +50,22 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
 ## Gaps, by priority (per the pivot's own P0–P3 scheme)
 
 ### P0 — install/bootstrap/runtime/execution
-- **No single bootstrap/install command for the ecosystem.** A fresh user must clone 11
-  repositories separately, `pip install -e .` several of them, and wire 9 `VIDEO_AGENT_*_DIR`
-  environment variables by hand (or install each Skill's console script). Nothing in this
-  repository or `video-production-agent` automates that. This is the single largest gap
-  between "the architecture exists" and "a user can install this and use it today."
+- **RESOLVED 2026-09-06**: this section used to describe "no single bootstrap/install
+  command for the ecosystem" as the single largest open gap — that description was stale.
+  `scripts/bootstrap.sh` already existed in this repository (added together with the first
+  version of this document, commit `ca2639e`) and genuinely does the whole job: clones
+  `video-production-agent` + all 10 Skill repos as siblings, `pip install -e .`s the Python
+  ones, checks `ffmpeg`/`ffprobe`, and finishes with a real `video-agent doctor` run — no
+  `VIDEO_AGENT_*_DIR` environment variables needed at all (sibling-directory discovery
+  handles it). Re-verified for real just now in a genuinely fresh scratch directory: **all 10
+  Skills report `AVAILABLE`**. The actual remaining gap was narrower than this section's own
+  wording claimed: the script was never referenced from the README's own "Quick start"
+  section, which instead told a fresh reader "there is no installable application" and walked
+  through the individual per-repo path only — so a user reading the README top-to-bottom
+  would never discover the one-command path already existed. Fixed by updating
+  `README.md`'s Quick Start to lead with `./scripts/bootstrap.sh` as the recommended path to
+  the full working ecosystem, while keeping the honest single-Skill (`npm install -g
+  ffmpeg-skill`) path for anyone who only wants one piece.
 - Runtime dependency confirmation (ffmpeg/ffprobe/encoders/ASR) is otherwise solid
   (`video-agent doctor` — see step 2 above).
 
@@ -449,6 +460,24 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   failures, unrelated); `tests/test_integration.py`: **45 passed, 0 skipped**, every real-Skill
   class, 0 regressions. Tracked as `WORK_QUEUE.md` item 14, now resolved. Five consecutive
   rounds of gap-hunting (items 9-14) found progressively smaller issues, with round 5 down to
-  one minor inert config field — the expected diminishing-returns signal; the next session
-  should shift to the still-open P0 (no single bootstrap/install script) rather than running
-  further discovery rounds.
+  one minor inert config field — the expected diminishing-returns signal that it was time to
+  pivot away from further discovery rounds toward this document's own P0.
+- **Correction, immediately after writing the line above**: acting on "pivot to the P0
+  bootstrap gap" turned out to mean checking the claim first, not re-doing work already done.
+  `scripts/bootstrap.sh` already existed in this repository (added in the same commit,
+  `ca2639e`, that first wrote this document and its P0 section — the two were simply never
+  reconciled with each other) and, tested for real just now in a genuinely fresh scratch
+  directory, does exactly what a bootstrap script should: clones `video-production-agent` +
+  all 10 Skills as siblings, installs the Python ones, checks ffmpeg, and finishes with a real
+  `video-agent doctor` showing **all 10 Skills `AVAILABLE`** — no `VIDEO_AGENT_*_DIR`
+  environment variables needed. The actual gap was one level narrower than this document's own
+  P0 wording claimed: the script was never linked from `README.md`'s "Quick start", which
+  instead told a fresh reader "there is no installable application" and walked through the
+  individual per-repo path only, so nobody reading the README top-to-bottom would ever find
+  the one-command path that already worked. Fixed: `README.md`'s Quick Start now leads with
+  `./scripts/bootstrap.sh` as the recommended path to the full ecosystem, keeping the
+  single-Skill (`npm install -g ffmpeg-skill`) path for anyone who only wants one piece. Step
+  1's table row and this section's P0 bullet above are corrected to match. Lesson for future
+  sessions: before writing "still open" about a gap this document itself tracks, check the
+  actual repository state, not just this document's own prior wording about it — a P0 item's
+  status can go stale exactly the way any other claim in this document can.
