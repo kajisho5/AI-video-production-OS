@@ -875,3 +875,53 @@ and switched those assertions to compare against the located skill's real versio
 sibling checkouts so the regression test itself doesn't depend on this machine's
 layout). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
 passed, 0 failed**. ADR-041 added.
+
+## 20. `video-production-agent`: `edit.concat.transition` accepted any lowercase string instead of the real 15-value enum, and a much larger sibling bug (unrecognized requirement sub-keys silently ignored across 7 namespaces) was found but deliberately not fixed — PARTIALLY RESOLVED 2026-09-07 (PR #47)
+
+Continuing the real-data validation from item 19: with the join.py/version-gate fixes
+merged, `video-agent plan`/`render` was run against the 5 real sample files through
+actual editing operations, not just delivery. `--set edit.concat=true --set
+edit.concat.transition=none` produced an `APPROVED` plan with no error, then failed
+at `render` with `"compiler produced arguments the tool rejects (agent bug, not
+retried)"` — video-editing-skill's own contract rejects `"none"` (its 15-value enum
+has no such member; the correct way to ask for a straight cut is to omit
+`edit.concat.transition` entirely). Root cause: `_TRANSITION_RE` in
+`agent/editing.py` was `^[a-z]{1,16}$`, a shape check, not the real enum — the
+sibling key `edit.concat.mode` in the same function already validated against its
+actual values (`pad|crop`), so this was a specific oversight, not a design choice,
+and it directly contradicted the module's own docstring ("An invalid value is
+refused at planning time — nothing is corrected or guessed").
+
+**Fixed** (`video-production-agent` PR #47, merged): pinned the real 15-value
+transition enum (video-editing-skill's own `contract.py` list, not imported —
+ADR-001's boundary discipline) and switched the error message to the same "one of
+..." style already used by `edit.concat.mode`/`edit.overlay.position`.
+
+**Found but deliberately NOT fixed, and documented rather than rushed**: while
+investigating this, tried `--set subtitle.generate=true` (a plausible-looking but
+wrong key — the real switch is bare `subtitle`; `subtitle.generate` is only the
+internal decision subject's name) and got a silent no-op: the top-level namespace
+check passed (it starts with the allowed prefix `subtitle`), no parser recognized
+the exact key, so nothing happened — no decision, no error, no subtitles, plan still
+`APPROVED`. This is structural, not specific to subtitles: `edit./audio./subtitle/
+thumbnail/color./motion./qc` all share the same shape (each parser reads only the
+keys it knows via `m.get()`, without ever checking whether an unrecognized key
+exists at all). A positive-allowlist fix was attempted directly in `service.py` and
+reverted after it broke 21, then 18, existing tests: `<subject>.approval` keys
+(`decision.py`/`decision_finishing.py`'s `APPROVAL_KEYS` values) and the
+pre-ADR-030 `audio.loudness.target_lufs`/`true_peak` vocabulary (hardcoded directly
+in `decision.py`, plus free-text extraction in `agent/requirements.py`) are both
+real, legitimate keys that don't live in any domain's own `REQUIREMENT_KEYS`-style
+constant — with no confidence the enumeration was complete even after finding those
+two, continuing risked silently rejecting more real, working requirement keys, a
+worse regression than the silent-ignore bug being fixed. Documented in ADR-042's
+third paragraph and here so a future attempt starts from what's already been ruled
+out (a positive allowlist built from each domain's own constant is not enough; it
+needs tracing every `m.get()` across `decision.py`, `decision_finishing.py` and
+`agent/requirements.py` first) instead of repeating the same false starts.
+`tests/test_unit.py`: 210 passed (2 new cases: `edit.concat.transition="none"`/
+`"xyzzy"` both raise `EditRequirementError` naming the real 15 values).
+`tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
+passed, 0 failed**. Verified live: `--set edit.concat=true` (transition omitted)
+against the 5 real audio-less sample files concats end-to-end to `COMPLETED`, QA
+PASS, an 82.05s 1920x1080 H.264 file. ADR-042 added.
