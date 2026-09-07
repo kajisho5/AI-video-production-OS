@@ -635,3 +635,27 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): 48 passed, 0
   failed. Verified live: concat of the 5 real audio-less samples (transition omitted)
   completed end-to-end to an 82.05s 1920x1080 H.264 file, QA PASS.
+- The user asked directly what should be done about the deferred finding. Rather than
+  guess again, read `agent/decision.py` (440 lines), `agent/decision_finishing.py` (216
+  lines), `agent/requirements.py` and `agent/intent.py` in full, and grepped every
+  `resolve_setting(rules, ...)`/`rules.get(...)` call across the tree before writing any
+  code -- an exhaustive trace this time, not another allowlist guessed from each domain's
+  own constant. That trace found the real shape: the 7 namespaces hold two genuinely
+  different key surfaces. Switch keys (read via the Requirement map, including a pre-
+  ADR-029/030 vocabulary hardcoded directly in decision.py/intent.py/service.py the first
+  attempt missed entirely -- edit.trim_leading_silence, audio.normalize, audio.loudness.
+  target_lufs, etc.) are where an unrecognized key causes the severe silent-total-loss
+  failure. Policy-default keys (read via resolve_setting()/rules, sourced from
+  _request_rules() which by design accepts any key matching these 7 prefixes and falls
+  back to the default on a miss -- every `<subject>.approval` key, thumbnail.at_ratio,
+  qc.warn.promotion, motion element defaults) must stay accepted, since rejecting them
+  would break real, working usage; conflating the two surfaces is exactly what broke the
+  first attempt.
+- **Fixed** (`video-production-agent` PR #48, merged): built the union of both surfaces
+  from the actual source and wired `_check_edit_requirements()` to refuse anything under
+  the 7 prefixes not in it, naming the bad key. `tests/test_unit.py`: 213 passed (210 +
+  new `UnrecognizedFinishingKeyTests`, 3 tests). `tests/test_integration.py` (real ffmpeg
+  + all 9 real Skills, no mocks): 48 passed, 0 failed. Verified live: `--set subtitle.
+  generate=true` now fails at `plan` with a clear message naming the key; `--set
+  subtitle=true` and `--set edit.concat=true` still work exactly as before. ADR-043
+  added; tracked as `WORK_QUEUE.md` item 21 (item 20 updated to RESOLVED).

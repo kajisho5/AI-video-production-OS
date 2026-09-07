@@ -876,7 +876,7 @@ sibling checkouts so the regression test itself doesn't depend on this machine's
 layout). `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48
 passed, 0 failed**. ADR-041 added.
 
-## 20. `video-production-agent`: `edit.concat.transition` accepted any lowercase string instead of the real 15-value enum, and a much larger sibling bug (unrecognized requirement sub-keys silently ignored across 7 namespaces) was found but deliberately not fixed — PARTIALLY RESOLVED 2026-09-07 (PR #47)
+## 20. `video-production-agent`: `edit.concat.transition` accepted any lowercase string instead of the real 15-value enum, and a much larger sibling bug (unrecognized requirement sub-keys silently ignored across 7 namespaces) was found but deliberately not fixed — RESOLVED 2026-09-07 (PR #47, follow-up completed as item 21 / PR #48)
 
 Continuing the real-data validation from item 19: with the join.py/version-gate fixes
 merged, `video-agent plan`/`render` was run against the 5 real sample files through
@@ -925,3 +925,48 @@ needs tracing every `m.get()` across `decision.py`, `decision_finishing.py` and
 passed, 0 failed**. Verified live: `--set edit.concat=true` (transition omitted)
 against the 5 real audio-less sample files concats end-to-end to `COMPLETED`, QA
 PASS, an 82.05s 1920x1080 H.264 file. ADR-042 added.
+
+## 21. `video-production-agent`: the "unrecognized requirement sub-key silently ignored" bug from item 20 — RESOLVED 2026-09-07 (PR #48)
+
+The user asked directly: "so what should be done about the big problem you didn't
+fix?" — item 20's deferred structural finding. The first attempt (documented in
+ADR-042) built an allowlist from only each domain's own `REQUIREMENT_KEYS`
+constant and broke 21, then 18, existing tests, because it missed two entire
+categories of legitimate key. This time, before writing any code, read
+`agent/decision.py` (440 lines), `agent/decision_finishing.py` (216 lines),
+`agent/requirements.py`, and `agent/intent.py` in full, and grepped every
+`resolve_setting(rules, ...)`/`rules.get(...)` call across the tree — an
+exhaustive trace, not another guess.
+
+That trace found the real shape of the problem: the 7 namespaces
+(`edit./audio./subtitle/thumbnail/color./motion./qc`) hold two genuinely
+different key surfaces. (1) **Switch keys**, read via the Requirement map inside
+`parse_edit_requirements()` and its five siblings, plus a pre-ADR-029/030
+vocabulary hardcoded directly in `decision.py`/`intent.py`/`service.py` that the
+first attempt missed entirely (`edit.trim_leading_silence`,
+`edit.trim_trailing_silence`, `edit.precision`, `audio.normalize`,
+`audio.loudness.target_lufs`, `audio.loudness.true_peak`). An unrecognized key
+here is the severe failure item 20 described: the whole feature silently never
+happens. (2) **Policy-default keys**, read via `resolve_setting()`/`rules`,
+sourced from `_request_rules()` which — by design — accepts *any* key matching
+these 7 prefixes and falls back to the default on a miss: every
+`<subject>.approval` key (the `APPROVAL_KEYS` dicts' *values*, never their dict
+keys — those are internal decision subjects, e.g. `video.concat` or
+`subtitle.generate`, never a requirement key themselves), `audio.loudness.
+tolerance_lu`, `thumbnail.at_ratio`, `qc.warn.promotion`, and the motion element
+start/duration defaults. This second surface must stay accepted — rejecting it
+would break real, working `--set audio.gain.approval=BLOCK`-style usage that
+works fine today; conflating it with the first surface is exactly what broke the
+first attempt.
+
+**Fixed** (`video-production-agent` PR #48, merged): `_FINISHING_REQUIREMENT_
+KEYS` in `service.py` is now the union of both surfaces, built from the actual
+source rather than guessed, and `_check_edit_requirements()` refuses anything
+under these 7 prefixes not in it, naming the bad key. `tests/test_unit.py`: 213
+passed (210 + new `UnrecognizedFinishingKeyTests`, 3 tests: 10 plausible-but-
+wrong keys all refused; every switch key across all 7 namespaces accepted;
+every policy-default key across all 7 namespaces accepted). `tests/test_
+integration.py` (real ffmpeg + all 9 real Skills, no mocks): 48 passed, 0
+failed. Verified live: `--set subtitle.generate=true` now fails at `plan` with
+a clear message naming the key; `--set subtitle=true` and `--set
+edit.concat=true` still work exactly as before. ADR-043 added.
