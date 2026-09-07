@@ -606,3 +606,32 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   reproducible bug, not the environment; new `LocateAuthoritativeOverrideTests`, 7 tests).
   `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): **48 passed, 0
   failed**. ADR-041 added; tracked as `WORK_QUEUE.md` item 19.
+- Continued real-data validation into actual editing operations, not just delivery:
+  concat, vertical (9:16) fill, and thumbnail extraction against the 5 real sample files
+  all worked end-to-end once item 19's fixes landed. `--set edit.concat.transition=none`
+  did not: it produced an `APPROVED` plan with no error, then failed at `render` with a
+  scary "compiler produced arguments the tool rejects (agent bug, not retried)" --
+  video-editing-skill's own contract rejects `"none"` (omit `edit.concat.transition`
+  entirely for a straight cut). Root cause: `_TRANSITION_RE` in `agent/editing.py` was a
+  generic lowercase-letters shape check, not the real 15-value enum -- the sibling key
+  `edit.concat.mode` in the same function already validated correctly, so this was a
+  specific oversight contradicting the module's own docstring ("an invalid value is
+  refused at planning time -- nothing is corrected or guessed").
+- **Fixed** (`video-production-agent` PR #47, merged): pinned the real 15-value
+  transition enum (video-editing-skill's own list, not imported -- ADR-001's boundary
+  discipline). **Found but deliberately not fixed**: while investigating, `--set
+  subtitle.generate=true` (a plausible-looking wrong key -- the real switch is bare
+  `subtitle`) silently did nothing: passed the top-level namespace check, matched no
+  parser's known keys, produced no decision, no error, and no subtitles, with the plan
+  still `APPROVED`. This is structural across `edit./audio./subtitle/thumbnail/color./
+  motion./qc` -- every parser reads only the keys it knows, never checking whether an
+  unrecognized key exists. A positive-allowlist fix attempted directly in `service.py`
+  broke 21, then 18, existing tests (`<subject>.approval` keys and the pre-ADR-030
+  `audio.loudness.target_lufs`/`true_peak` vocabulary are real, legitimate keys living
+  outside every domain's own `REQUIREMENT_KEYS` constant) and was reverted rather than
+  risk silently rejecting more real, working keys -- a worse regression than the bug
+  being fixed. Documented in ADR-042 and `WORK_QUEUE.md` item 20 so a future attempt
+  starts from what's already ruled out. `tests/test_unit.py`: 210 passed.
+  `tests/test_integration.py` (real ffmpeg + all 9 real Skills, no mocks): 48 passed, 0
+  failed. Verified live: concat of the 5 real audio-less samples (transition omitted)
+  completed end-to-end to an 82.05s 1920x1080 H.264 file, QA PASS.
