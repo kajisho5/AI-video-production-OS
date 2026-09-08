@@ -40,12 +40,25 @@ those logs could not be cross-checked against real commit-by-commit history.
 | `qc-skill` | Deterministic QC measurement | 0.1.0 | none | No | none (uses ffmpeg/ffprobe directly, read-only) |
 | `media-analysis-skill` | Deterministic observation | 0.1.0 | none | No | none (uses ffmpeg/ffprobe directly, read-only) |
 | `transcription-skill` | Local ASR (faster-whisper) | 0.2.0 | faster-whisper (optional) | No (MCP-shaped CLI) | none |
+| `image-skill` | General image convert/resize/thumbnail/EXIF-strip (no video) | 0.2.0 | none (stdlib + system `magick`/`sips` binary) | No | none (ImageMagick/`sips`, not ffmpeg — no video capability at all) |
 
 **Not in the task's original list of 9 skills, but a real, active ecosystem member:**
 `transcription-skill`. It is cross-referenced by `subtitle-skill`'s README and by
 `video-production-agent`'s integration CI (which clones it alongside the other 8). The
 original task brief's "9 skills" framing is already stale — this is direct evidence that
 **the number of Skills is not fixed and the OS must not assume it.**
+
+**Not part of this map's original 11-repo audit at all, and not a registered ecosystem
+member:** `image-skill`. Unlike `transcription-skill` above (which the original audit
+found already cross-referenced by other Skills), `image-skill` was found by a later,
+separate check and has **zero** cross-references in either direction: nothing in this
+ecosystem's docs or code mentions `image-skill`/`image_skill`, and `image-skill`'s own repo
+has zero mentions of `video-production-agent` or any other Skill here. It is included in
+the table above and detailed below because it is real, working code in the same
+`kajisho5` account that does capability-relevant work (general image conversion/resize/
+thumbnailing/EXIF-strip) this document should not silently omit — see
+`CAPABILITY_MATRIX.md` §11 for its full capability listing and an honest overlap
+comparison against `thumbnail-skill`.
 
 ## Per-repository detail
 
@@ -326,6 +339,45 @@ SRT/VTT export.
 rather than an in-code contract generator. Its `run -` stdin/stdout transport is
 described in its own ADR-021 as "exactly what an MCP transport would also wrap" —
 MCP-shaped, but not an actual MCP server.
+
+### `image-skill` — unregistered general-purpose image tool
+
+**Role (CURRENT):** a local, deterministic image editor for files landing in a repo
+(iPhone HEIC/JPEG, screenshots, OG images, README assets) — not part of the video pipeline
+at all. Eight tools, taken from its own machine-readable contract
+(`scripts/_contract.py contract --json`, `version: "0.2.0"`), not from README prose:
+`probe` (dimensions/format/colorspace/alpha/GPS, read-only), `convert` (format change,
+e.g. HEIC→JPEG/PNG/WebP), `resize` (`fit`/`fill`/`exact`), `thumb` (long-edge thumbnail,
+never upscales), `strip` (EXIF/GPS removal, magick-only), `trim` (solid-color border trim,
+magick-only), `check` (verifies an output file, read-only, no `--dry-run`), and `batch`
+(re-runs one of the above over every image in a folder). Backend is ImageMagick `magick`
+first, with macOS `sips` as a reduced-subset fallback for `convert`/`resize`/`thumb`
+(`strip`/`trim` always require `magick`). No pip dependencies, no API keys, no network
+calls — Python 3.9+ stdlib plus whichever system binary is present, verified by its own
+`doctor --json`.
+
+**Explicitly unsupported (CURRENT, declared in its own README/SKILL.md):** video editing,
+frame extraction, GIF animation, face recognition, generative/AI image editing, cloud
+background removal, RAW development, print-grade ICC color management, PDF conversion.
+
+**Maturity (CURRENT, verified in this audit, not assumed):** `package.json` version
+`0.2.0`; a real itemized `CHANGELOG.md` (a silent-format-write correctness bug found and
+fixed against an actual HEIC sample, a `doctor` HEIC/WebP read/write detection fix, a new
+GitHub Actions CI suite); 39 tests run locally in this audit
+(`python3 -m unittest discover -s tests`) — all passing, 14 skipped only where a backend
+binary is genuinely absent; real CI across four jobs (Ubuntu without ImageMagick, Ubuntu
+with it, macOS exercising the `sips` fallback, and the npm installer). Like 10 of the other
+11 repos in this map, it ships as a single squashed commit (`git log --oneline` shows one
+commit), so "recent commits" analysis is not meaningful here either.
+
+**Not connected to this ecosystem (CURRENT, the actual finding that motivated adding this
+entry):** zero references to `video-production-agent`, `ffmpeg-skill`, or any other Skill
+in this map exist anywhere in `image-skill`'s repo, and — before this document was
+updated — zero references to `image-skill`/`image_skill` existed anywhere in this
+ecosystem's docs. No `video-production-agent` adapter exists for it. It does, however,
+have real capability overlap worth naming honestly with `thumbnail-skill`'s image-fit and
+PNG/JPEG output handling — see `CAPABILITY_MATRIX.md` §11a for the operation-by-operation
+comparison (not a resolution of which Skill should own what).
 
 ## Cross-cutting findings that shape this OS's architecture
 

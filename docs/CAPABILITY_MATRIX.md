@@ -390,3 +390,99 @@ specific machine's installed Skills instead of by an audit reading source code o
 named here, next to the static matrix, precisely so the two are never confused: this
 document is documentation of what the ecosystem *can theoretically do*; the Support
 Envelope, once built, is a live answer to what *this installed instance can do right now*.
+
+---
+
+## 11. Image capabilities — `image-skill` (unregistered)
+
+`kajisho5/image-skill` (npm-distributed as `image-skill`, installs to
+`~/.claude/skills/image-skill` via `npx image-skill`) is a real, separate repository in
+the `kajisho5` account that is **absent from every other section of this document and
+from `REPOSITORY_MAP.md`'s original audit.** A direct grep of this repo for
+`"image-skill"`/`"image_skill"` returns zero matches anywhere prior to this section, and a
+grep of `image-skill`'s own repo for `"video-production-agent"` also returns zero matches.
+The two repos do not know about each other: there is no adapter in
+`video-production-agent`, no `provides`/capability-registration block in `image-skill`,
+and no cross-reference in either repo's docs. This section documents what `image-skill`
+actually does today, exactly as the rest of this matrix documents the other 10 audited
+Skills — it does not register it, wire it up, or claim any Agent integration exists.
+
+Tool list below is taken from `image-skill`'s own machine-readable contract
+(`python3 scripts/_contract.py contract --json`, `version: "0.2.0"`), not from README
+prose, per this section's own sourcing rule.
+
+| Capability id (proposed) | Provider(s) | Skill(s) | Lifecycle | Unsupported-in-domain note |
+|---|---|---|---|---|
+| `image.probe` | image-skill (`probe.py`) | image-skill → **[ImageMagick `magick` / macOS `sips`]** | EXPERIMENTAL | Width, height, format, colorspace, alpha, GPS presence. Read-only; `writes_output: false` in the contract. |
+| `image.convert` | image-skill (`convert.py`) | image-skill → **[ImageMagick `magick` / macOS `sips`]** | EXPERIMENTAL | Format conversion (e.g. HEIC→JPEG/PNG/WebP, PNG→WebP); input file is never modified (`-o/--output` required, must differ from input). `sips` fallback covers a reduced subset when `magick` is absent; WebP write support depends on the local ImageMagick build (`doctor`'s `webp` field), never assumed. |
+| `image.resize` | image-skill (`resize.py`) | image-skill → **[ImageMagick `magick` / macOS `sips`]** | EXPERIMENTAL | Three modes: `fit` (default, no distortion), `fill` (cover+crop), `exact` (forced). See §11a for overlap with `thumbnail-skill`'s per-element `fit` modes. |
+| `image.thumb` | image-skill (`thumb.py`) | image-skill → **[ImageMagick `magick` / macOS `sips`]** | EXPERIMENTAL | Thumbnail sized by longest edge, aspect preserved, never upscales. See §11a. |
+| `image.strip_metadata` | image-skill (`strip.py`) | image-skill → **[ImageMagick `magick` only]** | EXPERIMENTAL | Removes GPS/EXIF, applying orientation first. No `sips` fallback — `magick` required. |
+| `image.trim` | image-skill (`trim.py`) | image-skill → **[ImageMagick `magick` only]** | EXPERIMENTAL | Trims a solid-color border; fails rather than over-trimming. No `sips` fallback. |
+| `image.check` | image-skill (`check.py`) | image-skill → **[self]** (re-opens the output file directly; no `magick`/`sips` shell-out needed to verify) | EXPERIMENTAL | Verifies an output opens, matches promised dimensions/format, and did not overwrite the input. Read-only; the only tool with no `--dry-run` (it writes nothing). |
+| `image.batch` | image-skill (`batch.py`) | image-skill → (re-invokes `convert`/`resize`/`thumb`/`strip`/`trim` per file) | EXPERIMENTAL | Runs one of the other tools over every image in a folder; per `CHANGELOG.md` 0.2.0, a bad per-file argument fails only that file, not the whole batch run. |
+
+**Explicitly unsupported (declared, not silently approximated) in this domain:** video
+editing, frame extraction, GIF animation (`README.md`: "Isn't video editing. No FFmpeg, no
+frame extraction, no GIF animation"), face recognition, background removal,
+generative/AI image editing, RAW development, print-grade ICC color management, and PDF
+conversion ("out of scope for v0.1," `SKILL.md`).
+
+**Lifecycle basis, checked rather than defaulted (per this document's own convention,
+`CAPABILITY_MODEL.md`'s 5-state model):** `image-skill` is genuinely further along than
+"untested scaffold" — it is at `package.json` version `0.2.0` with a real, itemized
+`CHANGELOG.md` (a correctness bug fix, a doctor-detection fix, a CI addition, all named),
+39 tests actually run and passing locally in this audit (`python3 -m unittest discover -s
+tests`, 14 skipped only where a backend binary is genuinely absent), and real GitHub
+Actions CI across three separate jobs (Ubuntu without ImageMagick, Ubuntu with it, and
+macOS exercising the `sips` fallback) plus a fourth job exercising the installer. None of
+that changes the lifecycle call, for the same reason `thumbnail-skill`'s well-designed
+ffmpeg-skill delegation pattern is still `EXPERIMENTAL` above: `image-skill` ships as a
+single squashed commit (like 10 of the 11 audited repos), is pre-1.0, has no `capabilities
+[].lifecycle` field, has never gone through any promotion process because none exists, and
+— unlike every other Skill in this matrix — has no registered Provider identity or adapter
+in this ecosystem at all. `EXPERIMENTAL` is the honest label on the same basis the rest of
+this document uses it, not a default applied without checking.
+
+**No `video-production-agent` adapter exists today.** This is confirmed absent, not merely
+undocumented: `video-production-agent`'s adapter directory has no `image-skill` entry, and
+`image-skill`'s own repo has zero references to `video-production-agent` or any orchestrator
+integration. Building that adapter is a separate, larger piece of follow-up work and is
+explicitly out of scope for this section — this table only documents what `image-skill`
+itself can do standalone.
+
+### 11a. Overlap comparison against `thumbnail-skill`
+
+This is **not** a confirmed Capability collision in the §8a sense — `image-skill` has no
+capability ids published or registered anywhere in this ecosystem, so there is no shared
+identity for two Providers to collide under. It is a narrower, honest question worth
+recording anyway, the same way §8a records qc-skill/media-analysis-skill's overlap: **do
+the two Skills' actual operations overlap**, and on which specific ones. Read directly from
+both Skills' code/docs (`thumbnail-skill/src/thumbnail_skill/model.py`'s `OUTPUT_FORMATS`
+and `ThumbnailElement` image-fit handling; `image-skill/scripts/resize.py` and
+`convert.py`):
+
+| Operation | `image-skill` | `thumbnail-skill` | Real overlap? |
+|---|---|---|---|
+| Resize/crop a single image to a target box | `resize.py`: `fit`/`fill`/`exact` on a whole standalone image file, written out as its own output | `ThumbnailElement` (image) `fit`: `cover`/`contain`/`fill`/`none`, applied only to one image *positioned inside a larger fixed canvas* as part of a `render` call with other elements/text | **Partial.** Both resize/crop a source image using conceptually similar fit semantics (`fit`≈`contain`, `fill`≈`cover`), but `image-skill`'s output *is* the edited image; `thumbnail-skill`'s "resize" is one intermediate step inside compositing a document that also has a canvas, z-ordered elements, and optional text — never invokable as a standalone "just resize this file" operation. No shared code between them. |
+| Output format | `convert.py`: any ImageMagick/`sips`-writable format, explicitly including WebP | `render`/`extract_frame`: **PNG or JPEG only** (`OUTPUT_FORMATS` in `model.py` has exactly two entries: `png`, `jpeg`) — no WebP anywhere in the codebase | **Partial.** Both can take a source image and emit PNG or JPEG, so that narrow slice overlaps. WebP — the exact case the external review flagged — is confirmed `image-skill`-only; `thumbnail-skill` has no WebP capability at all. |
+| Thumbnail-style shrink of one image | `thumb.py`: long-edge-based, aspect-preserving, never upscales, on a plain standalone file | Not a discrete tool — a caller-specified fixed canvas (`width`/`height`, 16..7680) that must be reached via layout/`fit`, never a "shrink to N px on the long edge" primitive | **No real overlap.** Different shape of operation (long-edge shrink vs. fixed-canvas layout), not the same capability under different names. |
+| EXIF/GPS metadata removal | `strip.py`: dedicated tool, magick-only | None found — zero mentions of EXIF/GPS/metadata anywhere in `thumbnail-skill`'s README, SKILL.md, or source | **No overlap.** `image-skill` only. |
+| Solid-color border trim | `trim.py`: dedicated tool, magick-only | None found | **No overlap.** `image-skill` only. |
+| Video-frame-to-image | Explicitly out of scope (`README.md`: "Isn't video editing... use a separate video skill") | `extract_frame`: one video timestamp → one frame, via `ffmpeg-skill` | **No overlap.** `thumbnail-skill` only. |
+| Multi-element canvas compositing (image + text + z-order) | Not implemented at all | `render`: full `ThumbnailDocument` (canvas, multiple positioned/opacity/rotation image and text elements, fonts, shadows, strokes) | **No overlap.** `thumbnail-skill` only. |
+
+**Awareness is zero-directional, not one-directional** (unlike §8a's qc-skill/
+media-analysis-skill asymmetry, where at least one side references the other):
+`thumbnail-skill`'s docs never mention `image-skill`, and `image-skill`'s docs never
+mention `thumbnail-skill` or `video-production-agent` — because, unlike qc-skill and
+media-analysis-skill, neither repo currently knows the other exists. This comparison is a
+new observation being recorded for the first time here, not a restatement of something
+either Skill's own maintainers have already flagged.
+
+This overlap does not resolve which tool an Agent should call for a resize-to-WebP task —
+that is a product/ownership decision (does `thumbnail-skill` stay canvas/layout-only and
+delegate plain image conversion to `image-skill`, or does it grow its own WebP path) that
+this document deliberately leaves open, the same way §8a leaves the qc-skill/
+media-analysis-skill loudness/silence/integrity overlap unresolved pending
+`ROADMAP.md` Phase 3.
