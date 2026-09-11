@@ -1,0 +1,41 @@
+version: 2
+updates:
+  # This repository's own workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "ci"
+      - "dependencies"
+
+  # Three independent npm projects live under dashboard/ (no root package.json / no npm
+  # workspaces), so each needs its own entry pointed at its own package-lock.json.
+  - package-ecosystem: "npm"
+    directory: "/dashboard/web"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "chore"
+      - "dependencies"
+
+  - package-ecosystem: "npm"
+    directory: "/dashboard/control-room"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "chore"
+      - "dependencies"
+
+  - package-ecosystem: "npm"
+    directory: "/dashboard/aggregator"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "chore"
+      - "dependencies"
+
+  # No pip/pyproject.toml ecosystem entry: registry/ and poc/capability-contract/ are
+  # dependency-free (standard library only -- confirmed by inspection, no
+  # requirements.txt/pyproject.toml/Pipfile exists anywhere in this repository), so
+  # there is nothing for Dependabot's pip ecosystem to track.

@@ -1,0 +1,40 @@
+name: CodeQL
+
+# Static analysis for this repository's two real languages: TypeScript (285 files under
+# dashboard/) and Python (60 files under registry/ and poc/capability-contract/). No
+# build step is configured for either language deliberately -- CodeQL's default
+# "autobuild"/no-build extraction is sufficient for TypeScript (it doesn't need a
+# compiled bundle to analyze) and Python (interpreted, no build step exists), and
+# dashboard/*'s own `npm run build`/typecheck already run in .github/workflows/dashboard.yml.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1" # weekly, Monday 03:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript-typescript", "python"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

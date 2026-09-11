@@ -1,0 +1,86 @@
+# Config for release-drafter/release-drafter (https://github.com/release-drafter/release-drafter).
+#
+# Two things read this file:
+#   .github/workflows/autolabeler.yml   labels PRs on open/reopen/synchronize using `autolabeler`
+#                                       below, so a PR carries a version-resolver label before it
+#                                       is ever merged.
+#   .github/workflows/release.yml       runs this action in `dry-run: true` mode on every push to
+#                                       main to resolve the next version (`version-resolver` below)
+#                                       and render the changelog body (`template`/`categories`)
+#                                       from every PR merged since the last "vX.Y.Z" tag. It never
+#                                       lets this action create or publish a GitHub Release itself
+#                                       -- see that workflow for why (single-job design, no
+#                                       tag-push-triggered second workflow).
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "Breaking changes"
+    labels:
+      - major
+  - title: "Features"
+    labels:
+      - minor
+      - feature
+  - title: "Fixes"
+    labels:
+      - fix
+      - bug
+  - title: "Other changes"
+    labels:
+      - chore
+      - docs
+      - ci
+
+change-template: "- $TITLE (#$NUMBER)"
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - major
+  minor:
+    labels:
+      - minor
+      - feature
+  patch:
+    labels:
+      - fix
+      - bug
+      - chore
+      - docs
+      - ci
+  default: patch
+
+autolabeler:
+  - label: "major"
+    title:
+      - "/^[a-z]+(\\(.+\\))?!:/" # Conventional Commits breaking-change marker, e.g. "feat!:" / "fix(api)!:"
+      - "/BREAKING CHANGE/"
+  - label: "feature"
+    title:
+      - "/^feat(\\(.+\\))?:/"
+  - label: "fix"
+    title:
+      - "/^fix(\\(.+\\))?:/"
+  - label: "docs"
+    title:
+      - "/^docs(\\(.+\\))?:/"
+    files:
+      - "**/*.md"
+      - "docs/**"
+  - label: "ci"
+    title:
+      - "/^ci(\\(.+\\))?:/"
+    files:
+      - ".github/**"
+  - label: "chore"
+    title:
+      - "/^chore(\\(.+\\))?:/"
+
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
