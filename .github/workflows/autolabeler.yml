@@ -1,0 +1,34 @@
+name: autolabeler
+
+# Labels PRs (feature/fix/major/chore/docs/ci, from .github/release-drafter.yml's
+# `autolabeler`) so that by the time a PR merges, release.yml's release-drafter dry-run
+# has a label to resolve the next version from -- without this, every PR would be an
+# unlabeled default patch bump forever.
+#
+# pull_request_target (not pull_request), deliberately: it runs with this repository's
+# permissions and secrets even for a PR opened from a fork, which `pull_request` cannot
+# do. This workflow only reads the PR's title/changed-files list and calls
+# `github.rest.issues.addLabels` -- it never checks out, builds, or executes the PR's
+# own code, so running with base-repo permissions against a fork's PR carries none of
+# the usual pull_request_target risk (nothing here ever runs untrusted code).
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  autolabel:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      # The dedicated autolabeler sub-action (not release-drafter/release-drafter itself,
+      # which also drafts/updates a GitHub Release -- something this PR-triggered job
+      # must never do). It reads .github/release-drafter.yml's `autolabeler` section and
+      # only calls the labels API; it never checks out or executes the PR's own code.
+      - uses: release-drafter/release-drafter/autolabeler@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

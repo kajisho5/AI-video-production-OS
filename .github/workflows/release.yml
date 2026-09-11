@@ -1,0 +1,111 @@
+name: release
+
+# Fully automated release: version resolution -> VERSION/package.json bump -> CHANGELOG.md
+# entry -> git tag -> GitHub Release -> (conditional) package-registry publish, all in one
+# job that runs on every push to main.
+#
+# Deliberately ONE job triggered by `push: branches: [main]`, not a tag-push-triggered
+# second workflow: GitHub Actions does not run a workflow in response to a push made
+# with the default GITHUB_TOKEN (the documented anti-recursion rule -- see "Triggering a
+# workflow from a workflow" in GitHub's Actions docs). If tag creation lived in a
+# separate `on: push: tags:` workflow and this job created that tag using GITHUB_TOKEN,
+# that second workflow would simply never fire. Everything from computing the version
+# through creating the GitHub Release therefore happens in this single job, in one
+# checkout, so nothing depends on a second trigger.
+#
+# Version resolution, the CHANGELOG.md entry, and the git commit/tag are all delegated
+# to .github/scripts/prepare-release.sh (kept as a standalone, unit-testable script
+# rather than inlined here -- see that file's own header for the exact rules, and
+# docs/decisions or the PR that introduced this workflow for the isolated-fixture
+# verification that exercised it before this workflow ever ran for real).
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history + tags: prepare-release.sh needs the latest "vX.Y.Z" tag
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # dry-run: true -- this step only resolves the next version and renders the
+      # changelog body from PRs merged since the last tag. It never creates, updates, or
+      # publishes a GitHub Release or draft itself (see the file header above for why
+      # that step happens later in this same job instead).
+      - name: Resolve next version (release-drafter dry-run)
+        id: drafter
+        uses: release-drafter/release-drafter@v6
+        with:
+          dry-run: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Decide whether to release, bump versions, write CHANGELOG.md
+        id: prepare
+        env:
+          DRAFTER_RESOLVED_VERSION: ${{ steps.drafter.outputs.resolved_version }}
+          # Safe pattern for untrusted text (PR titles/bodies release-drafter rendered
+          # into this body): passed through `env:`, then read back inside the script as
+          # a shell variable ("$DRAFTER_BODY") -- never interpolated via `${{ }}` inside
+          # a run: script, which is the documented GitHub Actions script-injection risk.
+          DRAFTER_BODY: ${{ steps.drafter.outputs.body }}
+          VERSION_FILE: VERSION
+          CHANGELOG_FILE: CHANGELOG.md
+          RELEASE_NOTES_FILE: release_notes.md
+          PACKAGE_DIRS: "dashboard/web dashboard/control-room dashboard/aggregator"
+        run: bash .github/scripts/prepare-release.sh
+
+      - name: Push the release commit and tag
+        if: steps.prepare.outputs.should_release == 'true'
+        run: git push origin HEAD:main --follow-tags
+
+      - name: Create GitHub Release
+        if: steps.prepare.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.prepare.outputs.tag }}
+          body_path: release_notes.md # never `body:` with templated text -- see prepare-release.sh's header
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Every package under PACKAGE_DIRS above is currently `"private": true` (internal
+      # dashboard tooling, not published anywhere), so this step is a deliberate no-op
+      # today for all of them and NPM_TOKEN is not expected to be set. It is still wired
+      # up correctly so that the day one of these (or a future package) is made public,
+      # publishing starts working with no change to this workflow -- add the token as a
+      # repository secret named NPM_TOKEN and set that package's "private" field to
+      # false or remove it.
+      - name: Publish non-private packages to npm
+        if: steps.prepare.outputs.should_release == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "NPM_TOKEN is not set; skipping npm publish (tag and GitHub Release were still created above)."
+            exit 0
+          fi
+          for dir in dashboard/web dashboard/control-room dashboard/aggregator; do
+            if [ ! -f "$dir/package.json" ]; then
+              continue
+            fi
+            if [ "$(node -p "require('./$dir/package.json').private === true")" = "true" ]; then
+              echo "Skipping $dir: package.json declares \"private\": true."
+              continue
+            fi
+            echo "Publishing $dir..."
+            (cd "$dir" && npm publish --access public)
+          done
