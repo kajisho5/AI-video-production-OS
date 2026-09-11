@@ -48,7 +48,7 @@ jobs:
       # that step happens later in this same job instead).
       - name: Resolve next version (release-drafter dry-run)
         id: drafter
-        uses: release-drafter/release-drafter@v6
+        uses: release-drafter/release-drafter@v7
         with:
           dry-run: true
         env:
