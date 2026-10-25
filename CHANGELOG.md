@@ -1,3 +1,12 @@
+## v0.1.1 (2026-10-25)
+
+## What's Changed
+
+* No changes
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.1.0 (2026-09-11)
 
 ## What's Changed
