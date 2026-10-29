@@ -1,3 +1,18 @@
+## v0.2.0 (2026-10-29)
+
+## What's Changed
+
+## Features
+
+- feat: one-command ecosystem install, ownership map, org charts and weekly audit (#77)
+
+## Other changes
+
+- feat: one-command ecosystem install, ownership map, org charts and weekly audit (#77)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.1.1 (2026-10-25)
 
 ## What's Changed
