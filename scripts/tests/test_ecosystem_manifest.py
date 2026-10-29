@@ -67,7 +67,7 @@ class BootstrapTests(unittest.TestCase):
                 (ws / repo).mkdir(parents=True)
                 subprocess.run(["git", "init", "-q", str(ws / repo)], check=True)
             (ws / "qc-skill" / "SKILL.md").write_text("---\nname: qc-skill\n---\n", encoding="utf-8")
-            (ws / "image-skill" / "SKILL.md").write_text("---\nname: imagemagick-skill\n---\n", encoding="utf-8")
+            (ws / "imagemagick-skill" / "SKILL.md").write_text("---\nname: imagemagick-skill\n---\n", encoding="utf-8")
             (ws / "ffmpeg-skill" / "SKILL.md").write_text("---\nname: ffmpeg-skill\n---\n", encoding="utf-8")
             skills = home / ".claude" / "skills"
             (skills / "ffmpeg-skill").mkdir(parents=True)  # the user's own copy
@@ -77,7 +77,7 @@ class BootstrapTests(unittest.TestCase):
 
             self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
             self.assertEqual(os.readlink(skills / "qc-skill"), str(ws / "qc-skill"))
-            self.assertEqual(os.readlink(skills / "imagemagick-skill"), str(ws / "image-skill"))
+            self.assertEqual(os.readlink(skills / "imagemagick-skill"), str(ws / "imagemagick-skill"))
             self.assertFalse((skills / "ffmpeg-skill").is_symlink())
             self.assertIn("dubbing-skill: no package yet", out.stdout)
             self.assertIn("ffmpeg-skill: ~/.claude/skills entry not replaced", out.stdout)

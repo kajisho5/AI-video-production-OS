@@ -18,6 +18,6 @@
     {"repo": "transcription-skill", "layer": "recognize", "install": "pip", "extras": ["faster-whisper"], "role": "Speech to timestamped transcript (local faster-whisper)"},
     {"repo": "detection-skill", "layer": "recognize", "install": "pip", "role": "Face, text (OCR) and object detection"},
     {"repo": "slide-sync-skill", "layer": "recognize", "install": "pip", "role": "Slide import, slide-change detection, slide text"},
-    {"repo": "image-skill", "layer": "utility", "install": "checkout", "role": "Still-image editing with ImageMagick (imagemagick-skill)"}
+    {"repo": "imagemagick-skill", "layer": "utility", "install": "checkout", "role": "Still-image editing with ImageMagick"}
   ]
 }
