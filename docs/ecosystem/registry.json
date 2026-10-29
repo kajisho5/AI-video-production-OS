@@ -237,6 +237,13 @@
       "type": "Extension",
       "role": "Read-only ecosystem auditing (si diagnose); feeds the Control Room.",
       "depends_on": []
+    },
+    {
+      "slug": "kajisho5/ingest-skill",
+      "name": "ingest-skill",
+      "type": "Skill",
+      "role": "Media offload with checksum-verified copies, dual backup and a clip inventory. Repository created 2026-10-29; no package yet.",
+      "depends_on": []
     }
   ]
 }

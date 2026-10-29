@@ -4,6 +4,7 @@
   "org": "kajisho5",
   "departments": [
     {"id": "command", "name": "司令塔", "en": "Command"},
+    {"id": "ingest", "name": "取込", "en": "Ingest"},
     {"id": "engine", "name": "エンジン", "en": "Engine"},
     {"id": "visual", "name": "映像", "en": "Visual"},
     {"id": "audio", "name": "音", "en": "Audio"},
@@ -17,6 +18,10 @@
     {"repo": "video-production-agent", "department": "command", "install": "pip", "status": "active",
      "role": "Orchestrator: plans a production and calls the Skills below",
      "owns": ["制作計画", "スキルの呼び分け", "制作記録(ProductionReceipt)"]},
+
+    {"repo": "ingest-skill", "department": "ingest", "install": "pip", "status": "scaffold",
+     "role": "Media offload from cards and recorders with checksum-verified copies, dual backup and a clip inventory",
+     "owns": ["素材取り込み(検証付きコピー)", "二重バックアップ", "素材台帳"]},
 
     {"repo": "ffmpeg-skill", "department": "engine", "install": "checkout", "status": "active",
      "role": "Execution engine: typed FFmpeg/ffprobe tools every delegating Skill runs on",
