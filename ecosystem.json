@@ -122,7 +122,5 @@
      "role": "Read-only auditing of the ecosystem's repositories (si diagnose); feeds the Control Room's findings",
      "owns": ["エコシステム監査"]}
   ],
-  "on_hold": [
-    {"repo": "event-recording-auditor", "note": "収録映像の事故検出 / 採否未決"}
-  ]
+  "on_hold": []
 }
