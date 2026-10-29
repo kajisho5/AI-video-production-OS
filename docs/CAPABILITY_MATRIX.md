@@ -138,7 +138,7 @@ architecture doc explicitly lists MCP among things it deliberately does not do.
 | `thumbnail.render` | thumbnail-skill (`render`) | thumbnail-skill → **[Pillow]** (raster compositing; "never touches ffmpeg" for this step) | EXPERIMENTAL | The only repo in the ecosystem with a real third-party pip dependency (`Pillow>=10.0`). |
 | `thumbnail.extract_frame` | thumbnail-skill (`extract_frame`) | thumbnail-skill → ffmpeg-skill (`look`, `probe`) | EXPERIMENTAL | Delegates only the one video-decoding step it needs. |
 
-**Explicitly unsupported (declared, refused by design):** no AI-generated thumbnails, no
+**(ADR-012: AI-generated thumbnail backgrounds are now allowed via FLUX.2 [klein] 4B.)** **Explicitly unsupported (declared, refused by design):** no AI-generated thumbnails, no
 "best-frame" selection, no face detection.
 
 ---

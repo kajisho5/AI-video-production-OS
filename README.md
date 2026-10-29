@@ -160,25 +160,25 @@ yet, and this README does not pretend otherwise.
 
 ## Quick start
 
-**This repository is architecture and contracts, not an installable application** —
-there is no `npm install ai-video-production-os`, because that package doesn't exist
-and this README will not invent one. What this repository *does* ship is a real
-bootstrap script for the ecosystem it describes, because "clone 11 repos, `pip install
--e .` nine of them, and wire up sibling-directory discovery by hand" is not a real
-onboarding path:
+Installing the OS installs the whole ecosystem — the agent and every Skill listed in
+[`ecosystem.json`](ecosystem.json) — with one command:
 
 ```bash
-git clone https://github.com/kajisho5/AI-video-production-OS
-cd AI-video-production-OS
-./scripts/bootstrap.sh                 # target dir defaults to ./ai-video-os-workspace
+curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash
+# options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills
 ```
 
-This clones `video-production-agent` and all 10 Skill repos as siblings, `pip install
--e .`s the Python ones, checks `ffmpeg`/`ffprobe` are on `PATH` (prints the right
-`apt`/`brew` command if not — it never installs system packages itself), and finishes
-by running a real `video-agent doctor` so you see exactly what's usable, not a claim
-about it. Safe to interrupt and re-run — it skips anything already cloned. See the
-script's own header comment for the full breakdown of what it does and doesn't do.
+Into `~/ai-video-os` (or `--dir`), this clones every repository (or fast-forwards an
+existing clone to the latest), `pip install -e`s the Python ones into `~/ai-video-os/.venv`,
+links every Skill that has a `SKILL.md` into `~/.claude/skills/` so Claude Code sees it,
+checks `ffmpeg`/`ffprobe` (prints the `apt`/`brew` command if missing — it never installs
+system packages itself) and finishes with a real `video-agent doctor`. Re-running it
+updates everything. It never deletes, resets or overwrites: a clone with local changes, or
+a `~/.claude/skills` entry that points elsewhere, is reported and left alone. A Skill
+repository with no package yet is cloned and reported as such. DVD/Blu-ray authoring
+(`bdmvkit`, `vtskit`, `udfkit`, `dvdcc`, `oncemore`) is optional: add `--with-optional`. From a checkout,
+`./install.sh` does the same. To add a Skill to the ecosystem, add it to `ecosystem.json`
+(and to `docs/ecosystem/registry.json`; a test checks they agree).
 
 If you only want one piece rather than the whole ecosystem, the Skills are also usable
 standalone. `ffmpeg-skill` is genuinely published and installable on its own:
@@ -194,9 +194,9 @@ ffmpeg-skill contract    # machine-readable capability declaration
 [`docs/DISTRIBUTION_MODEL.md`](docs/DISTRIBUTION_MODEL.md) for what that actually looks
 like today.)
 
-The other nine Skills are Python packages (`pip install`-able from source per each
+The Python Skills are packages (`pip install`-able from source per each
 repo's own `pyproject.toml` — none are currently published to PyPI, marked `UNKNOWN`
-rather than assumed; `bootstrap.sh` above does this step for all of them at once).
+rather than assumed; `install.sh` above does this step for all of them at once).
 `video-production-agent` is the closest thing to a full end-to-end entry point — see
 its own README for the current CLI. To understand the architecture behind all of them,
 the path is:

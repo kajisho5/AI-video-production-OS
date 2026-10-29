@@ -1,0 +1,61 @@
+name: Ecosystem install
+
+# Keeps install.sh honest: the offline checks on every change to the installer or the list
+# of repositories it installs (ecosystem.json), on Linux and on macOS (whose /bin/bash is
+# 3.2), and a real install of every repository from GitHub -- which can break without any
+# change here, when a Skill repository changes -- weekly and on demand.
+
+on:
+  pull_request:
+    paths:
+      - "install.sh"
+      - "scripts/**"
+      - "ecosystem.json"
+      - "docs/ecosystem/registry.json"
+      - ".github/workflows/install.yml"
+  push:
+    branches: [main]
+    paths:
+      - "install.sh"
+      - "scripts/**"
+      - "ecosystem.json"
+      - "docs/ecosystem/registry.json"
+      - ".github/workflows/install.yml"
+  schedule:
+    - cron: "17 3 * * 1" # weekly
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        if: runner.os == 'Linux'
+        run: shellcheck install.sh scripts/bootstrap.sh
+      - name: Manifest and installer tests (offline)
+        env:
+          AVOS_TEST_BASH: /bin/bash
+        run: python3 -m unittest discover -s scripts/tests -v
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # hyperframes-skill needs Node 22+
+      - name: Install every repository in ecosystem.json from GitHub
+        run: ./install.sh --dir "$RUNNER_TEMP/avos" --with-optional 2>&1 | tee "$RUNNER_TEMP/install.log"
+      - name: Fail on any install failure
+        run: |
+          if grep -E 'clone failed|pip install failed|npm install failed|needs Node.js|unknown install kind' "$RUNNER_TEMP/install.log"; then
+            exit 1
+          fi

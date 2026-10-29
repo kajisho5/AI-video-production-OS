@@ -1,0 +1,42 @@
+name: Ecosystem audit
+
+# Weekly read-only audit of every repository in ecosystem.json with System Intelligence
+# (scripts/ecosystem-audit.sh, `si watch`). The watch history is carried between runs in the
+# Actions cache, so each run reports what changed since the previous one; the report is the
+# run's job summary and an artifact. It reports, it never fails the build on findings.
+
+on:
+  schedule:
+    - cron: "41 2 * * 1" # weekly, Monday
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install System Intelligence
+        run: python -m pip install -q "git+https://github.com/kajisho5/system-intelligence"
+      - name: Restore previous watch history
+        uses: actions/cache@v4
+        with:
+          path: .si-state
+          key: si-watch-${{ github.run_id }}
+          restore-keys: si-watch-
+      - name: Audit every repository
+        run: scripts/ecosystem-audit.sh .si-state ecosystem-audit.md .si-repos
+      - name: Job summary
+        if: always()
+        run: '[ -f ecosystem-audit.md ] && cat ecosystem-audit.md >> "$GITHUB_STEP_SUMMARY" || true'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ecosystem-audit
+          path: ecosystem-audit.md
+          if-no-files-found: ignore

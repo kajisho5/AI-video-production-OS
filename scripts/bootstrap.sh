@@ -1,89 +1,205 @@
 #!/usr/bin/env bash
-# Bootstrap the AI Video Production OS ecosystem on a fresh machine: clone every real
-# repository as a sibling directory, install what needs installing, and run a real
-# `video-agent doctor` so the user sees exactly what is (and isn't) usable — no guessing.
-#
-# Why this exists: today there is no single install path for this ecosystem (README.md's
-# own "Quick start" says so). A user has to know 11 repository URLs, know which are npm and
-# which are pip, know that `video-production-agent`'s own Skill-discovery mechanism looks for
-# sibling directories named exactly `<skill-name>` next to itself, and wire that up by hand.
-# This script does that once, so the *next* time is `git pull` in 11 directories, not this.
+# Install the whole AI Video Production ecosystem into one workspace directory, driven by
+# ../ecosystem.json (the single list of repositories). Normally reached through ../install.sh;
+# running it directly from an OS checkout works the same.
 #
 # Usage:
-#   ./scripts/bootstrap.sh [target-directory]     # default: ./ai-video-os-workspace
+#   ./scripts/bootstrap.sh [--dir DIR] [--with-optional] [--no-update] [--no-claude-skills] [--dry-run]
 #
-# What it does:
-#   1. Clones video-production-agent + all 10 Skill repositories as siblings under the
-#      target directory (skips any that already exist — safe to re-run).
-#   2. `pip install -e .` for video-production-agent and each of the 9 Python Skills, so
-#      their own third-party dependencies (Pillow, numpy, faster-whisper, ...) are present.
-#      ffmpeg-skill is left as a checkout only: video-production-agent's ffmpeg-skill
-#      adapter runs it straight from `<checkout>/scripts/*.py` with no install needed.
-#   3. Checks `ffmpeg`/`ffprobe` are on PATH and prints an install hint if not (never
-#      installs system packages itself — that needs root/sudo the user should grant knowingly).
-#   4. Runs `video-agent doctor` from inside the video-production-agent checkout, so its own
-#      sibling-directory discovery (`../<skill-name>`) finds every Skill with **no environment
-#      variables at all** — the real, lowest-friction path this ecosystem's own code already
-#      supports but nothing had scripted until now.
+#   --dir DIR            workspace (default: $AVOS_HOME or ~/ai-video-os)
+#   --with-optional      also install components marked "optional" (DVD/Blu-ray authoring)
+#   --no-update          do not `git pull` repositories that are already cloned
+#   --no-claude-skills   do not link Skills into ~/.claude/skills
+#   --dry-run            print what would be done, change nothing
 #
-# Never touches git remotes, never force-pushes, never deletes anything; every step is
-# additive and safe to interrupt and re-run.
+# What it does, per repository in ecosystem.json (except "planned" ones, which have no
+# repository yet and are only reported):
+#   1. Clone it under DIR, or fast-forward an existing clone to the latest origin (a clone
+#      with local changes or diverged history is left alone and reported, never reset).
+#   2. install=pip: `pip install -e` into DIR/.venv (or the already-active virtualenv).
+#      A repository that has no pyproject.toml yet is reported as "no package yet", not failed.
+#      install=npm: `npm ci` in the checkout (needs Node.js; reported if missing).
+#      install=checkout: nothing to install; the agent runs it from the checkout.
+#      "path": the package lives in that subdirectory of the repository.
+#   3. If it has a SKILL.md, symlink it to ~/.claude/skills/<name from SKILL.md> so Claude Code
+#      sees it. An existing entry there that points somewhere else is reported, never replaced.
+# Then checks ffmpeg/ffprobe and Blender (never installs system packages) and runs `video-agent doctor`
+# from the agent checkout, whose sibling-directory discovery finds every Skill in DIR.
+#
+# Safe to interrupt and re-run: nothing is deleted, no remote is changed, nothing is forced.
 set -euo pipefail
 
-TARGET="${1:-./ai-video-os-workspace}"
-ORG="kajisho5"
-PY_SKILLS=(media-analysis-skill transcription-skill video-editing-skill audio-production-skill subtitle-skill thumbnail-skill color-grading-skill motion-graphics-skill qc-skill)
-NODE_SKILLS=(ffmpeg-skill)
-AGENT_REPO="video-production-agent"
+OS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MANIFEST="$OS_ROOT/ecosystem.json"
+WORKSPACE="${AVOS_HOME:-$HOME/ai-video-os}"
+UPDATE=1
+LINK_SKILLS=1
+DRY_RUN=0
+WITH_OPTIONAL=0
+CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 
-mkdir -p "$TARGET"
-TARGET="$(cd "$TARGET" && pwd)"
-echo "==> Ecosystem workspace: $TARGET"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dir) WORKSPACE="${2:?--dir needs a directory}"; shift 2 ;;
+    --dir=*) WORKSPACE="${1#--dir=}"; shift ;;
+    --no-update) UPDATE=0; shift ;;
+    --no-claude-skills) LINK_SKILLS=0; shift ;;
+    --dry-run) DRY_RUN=1; shift ;;
+    --with-optional) WITH_OPTIONAL=1; shift ;;
+    -h|--help) sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown option: $1 (see --help)" >&2; exit 2 ;;
+  esac
+done
 
-clone_if_missing() {
-  local repo="$1" dir="$TARGET/$1"
-  if [ -d "$dir/.git" ]; then
-    echo "==> $repo already cloned, skipping (run 'git pull' inside it yourself to update)"
-  else
-    echo "==> Cloning $repo"
-    git clone --depth 1 "https://github.com/$ORG/$repo" "$dir"
-  fi
+for cmd in git python3; do
+  command -v "$cmd" >/dev/null 2>&1 || { echo "!! $cmd is required but not on PATH" >&2; exit 1; }
+done
+[ -f "$MANIFEST" ] || { echo "!! manifest not found: $MANIFEST" >&2; exit 1; }
+
+run() {
+  if [ "$DRY_RUN" = 1 ]; then echo "   [dry-run] $*"; else "$@"; fi
 }
 
-echo "--- 1. Cloning repositories ---"
-clone_if_missing "$AGENT_REPO"
-for repo in "${PY_SKILLS[@]}" "${NODE_SKILLS[@]}"; do
-  clone_if_missing "$repo"
-done
+# One line per component: repo<TAB>install<TAB>extras(comma-separated)<TAB>package subdirectory,
+# "-" for an empty field (read collapses empty tab-separated fields). "planned" components
+# (no repository yet) are not installed; they are listed on stderr and reported at the end.
+TMP_PLANNED="$(mktemp)"
+trap 'rm -f "$TMP_PLANNED"' EXIT
+COMPONENTS="$(python3 - "$MANIFEST" "$WITH_OPTIONAL" 2>"$TMP_PLANNED" <<'EOF'
+import json, sys
+m = json.load(open(sys.argv[1], encoding="utf-8"))
+for c in m["components"]:
+    if c.get("status") == "planned":
+        print("planned: " + c["repo"], file=sys.stderr)
+        continue
+    if c.get("optional") and sys.argv[2] != "1":
+        continue
+    print("\t".join([c["repo"], c["install"], ",".join(c.get("extras", [])) or "-", c.get("path") or "-"]))
+EOF
+)" || { cat "$TMP_PLANNED" >&2; echo "!! could not read $MANIFEST" >&2; exit 1; }
+ORG="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["org"])' "$MANIFEST")"
 
-echo "--- 2. Installing Python packages (agent + Python Skills) ---"
-PY="${PYTHON:-python3}"
-"$PY" -m pip install -e "$TARGET/$AGENT_REPO" || echo "!! video-production-agent install failed — see output above; video-agent CLI will not be on PATH"
-for repo in "${PY_SKILLS[@]}"; do
-  echo "-- $repo"
-  "$PY" -m pip install -e "$TARGET/$repo" || echo "!! $repo install failed (non-fatal — video-production-agent can still run it from the checkout via sibling-directory discovery, but the Skill's own third-party dependencies may be missing)"
-done
-echo "-- ffmpeg-skill: left as a checkout only (video-production-agent runs its scripts/*.py directly, no install needed; 'npm install -g ffmpeg-skill' also works if you want its own CLI)"
+if [ "$DRY_RUN" = 0 ]; then mkdir -p "$WORKSPACE"; WORKSPACE="$(cd "$WORKSPACE" && pwd)"; fi
+echo "==> Workspace: $WORKSPACE"
 
-echo "--- 3. Checking ffmpeg/ffprobe ---"
-if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
-  echo "OK: $(ffmpeg -version | head -1)"
+declare -a SUMMARY=()
+note() { SUMMARY+=("$1"); }
+while read -r _ planned; do
+  [ -n "$planned" ] && note "$planned: planned, repository not created yet"
+done < "$TMP_PLANNED"
+
+echo "--- 1. Repositories ---"
+while IFS=$'\t' read -r repo _ _; do
+  dir="$WORKSPACE/$repo"
+  if [ -d "$dir/.git" ]; then
+    if [ "$UPDATE" = 0 ]; then
+      echo "   $repo: present (not updated, --no-update)"
+    elif [ -n "$(git -C "$dir" status --porcelain 2>/dev/null)" ]; then
+      echo "!! $repo: local changes, not updated"; note "$repo: local changes, left as is"
+    elif run git -C "$dir" pull --ff-only -q; then
+      echo "   $repo: up to date ($(git -C "$dir" log -1 --format='%h %ad' --date=short 2>/dev/null))"
+    else
+      echo "!! $repo: could not fast-forward (diverged or offline), left as is"; note "$repo: not updated"
+    fi
+  else
+    echo "   $repo: cloning"
+    run git clone -q "https://github.com/$ORG/$repo" "$dir" || { echo "!! $repo: clone failed"; note "$repo: clone failed"; }
+  fi
+done <<< "$COMPONENTS"
+
+echo "--- 2. Python environment ---"
+if [ -n "${VIRTUAL_ENV:-}" ]; then
+  PY="$VIRTUAL_ENV/bin/python"
+  echo "   using the active virtualenv: $VIRTUAL_ENV"
 else
-  echo "!! ffmpeg/ffprobe not found on PATH. Install them yourself, e.g.:"
-  echo "     Debian/Ubuntu:  sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core"
-  echo "     macOS:          brew install ffmpeg"
+  VENV="$WORKSPACE/.venv"
+  [ -x "$VENV/bin/python" ] || run python3 -m venv "$VENV"
+  PY="$VENV/bin/python"
+  echo "   virtualenv: $VENV"
+fi
+run "$PY" -m pip install -q --upgrade pip || true
+
+echo "--- 3. Packages ---"
+while IFS=$'\t' read -r repo install extras sub; do
+  dir="$WORKSPACE/$repo"
+  [ "$sub" = "-" ] || dir="$dir/$sub"
+  [ "$DRY_RUN" = 1 ] || [ -d "$dir" ] || continue
+  case "$install" in
+    pip)
+      if [ "$DRY_RUN" = 0 ] && [ ! -f "$dir/pyproject.toml" ]; then
+        echo "   $repo: no package yet (no pyproject.toml), cloned only"; note "$repo: no package yet"
+        continue
+      fi
+      target="$dir"; [ "$extras" = "-" ] || target="${dir}[$extras]"
+      echo "   $repo: pip install -e"
+      run "$PY" -m pip install -q -e "$target" || { echo "!! $repo: install failed"; note "$repo: pip install failed"; }
+      ;;
+    npm)
+      if ! command -v npm >/dev/null 2>&1; then
+        echo "!! $repo: npm not found (install Node.js), not installed"; note "$repo: needs Node.js/npm"
+        continue
+      fi
+      echo "   $repo: npm ci"
+      if [ "$DRY_RUN" = 1 ] || [ -f "$dir/package-lock.json" ]; then
+        run npm --prefix "$dir" ci --no-audit --no-fund --loglevel=error || { echo "!! $repo: npm ci failed"; note "$repo: npm install failed"; }
+      else
+        run npm --prefix "$dir" install --no-audit --no-fund --loglevel=error || { echo "!! $repo: npm install failed"; note "$repo: npm install failed"; }
+      fi
+      ;;
+    checkout) echo "   $repo: checkout only (run from the checkout)" ;;
+    *) echo "!! $repo: unknown install kind '$install' in ecosystem.json"; note "$repo: unknown install kind" ;;
+  esac
+done <<< "$COMPONENTS"
+
+echo "--- 4. Claude Code skills ($CLAUDE_SKILLS_DIR) ---"
+if [ "$LINK_SKILLS" = 0 ]; then
+  echo "   skipped (--no-claude-skills)"
+else
+  run mkdir -p "$CLAUDE_SKILLS_DIR"
+  while IFS=$'\t' read -r repo _ _; do
+    dir="$WORKSPACE/$repo"
+    [ -f "$dir/SKILL.md" ] || continue
+    name="$(sed -n 's/^name:[[:space:]]*//p' "$dir/SKILL.md" | head -1 | tr -d "\"'\r")"
+    name="${name:-$repo}"
+    link="$CLAUDE_SKILLS_DIR/$name"
+    if [ -L "$link" ] && [ "$(readlink "$link")" = "$dir" ]; then
+      echo "   $name: linked"
+    elif [ -e "$link" ] || [ -L "$link" ]; then
+      echo "!! $name: $link already exists and is not this checkout, left as is"; note "$name: ~/.claude/skills entry not replaced"
+    else
+      run ln -s "$dir" "$link" && echo "   $name: linked -> $dir"
+    fi
+  done <<< "$COMPONENTS"
 fi
 
-echo "--- 4. Real environment check (video-agent doctor) ---"
-echo "    Running from inside $AGENT_REPO's checkout so its own sibling-directory Skill"
-echo "    discovery (../<skill-name>) finds every Skill cloned above with no env vars."
-(
-  cd "$TARGET/$AGENT_REPO"
-  if command -v video-agent >/dev/null 2>&1; then
-    video-agent doctor || true
-  else
-    "$PY" -m video_agent.cli doctor || true
-  fi
-)
+echo "--- 5. ffmpeg / ffprobe / blender ---"
+if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
+  echo "   OK: $(ffmpeg -version | head -1)"
+else
+  echo "!! ffmpeg/ffprobe not found. Install them yourself, e.g.:"
+  echo "     Debian/Ubuntu:  sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core"
+  echo "     macOS:          brew install ffmpeg"
+  note "ffmpeg/ffprobe missing"
+fi
 
-echo "==> Done. Re-run this script anytime to pick up new Skill repositories or repair a missing install."
+if [ -d "$WORKSPACE/blender-skill" ] && ! command -v blender >/dev/null 2>&1; then
+  echo "!! blender not found: blender-skill needs it (https://www.blender.org/download/, or: brew install --cask blender)"
+  note "blender missing (blender-skill)"
+fi
+
+echo "--- 6. video-agent doctor ---"
+AGENT_DIR="$WORKSPACE/video-production-agent"
+if [ "$DRY_RUN" = 1 ]; then
+  echo "   [dry-run] (cd $AGENT_DIR && $PY -m video_agent.cli doctor)"
+elif [ -d "$AGENT_DIR" ]; then
+  (cd "$AGENT_DIR" && "$PY" -m video_agent.cli doctor) || note "video-agent doctor reported problems (see above)"
+fi
+
+echo
+if [ ${#SUMMARY[@]} -eq 0 ]; then
+  echo "==> Done. Everything in ecosystem.json is installed."
+else
+  echo "==> Done, with notes:"
+  printf '   - %s\n' "${SUMMARY[@]}"
+fi
+[ -n "${VIRTUAL_ENV:-}" ] || echo "    Use it: source \"$WORKSPACE/.venv/bin/activate\" && video-agent doctor"

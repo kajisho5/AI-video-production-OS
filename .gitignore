@@ -6,3 +6,8 @@ node_modules/
 dist/
 *.tsbuildinfo
 .vite/
+
+# scripts/ecosystem-audit.sh local output
+.si-state/
+.si-repos/
+ecosystem-audit.md
