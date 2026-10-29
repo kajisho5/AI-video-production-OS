@@ -49,10 +49,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # hyperframes-skill needs Node 22+
       - name: Install every repository in ecosystem.json from GitHub
         run: ./install.sh --dir "$RUNNER_TEMP/avos" --with-optional 2>&1 | tee "$RUNNER_TEMP/install.log"
       - name: Fail on any install failure
         run: |
-          if grep -E 'clone failed|pip install failed|unknown install kind' "$RUNNER_TEMP/install.log"; then
+          if grep -E 'clone failed|pip install failed|npm install failed|needs Node.js|unknown install kind' "$RUNNER_TEMP/install.log"; then
             exit 1
           fi

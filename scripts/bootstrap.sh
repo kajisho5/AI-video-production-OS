@@ -18,7 +18,9 @@
 #      with local changes or diverged history is left alone and reported, never reset).
 #   2. install=pip: `pip install -e` into DIR/.venv (or the already-active virtualenv).
 #      A repository that has no pyproject.toml yet is reported as "no package yet", not failed.
+#      install=npm: `npm ci` in the checkout (needs Node.js; reported if missing).
 #      install=checkout: nothing to install; the agent runs it from the checkout.
+#      "path": the package lives in that subdirectory of the repository.
 #   3. If it has a SKILL.md, symlink it to ~/.claude/skills/<name from SKILL.md> so Claude Code
 #      sees it. An existing entry there that points somewhere else is reported, never replaced.
 # Then checks ffmpeg/ffprobe and Blender (never installs system packages) and runs `video-agent doctor`
@@ -58,7 +60,8 @@ run() {
   if [ "$DRY_RUN" = 1 ]; then echo "   [dry-run] $*"; else "$@"; fi
 }
 
-# One line per component: repo<TAB>install<TAB>extras(comma-separated). "planned" components
+# One line per component: repo<TAB>install<TAB>extras(comma-separated)<TAB>package subdirectory,
+# "-" for an empty field (read collapses empty tab-separated fields). "planned" components
 # (no repository yet) are not installed; they are listed on stderr and reported at the end.
 TMP_PLANNED="$(mktemp)"
 trap 'rm -f "$TMP_PLANNED"' EXIT
@@ -71,7 +74,7 @@ for c in m["components"]:
         continue
     if c.get("optional") and sys.argv[2] != "1":
         continue
-    print("\t".join([c["repo"], c["install"], ",".join(c.get("extras", []))]))
+    print("\t".join([c["repo"], c["install"], ",".join(c.get("extras", [])) or "-", c.get("path") or "-"]))
 EOF
 )" || { cat "$TMP_PLANNED" >&2; echo "!! could not read $MANIFEST" >&2; exit 1; }
 ORG="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["org"])' "$MANIFEST")"
@@ -117,8 +120,9 @@ fi
 run "$PY" -m pip install -q --upgrade pip || true
 
 echo "--- 3. Packages ---"
-while IFS=$'\t' read -r repo install extras; do
+while IFS=$'\t' read -r repo install extras sub; do
   dir="$WORKSPACE/$repo"
+  [ "$sub" = "-" ] || dir="$dir/$sub"
   [ "$DRY_RUN" = 1 ] || [ -d "$dir" ] || continue
   case "$install" in
     pip)
@@ -126,9 +130,21 @@ while IFS=$'\t' read -r repo install extras; do
         echo "   $repo: no package yet (no pyproject.toml), cloned only"; note "$repo: no package yet"
         continue
       fi
-      target="$dir"; [ -n "$extras" ] && target="${dir}[$extras]"
+      target="$dir"; [ "$extras" = "-" ] || target="${dir}[$extras]"
       echo "   $repo: pip install -e"
       run "$PY" -m pip install -q -e "$target" || { echo "!! $repo: install failed"; note "$repo: pip install failed"; }
+      ;;
+    npm)
+      if ! command -v npm >/dev/null 2>&1; then
+        echo "!! $repo: npm not found (install Node.js), not installed"; note "$repo: needs Node.js/npm"
+        continue
+      fi
+      echo "   $repo: npm ci"
+      if [ "$DRY_RUN" = 1 ] || [ -f "$dir/package-lock.json" ]; then
+        run npm --prefix "$dir" ci --no-audit --no-fund --loglevel=error || { echo "!! $repo: npm ci failed"; note "$repo: npm install failed"; }
+      else
+        run npm --prefix "$dir" install --no-audit --no-fund --loglevel=error || { echo "!! $repo: npm install failed"; note "$repo: npm install failed"; }
+      fi
       ;;
     checkout) echo "   $repo: checkout only (run from the checkout)" ;;
     *) echo "!! $repo: unknown install kind '$install' in ecosystem.json"; note "$repo: unknown install kind" ;;

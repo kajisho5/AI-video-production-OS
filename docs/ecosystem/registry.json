@@ -209,6 +209,34 @@
       "type": "Skill",
       "role": "Speaker diarization: fills the Transcript speaker_id. Repository created 2026-10-29; no package yet.",
       "depends_on": []
+    },
+    {
+      "slug": "kajisho5/remotion-ffmpeg-skill",
+      "name": "remotion-ffmpeg-skill",
+      "type": "Skill",
+      "role": "Remotion motion graphics on real footage, timed from ffmpeg-skill measurements.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/hyperframes-skill",
+      "name": "hyperframes-skill",
+      "type": "Skill",
+      "role": "Renders HTML scenes to verified video with HyperFrames.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/skillpact",
+      "name": "skillpact",
+      "type": "Extension",
+      "role": "Machine-readable skill contracts: side effects, conformance tests, signatures.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/system-intelligence",
+      "name": "system-intelligence",
+      "type": "Extension",
+      "role": "Read-only ecosystem auditing (si diagnose); feeds the Control Room.",
+      "depends_on": []
     }
   ]
 }

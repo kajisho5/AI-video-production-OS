@@ -10,7 +10,8 @@
     {"id": "recognize", "name": "認識", "en": "Recognition"},
     {"id": "verify", "name": "検証", "en": "Verification"},
     {"id": "delivery", "name": "納品", "en": "Delivery"},
-    {"id": "utility", "name": "補助", "en": "Utility"}
+    {"id": "utility", "name": "補助", "en": "Utility"},
+    {"id": "governance", "name": "統制", "en": "Governance"}
   ],
   "components": [
     {"repo": "video-production-agent", "department": "command", "install": "pip", "status": "active",
@@ -40,6 +41,12 @@
     {"repo": "blender-skill", "department": "visual", "install": "checkout", "status": "active",
      "role": "Headless Blender: inspect, convert, optimize and render 3D assets (needs Blender installed)",
      "owns": ["3D素材・3Dレンダリング"]},
+    {"repo": "remotion-ffmpeg-skill", "department": "visual", "install": "checkout", "status": "active",
+     "role": "Remotion motion graphics on real footage, timed from ffmpeg-skill measurements (captions, jump cuts, beat-synced motion)",
+     "owns": ["計測連動モーショングラフィックス(Remotion)"]},
+    {"repo": "hyperframes-skill", "department": "visual", "install": "npm", "status": "active",
+     "role": "Renders HTML scenes to verified video with HyperFrames (needs Node.js 22+ and a headless Chromium)",
+     "owns": ["HTMLシーンの動画化(HyperFrames)"]},
 
     {"repo": "audio-production-skill", "department": "audio", "install": "pip", "status": "active",
      "role": "Gain, mix, normalize, dynamics, denoise, filler and silence removal",
@@ -106,12 +113,16 @@
      "owns": ["静止画編集"]},
     {"repo": "stepcap", "department": "utility", "install": "pip", "status": "active",
      "role": "Screen recording of a task into a how-to guide and a SKILL.md",
-     "owns": ["画面収録→手順書"]}
+     "owns": ["画面収録→手順書"]},
+
+    {"repo": "skillpact", "department": "governance", "install": "pip", "path": "ref", "status": "active",
+     "role": "Machine-readable skill contracts: declared side effects, conformance tests, signatures, harness policy",
+     "owns": ["スキル契約・署名", "スキル適合性検査"]},
+    {"repo": "system-intelligence", "department": "governance", "install": "pip", "status": "active",
+     "role": "Read-only auditing of the ecosystem's repositories (si diagnose); feeds the Control Room's findings",
+     "owns": ["エコシステム監査"]}
   ],
   "on_hold": [
-    {"repo": "remotion-ffmpeg-skill", "note": "Remotion専用グラフィックス / 採否未決"},
-    {"repo": "hyperframes-skill", "note": "HyperFrames専用グラフィックス / 採否未決"},
-    {"repo": "event-recording-auditor", "note": "収録映像の事故検出 / 採否未決"},
-    {"repo": "skillpact", "note": "スキル契約・署名 / OS本体への組込みは未決"}
+    {"repo": "event-recording-auditor", "note": "収録映像の事故検出 / 採否未決"}
   ]
 }

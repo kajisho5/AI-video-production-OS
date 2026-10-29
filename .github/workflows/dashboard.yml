@@ -86,13 +86,26 @@ jobs:
         working-directory: dashboard/control-room
         run: npm test
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # kajisho5/system-intelligence audits this repository read-only; the Control Room's
+      # Intelligence panel shows its findings. A failure here only leaves that panel saying
+      # "no snapshot" -- it never blocks the deploy.
+      - name: System Intelligence snapshot
+        id: si
+        continue-on-error: true
+        run: |
+          python -m pip install -q "git+https://github.com/kajisho5/system-intelligence"
+          si diagnose . --out "$RUNNER_TEMP/si"
+          echo "dir=$(ls -d "$RUNNER_TEMP"/si/snapshot-* | head -1)" >> "$GITHUB_OUTPUT"
+
       - name: Generate control-room snapshot
         working-directory: dashboard/control-room
         env:
           GITHUB_TOKEN: ${{ secrets.ECOSYSTEM_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          # No SI_SNAPSHOT_DIR here: this repository does not generate or bundle a
-          # System Intelligence snapshot. If one is ever produced for this target and
-          # committed/fetched somewhere in CI, point this at that directory.
+          SI_SNAPSHOT_DIR: ${{ steps.si.outputs.dir }}
         run: npm run generate
 
       - name: Install web dependencies

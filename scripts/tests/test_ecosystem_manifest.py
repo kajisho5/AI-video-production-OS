@@ -31,7 +31,7 @@ class ManifestTests(unittest.TestCase):
         departments = {d["id"] for d in MANIFEST["departments"]}
         for c in MANIFEST["components"]:
             with self.subTest(repo=c["repo"]):
-                self.assertIn(c["install"], {"pip", "checkout"})
+                self.assertIn(c["install"], {"pip", "npm", "checkout"})
                 self.assertIn(c["department"], departments)
                 self.assertIn(c["status"], {"active", "scaffold", "planned"})
                 self.assertTrue(c["role"].strip())
