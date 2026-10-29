@@ -165,7 +165,7 @@ Installing the OS installs the whole ecosystem — the agent and every Skill lis
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash
-# options:  ... | bash -s -- --dir ~/work/avos --no-claude-skills
+# options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills
 ```
 
 Into `~/ai-video-os` (or `--dir`), this clones every repository (or fast-forwards an
@@ -175,7 +175,8 @@ checks `ffmpeg`/`ffprobe` (prints the `apt`/`brew` command if missing — it nev
 system packages itself) and finishes with a real `video-agent doctor`. Re-running it
 updates everything. It never deletes, resets or overwrites: a clone with local changes, or
 a `~/.claude/skills` entry that points elsewhere, is reported and left alone. A Skill
-repository with no package yet is cloned and reported as such. From a checkout,
+repository with no package yet is cloned and reported as such. DVD/Blu-ray authoring
+(`bdmvkit`, `vtskit`, `udfkit`, `dvdcc`, `oncemore`) is optional: add `--with-optional`. From a checkout,
 `./install.sh` does the same. To add a Skill to the ecosystem, add it to `ecosystem.json`
 (and to `docs/ecosystem/registry.json`; a test checks they agree).
 

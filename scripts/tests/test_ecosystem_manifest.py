@@ -15,6 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = json.loads((ROOT / "ecosystem.json").read_text(encoding="utf-8"))
 REPOS = [c["repo"] for c in MANIFEST["components"]]
+DEFAULT = [c["repo"] for c in MANIFEST["components"] if not c.get("optional")]
+OPTIONAL = [c["repo"] for c in MANIFEST["components"] if c.get("optional")]
 BOOTSTRAP = ROOT / "scripts" / "bootstrap.sh"
 BASH = os.environ.get("AVOS_TEST_BASH", "bash")  # CI sets /bin/bash on macOS: bash 3.2
 
@@ -27,9 +29,10 @@ class ManifestTests(unittest.TestCase):
         for c in MANIFEST["components"]:
             with self.subTest(repo=c["repo"]):
                 self.assertIn(c["install"], {"pip", "checkout"})
-                self.assertIn(c["layer"], {"agent", "engine", "skill", "verify", "recognize", "utility"})
+                self.assertIn(c["layer"], {"agent", "engine", "skill", "verify", "recognize", "utility", "delivery"})
                 self.assertTrue(c["role"].strip())
                 self.assertIsInstance(c.get("extras", []), list)
+                self.assertIsInstance(c.get("optional", False), bool)
 
     def test_exactly_one_agent(self):
         agents = [c["repo"] for c in MANIFEST["components"] if c["layer"] == "agent"]
@@ -50,20 +53,31 @@ def _env(home: Path) -> dict:
 
 
 class BootstrapTests(unittest.TestCase):
-    def test_dry_run_changes_nothing_and_names_every_repo(self):
+    def _dry_run(self, *flags):
         with tempfile.TemporaryDirectory() as tmp:
             ws = Path(tmp) / "ws"
-            out = subprocess.run([BASH, str(BOOTSTRAP), "--dir", str(ws), "--dry-run"],
+            out = subprocess.run([BASH, str(BOOTSTRAP), "--dir", str(ws), "--dry-run", *flags],
                                  env=_env(Path(tmp)), capture_output=True, text=True, timeout=60)
             self.assertEqual(out.returncode, 0, out.stderr)
             self.assertFalse(ws.exists())
-            for repo in REPOS:
-                self.assertIn(repo, out.stdout)
+            return out.stdout
+
+    def test_dry_run_changes_nothing_and_skips_optional_by_default(self):
+        out = self._dry_run()
+        for repo in DEFAULT:
+            self.assertIn(f"{repo}: cloning", out)
+        for repo in OPTIONAL:
+            self.assertNotIn(f"{repo}: cloning", out)
+
+    def test_with_optional_includes_optional_components(self):
+        out = self._dry_run("--with-optional")
+        for repo in REPOS:
+            self.assertIn(f"{repo}: cloning", out)
 
     def test_links_skills_and_never_replaces_a_foreign_entry(self):
         with tempfile.TemporaryDirectory() as tmp:
             home, ws = Path(tmp), Path(tmp) / "ws"
-            for repo in REPOS:  # pre-existing clones, so nothing touches the network
+            for repo in DEFAULT:  # pre-existing clones, so nothing touches the network
                 (ws / repo).mkdir(parents=True)
                 subprocess.run(["git", "init", "-q", str(ws / repo)], check=True)
             (ws / "qc-skill" / "SKILL.md").write_text("---\nname: qc-skill\n---\n", encoding="utf-8")

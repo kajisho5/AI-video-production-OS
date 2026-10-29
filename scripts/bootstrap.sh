@@ -4,9 +4,10 @@
 # running it directly from an OS checkout works the same.
 #
 # Usage:
-#   ./scripts/bootstrap.sh [--dir DIR] [--no-update] [--no-claude-skills] [--dry-run]
+#   ./scripts/bootstrap.sh [--dir DIR] [--with-optional] [--no-update] [--no-claude-skills] [--dry-run]
 #
 #   --dir DIR            workspace (default: $AVOS_HOME or ~/ai-video-os)
+#   --with-optional      also install components marked "optional" (DVD/Blu-ray authoring)
 #   --no-update          do not `git pull` repositories that are already cloned
 #   --no-claude-skills   do not link Skills into ~/.claude/skills
 #   --dry-run            print what would be done, change nothing
@@ -19,7 +20,7 @@
 #      install=checkout: nothing to install; the agent runs it from the checkout.
 #   3. If it has a SKILL.md, symlink it to ~/.claude/skills/<name from SKILL.md> so Claude Code
 #      sees it. An existing entry there that points somewhere else is reported, never replaced.
-# Then checks ffmpeg/ffprobe (never installs system packages) and runs `video-agent doctor`
+# Then checks ffmpeg/ffprobe and Blender (never installs system packages) and runs `video-agent doctor`
 # from the agent checkout, whose sibling-directory discovery finds every Skill in DIR.
 #
 # Safe to interrupt and re-run: nothing is deleted, no remote is changed, nothing is forced.
@@ -31,6 +32,7 @@ WORKSPACE="${AVOS_HOME:-$HOME/ai-video-os}"
 UPDATE=1
 LINK_SKILLS=1
 DRY_RUN=0
+WITH_OPTIONAL=0
 CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 
 while [ $# -gt 0 ]; do
@@ -40,7 +42,8 @@ while [ $# -gt 0 ]; do
     --no-update) UPDATE=0; shift ;;
     --no-claude-skills) LINK_SKILLS=0; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
-    -h|--help) sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --with-optional) WITH_OPTIONAL=1; shift ;;
+    -h|--help) sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1 (see --help)" >&2; exit 2 ;;
   esac
 done
@@ -55,10 +58,12 @@ run() {
 }
 
 # One line per component: repo<TAB>install<TAB>extras(comma-separated)
-COMPONENTS="$(python3 - "$MANIFEST" <<'EOF'
+COMPONENTS="$(python3 - "$MANIFEST" "$WITH_OPTIONAL" <<'EOF'
 import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
 for c in m["components"]:
+    if c.get("optional") and sys.argv[2] != "1":
+        continue
     print("\t".join([c["repo"], c["install"], ",".join(c.get("extras", []))]))
 EOF
 )"
@@ -141,7 +146,7 @@ else
   done <<< "$COMPONENTS"
 fi
 
-echo "--- 5. ffmpeg / ffprobe ---"
+echo "--- 5. ffmpeg / ffprobe / blender ---"
 if command -v ffmpeg >/dev/null 2>&1 && command -v ffprobe >/dev/null 2>&1; then
   echo "   OK: $(ffmpeg -version | head -1)"
 else
@@ -149,6 +154,11 @@ else
   echo "     Debian/Ubuntu:  sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core"
   echo "     macOS:          brew install ffmpeg"
   note "ffmpeg/ffprobe missing"
+fi
+
+if [ -d "$WORKSPACE/blender-skill" ] && ! command -v blender >/dev/null 2>&1; then
+  echo "!! blender not found: blender-skill needs it (https://www.blender.org/download/, or: brew install --cask blender)"
+  note "blender missing (blender-skill)"
 fi
 
 echo "--- 6. video-agent doctor ---"

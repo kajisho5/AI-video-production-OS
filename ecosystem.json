@@ -1,5 +1,5 @@
 {
-  "$comment": "The one list of repositories that make up the AI Video Production ecosystem. install.sh / scripts/bootstrap.sh install exactly what is listed here, and docs/ecosystem/registry.json must name the same repositories (checked by scripts/tests/test_ecosystem_manifest.py). To add a Skill to the ecosystem, add it here.",
+  "$comment": "The one list of repositories that make up the AI Video Production ecosystem. install.sh / scripts/bootstrap.sh install exactly what is listed here, and docs/ecosystem/registry.json must name the same repositories (checked by scripts/tests/test_ecosystem_manifest.py). To add a Skill to the ecosystem, add it here. \"optional\": true components are installed only with --with-optional.",
   "schema_version": 1,
   "org": "kajisho5",
   "components": [
@@ -18,6 +18,14 @@
     {"repo": "transcription-skill", "layer": "recognize", "install": "pip", "extras": ["faster-whisper"], "role": "Speech to timestamped transcript (local faster-whisper)"},
     {"repo": "detection-skill", "layer": "recognize", "install": "pip", "role": "Face, text (OCR) and object detection"},
     {"repo": "slide-sync-skill", "layer": "recognize", "install": "pip", "role": "Slide import, slide-change detection, slide text"},
-    {"repo": "imagemagick-skill", "layer": "utility", "install": "checkout", "role": "Still-image editing with ImageMagick"}
+    {"repo": "imagemagick-skill", "layer": "utility", "install": "checkout", "role": "Still-image editing with ImageMagick"},
+    {"repo": "blender-skill", "layer": "skill", "install": "checkout", "role": "Headless Blender: inspect, convert, optimize and render 3D assets (needs Blender installed)"},
+    {"repo": "artifacts-skill", "layer": "verify", "install": "pip", "extras": ["all"], "role": "Verifies AI-generated documents (scripts, captions, reports) and issues evidence-backed receipts"},
+    {"repo": "stepcap", "layer": "utility", "install": "pip", "role": "Screen recording of a task into a how-to guide and a SKILL.md"},
+    {"repo": "bdmvkit", "layer": "delivery", "install": "pip", "optional": true, "role": "Blu-ray (BDMV) authoring: titles, chapters, menus, subtitles"},
+    {"repo": "vtskit", "layer": "delivery", "install": "pip", "optional": true, "role": "DVD-Video (VIDEO_TS) authoring: titles, menus, subtitles"},
+    {"repo": "udfkit", "layer": "delivery", "install": "pip", "optional": true, "role": "UDF disc image writer for DVD-Video and Blu-ray"},
+    {"repo": "dvdcc", "layer": "delivery", "install": "pip", "optional": true, "role": "Line-21 closed captions (CEA-608) into DVD MPEG-2 without re-encoding"},
+    {"repo": "oncemore", "layer": "delivery", "install": "pip", "optional": true, "role": "DVD and Blu-ray authoring app (Mac): videos to disc images with menus, chapters, subtitles"}
   ]
 }

@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install every repository in ecosystem.json from GitHub
-        run: ./install.sh --dir "$RUNNER_TEMP/avos" 2>&1 | tee "$RUNNER_TEMP/install.log"
+        run: ./install.sh --dir "$RUNNER_TEMP/avos" --with-optional 2>&1 | tee "$RUNNER_TEMP/install.log"
       - name: Fail on any install failure
         run: |
           if grep -E 'clone failed|pip install failed|unknown install kind' "$RUNNER_TEMP/install.log"; then

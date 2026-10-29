@@ -132,6 +132,62 @@
       "type": "Skill",
       "role": "Still-image editing with ImageMagick (formerly image-skill). Not consumed by video-production-agent.",
       "depends_on": []
+    },
+    {
+      "slug": "kajisho5/blender-skill",
+      "name": "blender-skill",
+      "type": "Skill",
+      "role": "Headless Blender: inspect, convert, optimize and render 3D assets.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/artifacts-skill",
+      "name": "artifacts-skill",
+      "type": "Skill",
+      "role": "Verifies AI-generated documents and issues evidence-backed receipts.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/stepcap",
+      "name": "stepcap",
+      "type": "Skill",
+      "role": "Screen recording of a task into a how-to guide and a SKILL.md.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/bdmvkit",
+      "name": "bdmvkit",
+      "type": "Extension",
+      "role": "Optional install. Blu-ray (BDMV) authoring library.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/vtskit",
+      "name": "vtskit",
+      "type": "Extension",
+      "role": "Optional install. DVD-Video (VIDEO_TS) authoring library.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/udfkit",
+      "name": "udfkit",
+      "type": "Extension",
+      "role": "Optional install. UDF disc image writer for DVD-Video and Blu-ray.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/dvdcc",
+      "name": "dvdcc",
+      "type": "Extension",
+      "role": "Optional install. Line-21 closed captions (CEA-608) for DVD MPEG-2.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/oncemore",
+      "name": "oncemore",
+      "type": "Extension",
+      "role": "Optional install. DVD and Blu-ray authoring app (Mac).",
+      "depends_on": []
     }
   ]
 }
