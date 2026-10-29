@@ -14,8 +14,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = json.loads((ROOT / "ecosystem.json").read_text(encoding="utf-8"))
-REPOS = [c["repo"] for c in MANIFEST["components"]]
-DEFAULT = [c["repo"] for c in MANIFEST["components"] if not c.get("optional")]
+PLANNED = [c["repo"] for c in MANIFEST["components"] if c.get("status") == "planned"]
+REPOS = [c["repo"] for c in MANIFEST["components"] if c["repo"] not in PLANNED]
+DEFAULT = [c["repo"] for c in MANIFEST["components"] if not c.get("optional") and c["repo"] not in PLANNED]
 OPTIONAL = [c["repo"] for c in MANIFEST["components"] if c.get("optional")]
 BOOTSTRAP = ROOT / "scripts" / "bootstrap.sh"
 BASH = os.environ.get("AVOS_TEST_BASH", "bash")  # CI sets /bin/bash on macOS: bash 3.2
@@ -23,20 +24,38 @@ BASH = os.environ.get("AVOS_TEST_BASH", "bash")  # CI sets /bin/bash on macOS: b
 
 class ManifestTests(unittest.TestCase):
     def test_repos_are_unique(self):
-        self.assertEqual(len(REPOS), len(set(REPOS)))
+        names = [c["repo"] for c in MANIFEST["components"]] + [h["repo"] for h in MANIFEST.get("on_hold", [])]
+        self.assertEqual(len(names), len(set(names)))
 
     def test_fields(self):
+        departments = {d["id"] for d in MANIFEST["departments"]}
         for c in MANIFEST["components"]:
             with self.subTest(repo=c["repo"]):
                 self.assertIn(c["install"], {"pip", "checkout"})
-                self.assertIn(c["layer"], {"agent", "engine", "skill", "verify", "recognize", "utility", "delivery"})
+                self.assertIn(c["department"], departments)
+                self.assertIn(c["status"], {"active", "scaffold", "planned"})
                 self.assertTrue(c["role"].strip())
+                self.assertTrue(c["owns"])
                 self.assertIsInstance(c.get("extras", []), list)
                 self.assertIsInstance(c.get("optional", False), bool)
+                for e in c.get("engines", []):
+                    self.assertTrue(e["name"].strip())
 
-    def test_exactly_one_agent(self):
-        agents = [c["repo"] for c in MANIFEST["components"] if c["layer"] == "agent"]
-        self.assertEqual(agents, ["video-production-agent"])
+    def test_every_department_is_staffed(self):
+        staffed = {c["department"] for c in MANIFEST["components"]}
+        self.assertEqual(staffed, {d["id"] for d in MANIFEST["departments"]})
+
+    def test_nothing_is_owned_twice(self):
+        owners: dict = {}
+        for c in MANIFEST["components"]:
+            for thing in c["owns"]:
+                with self.subTest(thing=thing):
+                    self.assertNotIn(thing, owners, f"{thing}: {owners.get(thing)} and {c['repo']}")
+                owners[thing] = c["repo"]
+
+    def test_exactly_one_command(self):
+        command = [c["repo"] for c in MANIFEST["components"] if c["department"] == "command"]
+        self.assertEqual(command, ["video-production-agent"])
 
     def test_dashboard_roster_names_the_same_repositories(self):
         registry = json.loads((ROOT / "docs" / "ecosystem" / "registry.json").read_text(encoding="utf-8"))
@@ -64,6 +83,9 @@ class BootstrapTests(unittest.TestCase):
 
     def test_dry_run_changes_nothing_and_skips_optional_by_default(self):
         out = self._dry_run()
+        for repo in PLANNED:
+            self.assertNotIn(f"{repo}: cloning", out)
+            self.assertIn(f"{repo}: planned, repository not created yet", out)
         for repo in DEFAULT:
             self.assertIn(f"{repo}: cloning", out)
         for repo in OPTIONAL:

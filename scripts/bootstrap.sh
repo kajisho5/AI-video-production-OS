@@ -12,7 +12,8 @@
 #   --no-claude-skills   do not link Skills into ~/.claude/skills
 #   --dry-run            print what would be done, change nothing
 #
-# What it does, per repository in ecosystem.json:
+# What it does, per repository in ecosystem.json (except "planned" ones, which have no
+# repository yet and are only reported):
 #   1. Clone it under DIR, or fast-forward an existing clone to the latest origin (a clone
 #      with local changes or diverged history is left alone and reported, never reset).
 #   2. install=pip: `pip install -e` into DIR/.venv (or the already-active virtualenv).
@@ -57,16 +58,22 @@ run() {
   if [ "$DRY_RUN" = 1 ]; then echo "   [dry-run] $*"; else "$@"; fi
 }
 
-# One line per component: repo<TAB>install<TAB>extras(comma-separated)
-COMPONENTS="$(python3 - "$MANIFEST" "$WITH_OPTIONAL" <<'EOF'
+# One line per component: repo<TAB>install<TAB>extras(comma-separated). "planned" components
+# (no repository yet) are not installed; they are listed on stderr and reported at the end.
+TMP_PLANNED="$(mktemp)"
+trap 'rm -f "$TMP_PLANNED"' EXIT
+COMPONENTS="$(python3 - "$MANIFEST" "$WITH_OPTIONAL" 2>"$TMP_PLANNED" <<'EOF'
 import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
 for c in m["components"]:
+    if c.get("status") == "planned":
+        print("planned: " + c["repo"], file=sys.stderr)
+        continue
     if c.get("optional") and sys.argv[2] != "1":
         continue
     print("\t".join([c["repo"], c["install"], ",".join(c.get("extras", []))]))
 EOF
-)"
+)" || { cat "$TMP_PLANNED" >&2; echo "!! could not read $MANIFEST" >&2; exit 1; }
 ORG="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["org"])' "$MANIFEST")"
 
 if [ "$DRY_RUN" = 0 ]; then mkdir -p "$WORKSPACE"; WORKSPACE="$(cd "$WORKSPACE" && pwd)"; fi
@@ -74,6 +81,9 @@ echo "==> Workspace: $WORKSPACE"
 
 declare -a SUMMARY=()
 note() { SUMMARY+=("$1"); }
+while read -r _ planned; do
+  [ -n "$planned" ] && note "$planned: planned, repository not created yet"
+done < "$TMP_PLANNED"
 
 echo "--- 1. Repositories ---"
 while IFS=$'\t' read -r repo _ _; do
