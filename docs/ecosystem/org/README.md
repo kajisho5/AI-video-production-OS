@@ -9,6 +9,7 @@ node scripts/orgchart.mjs        # Playwright があれば PNG も出力(無け�
 | 図 | 内容 |
 |---|---|
 | [overview.png](overview.png) | 全体: 司令塔 → 各部門 → 実行基盤、保留中のリポジトリ |
+| [ingest.png](ingest.png) | 取込部門(素材の取り込み・バックアップ) |
 | [visual.png](visual.png) | 映像部門 |
 | [audio.png](audio.png) | 音部門 |
 | [recognize.png](recognize.png) | 認識部門 |
