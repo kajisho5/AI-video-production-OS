@@ -188,6 +188,27 @@
       "type": "Extension",
       "role": "Optional install. DVD and Blu-ray authoring app (Mac).",
       "depends_on": []
+    },
+    {
+      "slug": "kajisho5/voice-enhance-skill",
+      "name": "voice-enhance-skill",
+      "type": "Skill",
+      "role": "AI voice isolation, dereverberation and mic-bleed reduction for recorded speech. Repository created 2026-10-29; no package yet.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/sound-design-skill",
+      "name": "sound-design-skill",
+      "type": "Skill",
+      "role": "BGM and sound-effect generation (ACE-Step 1.5). Repository created 2026-10-29; no package yet.",
+      "depends_on": []
+    },
+    {
+      "slug": "kajisho5/diarization-skill",
+      "name": "diarization-skill",
+      "type": "Skill",
+      "role": "Speaker diarization: fills the Transcript speaker_id. Repository created 2026-10-29; no package yet.",
+      "depends_on": []
     }
   ]
 }
