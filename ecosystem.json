@@ -20,12 +20,12 @@
      "owns": ["制作計画", "スキルの呼び分け", "制作記録(ProductionReceipt)"]},
 
     {"repo": "ingest-skill", "plugin": true, "department": "ingest", "install": "pip", "status": "scaffold",
-     "role": "Media offload from cards and recorders with checksum-verified copies, dual backup and a clip inventory",
-     "owns": ["素材取り込み(検証付きコピー)", "二重バックアップ", "素材台帳"]},
+     "role": "Media offload from cards, recorders and URLs with checksum-verified copies, dual backup and a clip inventory",
+     "owns": ["素材取り込み(検証付きコピー)", "二重バックアップ", "素材台帳", "URL素材取得"]},
 
     {"repo": "ffmpeg-skill", "plugin": true, "department": "engine", "install": "checkout", "status": "active",
      "role": "Execution engine: typed FFmpeg/ffprobe tools every delegating Skill runs on",
-     "owns": ["FFmpeg実行", "書き出し規格の検査", "マルチカム同期", "Bロール・画面合成", "手ぶれ・傾き補正", "プレビュー・縮小一覧", "納品レポート"]},
+     "owns": ["FFmpeg実行", "書き出し規格の検査", "マルチカム同期", "Bロール・画面合成", "手ぶれ・傾き補正", "プレビュー・縮小一覧", "納品レポート", "配信プラットフォーム仕様"]},
 
     {"repo": "video-editing-skill", "plugin": true, "department": "visual", "install": "pip", "status": "active",
      "role": "Cut, trim, concat, fit, overlay",
@@ -95,8 +95,8 @@
      "owns": ["生成文書の検証"]},
 
     {"repo": "publish-skill", "department": "delivery", "install": "pip", "status": "scaffold",
-     "role": "Upload and metadata for delivery platforms, platform delivery specs",
-     "owns": ["配信先アップロード", "配信プラットフォーム仕様"]},
+     "role": "Upload and metadata for delivery platforms; reads the platform specs from ffmpeg-skill",
+     "owns": ["配信先アップロード", "アップロード制限"]},
     {"repo": "nle-bridge-skill", "department": "delivery", "install": "pip", "status": "planned",
      "role": "Timeline interchange with Premiere Pro and DaVinci Resolve: OTIO / FCP7 XML / EDL + SRT export, conform packages, round trip of the editor's changes",
      "owns": ["NLE連携(タイムライン受け渡し)"]},
