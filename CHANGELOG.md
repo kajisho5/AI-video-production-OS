@@ -1,3 +1,14 @@
+## v0.7.7 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- ci: stop inferring major from PR titles; pin third-party actions by SHA (#94)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.6 (2026-10-30)
 
 ## What's Changed
