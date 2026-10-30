@@ -77,7 +77,7 @@
      "role": "Speaker diarization: fills the Transcript speaker_id that transcription-skill reserves",
      "owns": ["話者識別"],
      "engines": [{"name": "pyannote.audio 4.x + speaker-diarization-community-1", "note": "CC-BY-4.0 / 初回のみゲート付きDL後オフライン / CPU可"}]},
-    {"repo": "detection-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active",
+    {"repo": "detection-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active", "optional": true,
      "role": "Face, text (OCR) and object detection",
      "owns": ["顔検出", "文字検出(OCR)", "物体検出"],
      "engines": [{"name": "YuNet", "note": "顔 / MIT / OpenCV"}, {"name": "Tesseract 5 (tessdata_best)", "note": "OCR / Apache-2.0 / jpn・jpn_vert / stepcap と共通"}, {"name": "YOLOX", "note": "物体 / Apache-2.0 / ONNXRuntime"}]},
