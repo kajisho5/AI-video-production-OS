@@ -1,3 +1,18 @@
+## v0.7.0 (2026-10-30)
+
+## What's Changed
+
+## Features
+
+- feat: detection-skill is active (#87)
+
+## Other changes
+
+- feat: detection-skill is active (#87)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.6.1 (2026-10-30)
 
 ## What's Changed
