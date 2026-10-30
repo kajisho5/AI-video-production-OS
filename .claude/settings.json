@@ -6,5 +6,16 @@
         "repo": "trailofbits/skills"
       }
     }
+  },
+  "enabledPlugins": {
+    "static-analysis@trailofbits": true,
+    "differential-review@trailofbits": true,
+    "insecure-defaults@trailofbits": true,
+    "sharp-edges@trailofbits": true,
+    "supply-chain-risk-auditor@trailofbits": true,
+    "agentic-actions-auditor@trailofbits": true,
+    "property-based-testing@trailofbits": true,
+    "dimensional-analysis@trailofbits": true,
+    "variant-analysis@trailofbits": true
   }
 }
