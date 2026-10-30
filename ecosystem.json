@@ -97,6 +97,10 @@
     {"repo": "publish-skill", "department": "delivery", "install": "pip", "status": "scaffold",
      "role": "Upload and metadata for delivery platforms, platform delivery specs",
      "owns": ["配信先アップロード", "配信プラットフォーム仕様"]},
+    {"repo": "nle-bridge-skill", "department": "delivery", "install": "pip", "status": "planned",
+     "role": "Timeline interchange with Premiere Pro and DaVinci Resolve: OTIO / FCP7 XML / EDL + SRT export, conform packages, round trip of the editor's changes",
+     "owns": ["NLE連携(タイムライン受け渡し)"]},
+
     {"repo": "bdmvkit", "department": "delivery", "install": "pip", "status": "active", "optional": true,
      "role": "Blu-ray (BDMV) authoring: titles, chapters, menus, subtitles",
      "owns": ["Blu-ray作成"]},
