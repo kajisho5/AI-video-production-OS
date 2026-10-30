@@ -73,7 +73,8 @@ these rather than approximating them (`REPOSITORY_MAP.md`, video-editing-skill s
 | `audio.mono` | audio-production-skill (`MONO`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
 | `audio.stereo` | audio-production-skill (`STEREO`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
 | `audio.downmix` | audio-production-skill (`DOWNMIX`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
-| `audio.noise_reduction` | audio-production-skill (`NOISE_REDUCTION`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.voice_cleanup` | audio-production-skill (`VOICE_CLEANUP`: `light`/`medium`/`strong` voice chain via ffmpeg-skill `audio --voice`) | audio-production-skill → ffmpeg-skill (`audio`) | EXPERIMENTAL | `light`/`strong` need ffmpeg-skill ≥1.13; older engines accept `medium` only. Wired into the Agent by `video-production-agent`#84. |
+| `audio.noise_reduction` | audio-production-skill (`NOISE_REDUCTION`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | Known gap: `strength_db` 10–19 passes validation but ffmpeg's `afftdn` rejects `nf` above −20 at run time; raising the minimum to 20 needs an Agent re-pin. |
 | `audio.dynamics` | audio-production-skill (`DYNAMICS`: gate→compressor→limiter chain) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
 | `audio.concat` | audio-production-skill (`CONCAT`) | audio-production-skill → ffmpeg-skill (`join`) | EXPERIMENTAL | — |
 

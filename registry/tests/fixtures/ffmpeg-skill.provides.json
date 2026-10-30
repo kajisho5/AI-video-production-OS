@@ -1,7 +1,7 @@
 {
   "skill": {
     "id": "ffmpeg-skill",
-    "version": "0.9.1"
+    "version": "2.22.1"
   },
   "provides": [
     {
@@ -10,9 +10,19 @@
       "tool_id": "ffmpeg-skill/audio"
     },
     {
+      "id": "ffmpeg-skill.background",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/background"
+    },
+    {
       "id": "ffmpeg-skill.batch",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/batch"
+    },
+    {
+      "id": "ffmpeg-skill.broll",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/broll"
     },
     {
       "id": "ffmpeg-skill.caption",
@@ -30,9 +40,29 @@
       "tool_id": "ffmpeg-skill/color"
     },
     {
+      "id": "ffmpeg-skill.crop",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/crop"
+    },
+    {
+      "id": "ffmpeg-skill.cropdetect",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/cropdetect"
+    },
+    {
       "id": "ffmpeg-skill.cut",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/cut"
+    },
+    {
+      "id": "ffmpeg-skill.deinterlace",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/deinterlace"
+    },
+    {
+      "id": "ffmpeg-skill.denoise",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/denoise"
     },
     {
       "id": "ffmpeg-skill.export",
@@ -45,9 +75,24 @@
       "tool_id": "ffmpeg-skill/fit"
     },
     {
+      "id": "ffmpeg-skill.freeze",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/freeze"
+    },
+    {
       "id": "ffmpeg-skill.graphics",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/graphics"
+    },
+    {
+      "id": "ffmpeg-skill.grid",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/grid"
+    },
+    {
+      "id": "ffmpeg-skill.insert",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/insert"
     },
     {
       "id": "ffmpeg-skill.join",
@@ -60,9 +105,19 @@
       "tool_id": "ffmpeg-skill/look"
     },
     {
+      "id": "ffmpeg-skill.loop",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/loop"
+    },
+    {
       "id": "ffmpeg-skill.loudness",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/loudness"
+    },
+    {
+      "id": "ffmpeg-skill.metadata",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/metadata"
     },
     {
       "id": "ffmpeg-skill.multicam",
@@ -75,9 +130,24 @@
       "tool_id": "ffmpeg-skill/overlay"
     },
     {
+      "id": "ffmpeg-skill.pad",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/pad"
+    },
+    {
       "id": "ffmpeg-skill.probe",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/probe"
+    },
+    {
+      "id": "ffmpeg-skill.proxy",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/proxy"
+    },
+    {
+      "id": "ffmpeg-skill.redact",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/redact"
     },
     {
       "id": "ffmpeg-skill.render",
@@ -90,14 +160,44 @@
       "tool_id": "ffmpeg-skill/report"
     },
     {
+      "id": "ffmpeg-skill.reverse",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/reverse"
+    },
+    {
       "id": "ffmpeg-skill.scenes",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/scenes"
     },
     {
+      "id": "ffmpeg-skill.sequence",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/sequence"
+    },
+    {
       "id": "ffmpeg-skill.silence",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/silence"
+    },
+    {
+      "id": "ffmpeg-skill.speedramp",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/speedramp"
+    },
+    {
+      "id": "ffmpeg-skill.sphere",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/sphere"
+    },
+    {
+      "id": "ffmpeg-skill.stabilize",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/stabilize"
+    },
+    {
+      "id": "ffmpeg-skill.straighten",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/straighten"
     },
     {
       "id": "ffmpeg-skill.sync",
@@ -108,6 +208,11 @@
       "id": "ffmpeg-skill.verify",
       "lifecycle": "EXPERIMENTAL",
       "tool_id": "ffmpeg-skill/verify"
+    },
+    {
+      "id": "ffmpeg-skill.waveform",
+      "lifecycle": "EXPERIMENTAL",
+      "tool_id": "ffmpeg-skill/waveform"
     }
   ]
 }

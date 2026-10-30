@@ -40,7 +40,7 @@
     },
     "dependencies": {
       "type": "array",
-      "description": "Existing pattern: every delegating Skill's adapter.py declares this against another Skill's contract_version (docs/VERSIONING.md), e.g. depends on ffmpeg-skill >=0.9.1,<1.0.0.",
+      "description": "Existing pattern: every delegating Skill's adapter.py declares this against another Skill's contract_version (docs/VERSIONING.md), e.g. video-editing-skill depends on ffmpeg-skill >=0.10.0 (a lower bound only; Skills do not cap the upper version).",
       "items": {
         "type": "object",
         "properties": {

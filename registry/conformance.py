@@ -236,11 +236,9 @@ def check_no_unsafe_shell_out(
 
     This is the AST-walk half of SKILL_SPEC.md #3, not the weaker injection-probe
     fallback it also describes for closed-source Skills - not applicable here since
-    every Skill in this ecosystem is open source. It also does not apply to
-    `ffmpeg-skill` (a Node.js package, not Python) - a language-appropriate equivalent
-    (an eslint rule banning the shell-spawning API outside an allow-listed file, per
-    SKILL_SPEC.md section 4.3's own language-independence note) is real future work, not
-    built here.
+    every Skill in this ecosystem is open source. It applies to
+    `ffmpeg-skill` as well: that Skill is implemented in Python (`scripts/`, `mcp/`) and
+    only distributed through npm, so point `source_dir` at those trees.
 
     `exclude_dir_names` defaults (when left as `None`) to skipping `__pycache__` and any
     `tests`/`test` directory (a Skill's own test suite intentionally exercises
