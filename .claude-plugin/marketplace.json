@@ -183,6 +183,20 @@
       ]
     },
     {
+      "name": "diarization-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/diarization-skill"
+      },
+      "description": "Speaker diarization: fills the Transcript speaker_id that transcription-skill reserves",
+      "category": "recognition",
+      "tags": [
+        "recognition",
+        "認識",
+        "optional"
+      ]
+    },
+    {
       "name": "slide-sync-skill",
       "source": {
         "source": "github",
