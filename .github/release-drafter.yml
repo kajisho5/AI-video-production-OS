@@ -52,11 +52,12 @@ version-resolver:
       - ci
   default: patch
 
+# `major` is deliberately NOT autolabeled from title/body text (no "feat!:" / "BREAKING CHANGE"
+# rule). The autolabeler runs on pull_request_target, so anyone opening a fork PR controls the
+# title, and a label it adds is never removed after the title is edited -- release.yml's
+# version-resolver would then cut a major release on merge. A maintainer applies `major` by hand
+# when a change is actually breaking; only that label feeds the major bump.
 autolabeler:
-  - label: "major"
-    title:
-      - "/^[a-z]+(\\(.+\\))?!:/" # Conventional Commits breaking-change marker, e.g. "feat!:" / "fix(api)!:"
-      - "/BREAKING CHANGE/"
   - label: "feature"
     title:
       - "/^feat(\\(.+\\))?:/"
