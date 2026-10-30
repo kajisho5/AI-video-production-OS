@@ -1,3 +1,14 @@
+## v0.3.3 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- docs: add app icon and wordmark (made with fresnel) (#82)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.3.2 (2026-10-30)
 
 ## What's Changed
