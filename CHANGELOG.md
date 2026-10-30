@@ -1,3 +1,18 @@
+## v0.3.0 (2026-10-30)
+
+## What's Changed
+
+## Features
+
+- feat: fill the GitHub Project from this repository alone (project-sync) (#79)
+
+## Other changes
+
+- feat: fill the GitHub Project from this repository alone (project-sync) (#79)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.2.1 (2026-10-30)
 
 ## What's Changed
