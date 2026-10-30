@@ -197,6 +197,19 @@
       ]
     },
     {
+      "name": "detection-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/detection-skill"
+      },
+      "description": "Face, text (OCR) and object detection",
+      "category": "recognition",
+      "tags": [
+        "recognition",
+        "認識"
+      ]
+    },
+    {
       "name": "slide-sync-skill",
       "source": {
         "source": "github",
