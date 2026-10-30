@@ -254,7 +254,7 @@
         "source": "github",
         "repo": "kajisho5/artifacts-skill"
       },
-      "description": "Verifies AI-generated documents (scripts, captions, reports) and issues evidence-backed receipts",
+      "description": "Verifies AI-generated documents (scripts, caption scripts as documents, reports; caption files belong to subtitle-skill and qc-skill) and issues evidence-backed receipts",
       "category": "verification",
       "tags": [
         "verification",
