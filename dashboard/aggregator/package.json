@@ -1,7 +1,7 @@
 {
   "name": "@ecosystem-dashboard/aggregator",
   "private": true,
-  "version": "0.3.3",
+  "version": "0.4.0",
   "type": "module",
   "description": "Server-side (CI-only) data aggregator: fetches GitHub state for the AI Video Production OS ecosystem and produces one normalized EcosystemSnapshot JSON file. Never run in a browser; the only place in this project that touches a GitHub token.",
   "scripts": {

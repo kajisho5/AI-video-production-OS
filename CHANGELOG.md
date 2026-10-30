@@ -1,3 +1,18 @@
+## v0.4.0 (2026-10-30)
+
+## What's Changed
+
+## Features
+
+- feat: slide-sync-skill is active (0.1.0 released) (#83)
+
+## Other changes
+
+- feat: slide-sync-skill is active (0.1.0 released) (#83)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.3.3 (2026-10-30)
 
 ## What's Changed
