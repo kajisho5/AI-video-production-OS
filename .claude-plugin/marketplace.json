@@ -1,0 +1,251 @@
+{
+  "name": "ai-video-production-os",
+  "description": "AI Video Production OS: production skills for video, audio, subtitles, QC and delivery, and the agent that plans with them.",
+  "owner": {
+    "name": "kajisho5",
+    "url": "https://github.com/kajisho5"
+  },
+  "plugins": [
+    {
+      "name": "video-production-os",
+      "source": "./plugins/video-production-os",
+      "description": "Installs the whole AI Video Production OS: every Skill below except the optional disc-authoring kits, and the routing skill that picks the right one.",
+      "category": "os"
+    },
+    {
+      "name": "video-production-agent",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/video-production-agent"
+      },
+      "description": "Orchestrator: plans a production and calls the Skills below",
+      "category": "command",
+      "tags": [
+        "command",
+        "司令塔"
+      ]
+    },
+    {
+      "name": "ingest-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/ingest-skill"
+      },
+      "description": "Media offload from cards and recorders with checksum-verified copies, dual backup and a clip inventory",
+      "category": "ingest",
+      "tags": [
+        "ingest",
+        "取込",
+        "scaffold"
+      ]
+    },
+    {
+      "name": "ffmpeg-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/ffmpeg-skill"
+      },
+      "description": "Execution engine: typed FFmpeg/ffprobe tools every delegating Skill runs on",
+      "category": "engine",
+      "tags": [
+        "engine",
+        "エンジン"
+      ]
+    },
+    {
+      "name": "video-editing-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/video-editing-skill"
+      },
+      "description": "Cut, trim, concat, fit, overlay",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "color-grading-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/color-grading-skill"
+      },
+      "description": "Colour correction, LUT, HDR to SDR",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "motion-graphics-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/motion-graphics-skill"
+      },
+      "description": "Title cards, lower thirds, overlays",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "subtitle-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/subtitle-skill"
+      },
+      "description": "Subtitle validation, SRT/WebVTT generation, burn-in",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "thumbnail-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/thumbnail-skill"
+      },
+      "description": "Thumbnail rendering; AI-generated background assets via FLUX.2 [klein] 4B (ADR-012)",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "blender-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/blender-skill"
+      },
+      "description": "Headless Blender: inspect, convert, optimize and render 3D assets (needs Blender installed)",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "remotion-ffmpeg-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/remotion-ffmpeg-skill"
+      },
+      "description": "Remotion motion graphics on real footage, timed from ffmpeg-skill measurements (captions, jump cuts, beat-synced motion)",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "hyperframes-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/hyperframes-skill"
+      },
+      "description": "Renders HTML scenes to verified video with HyperFrames (needs Node.js 22+ and a headless Chromium)",
+      "category": "visual",
+      "tags": [
+        "visual",
+        "映像"
+      ]
+    },
+    {
+      "name": "audio-production-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/audio-production-skill"
+      },
+      "description": "Gain, mix, normalize, dynamics, denoise, filler and silence removal",
+      "category": "audio",
+      "tags": [
+        "audio",
+        "音"
+      ]
+    },
+    {
+      "name": "transcription-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/transcription-skill"
+      },
+      "description": "Speech to timestamped transcript (local faster-whisper)",
+      "category": "recognition",
+      "tags": [
+        "recognition",
+        "認識"
+      ]
+    },
+    {
+      "name": "qc-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/qc-skill"
+      },
+      "description": "Rule-based QC: PASS/WARN/FAIL/UNKNOWN",
+      "category": "verification",
+      "tags": [
+        "verification",
+        "検証"
+      ]
+    },
+    {
+      "name": "media-analysis-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/media-analysis-skill"
+      },
+      "description": "Observation only: measures facts about a media file",
+      "category": "verification",
+      "tags": [
+        "verification",
+        "検証"
+      ]
+    },
+    {
+      "name": "artifacts-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/artifacts-skill"
+      },
+      "description": "Verifies AI-generated documents (scripts, captions, reports) and issues evidence-backed receipts",
+      "category": "verification",
+      "tags": [
+        "verification",
+        "検証"
+      ]
+    },
+    {
+      "name": "imagemagick-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/imagemagick-skill"
+      },
+      "description": "Still-image editing with ImageMagick",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "補助"
+      ]
+    },
+    {
+      "name": "stepcap",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/stepcap"
+      },
+      "description": "Screen recording of a task into a how-to guide and a SKILL.md",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "補助"
+      ]
+    }
+  ]
+}

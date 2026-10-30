@@ -1,0 +1,35 @@
+name: Skill updates
+
+# Daily: compares every repository in ecosystem.json with the previous run (default-branch head and
+# version tags, via git ls-remote) and posts what changed as a comment on the open issue labelled
+# `skill-updates`, mentioning the repository owner, so GitHub notifies by mail / in the app.
+# The issue body carries the state between runs (scripts/skill-updates.py --issue). The first run
+# opens the issue and records a baseline without commenting.
+
+on:
+  schedule:
+    - cron: "17 22 * * *" # daily, 07:17 JST
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: skill-updates
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/skill-updates.py --issue --report skill-updates.md
+      - name: Marketplace is in step with ecosystem.json
+        run: python3 scripts/marketplace.py --check
+      - name: Job summary
+        if: always()
+        run: '[ -f skill-updates.md ] && cat skill-updates.md >> "$GITHUB_STEP_SUMMARY" || true'

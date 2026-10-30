@@ -1,5 +1,7 @@
 # Roadmap
 
+> What each repository still needs and the build order across them: [`ecosystem/ROADMAP.md`](ecosystem/ROADMAP.md). This page is the architecture roadmap of the contract layer.
+
 Status: this roadmap is built from the task brief's suggested phase shape, then
 challenged against `REPOSITORY_MAP.md`'s evidence, `ARCHITECTURE.md`'s minimal-kernel
 definition (§8), and `CAPABILITY_MODEL.md`/`SKILL_SPEC.md`'s already-specified contract

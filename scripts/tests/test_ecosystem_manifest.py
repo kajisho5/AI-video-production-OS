@@ -65,7 +65,7 @@ class ManifestTests(unittest.TestCase):
 
 def _env(home: Path) -> dict:
     env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
-    env.update(HOME=str(home), CLAUDE_SKILLS_DIR=str(home / ".claude" / "skills"),
+    env.update(HOME=str(home), CLAUDE_SKILLS_DIR=str(home / ".claude" / "skills"), CODEX_SKILLS_DIR=str(home / ".agents" / "skills"),
                PIP_NO_INDEX="1", PIP_DISABLE_PIP_VERSION_CHECK="1", GIT_TERMINAL_PROMPT="0")
     env.pop("AVOS_HOME", None)
     return env
@@ -105,6 +105,8 @@ class BootstrapTests(unittest.TestCase):
             (ws / "qc-skill" / "SKILL.md").write_text("---\nname: qc-skill\n---\n", encoding="utf-8")
             (ws / "imagemagick-skill" / "SKILL.md").write_text("---\nname: imagemagick-skill\n---\n", encoding="utf-8")
             (ws / "ffmpeg-skill" / "SKILL.md").write_text("---\nname: ffmpeg-skill\n---\n", encoding="utf-8")
+            (ws / "stepcap" / "skills" / "stepcap").mkdir(parents=True)   # plugin layout: skills/<name>/SKILL.md
+            (ws / "stepcap" / "skills" / "stepcap" / "SKILL.md").write_text("---\nname: stepcap\n---\n", encoding="utf-8")
             skills = home / ".claude" / "skills"
             (skills / "ffmpeg-skill").mkdir(parents=True)  # the user's own copy
 
@@ -114,14 +116,18 @@ class BootstrapTests(unittest.TestCase):
             self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
             self.assertEqual(os.readlink(skills / "qc-skill"), str(ws / "qc-skill"))
             self.assertEqual(os.readlink(skills / "imagemagick-skill"), str(ws / "imagemagick-skill"))
+            self.assertEqual(os.readlink(skills / "stepcap"), str(ws / "stepcap" / "skills" / "stepcap"))
             self.assertFalse((skills / "ffmpeg-skill").is_symlink())
+            codex = home / ".agents" / "skills"   # Codex reads the same skills from here
+            self.assertEqual(os.readlink(codex / "qc-skill"), str(ws / "qc-skill"))
+            self.assertEqual(os.readlink(codex / "ffmpeg-skill"), str(ws / "ffmpeg-skill"), "a foreign entry in one target does not stop the other")
             self.assertIn("dubbing-skill: no package yet", out.stdout)
             self.assertIn("ffmpeg-skill: ~/.claude/skills entry not replaced", out.stdout)
 
             again = subprocess.run([BASH, str(BOOTSTRAP), "--dir", str(ws), "--no-update"],
                                    env=_env(home), capture_output=True, text=True, timeout=300)
             self.assertEqual(again.returncode, 0)
-            self.assertIn("qc-skill: linked\n", again.stdout)
+            self.assertIn(f"qc-skill: linked ({skills})\n", again.stdout)
 
 
 if __name__ == "__main__":
