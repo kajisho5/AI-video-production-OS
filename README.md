@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/app-icon-dark.png">
+    <img src="brand/app-icon.png" width="128" alt="AI-video-production-OS app icon">
+  </picture>
+</p>
+
 <div align="center">
 
 # AI Video Production OS
