@@ -1,6 +1,6 @@
 # Ecosystem build roadmap
 
-What every repository still needs, how the pieces connect, and the order to build them in. Written from a read-only audit of all 33 components on 2026-10-30 (source, tests, CI, contracts, the agent's adapters). Each repository carries its own `ROADMAP.md` with PR-sized steps; this page is the map across them. `docs/ROADMAP.md` is the architecture roadmap (phases of the contract layer) and stays as it is.
+What every repository still needs, how the pieces connect, and the order to build them in. Written from a read-only audit of all 33 components on 2026-10-30 (source, tests, CI, contracts, the agent's adapters). Each repository carries an `ECOSYSTEM_ROADMAP.md` with PR-sized steps; this page is the map across them. `docs/ROADMAP.md` is the architecture roadmap (phases of the contract layer) and stays as it is.
 
 **ffmpeg-skill is treated as complete.** Its 42 tools (contract v1.0, stability promise for 2.x) are the engine the others delegate to; no step below changes it. Several gaps are closed by *using* tools it already has, e.g. `render --export-timeline` (.otio / .fcpxml / .edl), `freeze`, `reverse`, `insert`, `audio --duck --voice`, `metadata` chapters.
 
@@ -139,7 +139,7 @@ Neither vendor ships a desktop MCP server. Community servers exist. Verified on 
 
 ## Tracking in the GitHub Project
 
-Each repository's `ROADMAP.md` arrives as a pull request named "Roadmap". Add those PRs, or issues cut from their steps, to the **AI Video Production Ecosystem** project. Two ways:
+Each repository's `ECOSYSTEM_ROADMAP.md` arrives as a pull request named "Roadmap". Add those PRs, or issues cut from their steps, to the **AI Video Production Ecosystem** project. Two ways:
 - **Auto-add:** in the project, open Workflows → Auto-add to project, and filter by repository (`is:pr,issue label:roadmap`).
 - **By hand:** Add item → choose the repository.
 
@@ -147,4 +147,4 @@ The project is private and has no API available to this tooling, so it is not po
 
 ## Per-repository roadmaps
 
-Each repository's `ROADMAP.md` (added by its "Roadmap" PR): video-production-agent, ingest-skill, video-editing-skill, color-grading-skill, motion-graphics-skill, subtitle-skill, thumbnail-skill, blender-skill, remotion-ffmpeg-skill, hyperframes-skill, audio-production-skill, voice-enhance-skill, dubbing-skill, sound-design-skill, transcription-skill, diarization-skill, detection-skill, slide-sync-skill, qc-skill, media-analysis-skill, artifacts-skill, publish-skill, imagemagick-skill, stepcap, skillpact, system-intelligence, bdmvkit, vtskit, udfkit, dvdcc, oncemore. ffmpeg-skill has none, because it is complete.
+Each repository's `ECOSYSTEM_ROADMAP.md` (added by its "Roadmap" PR): video-production-agent, ingest-skill, video-editing-skill, color-grading-skill, motion-graphics-skill, subtitle-skill, thumbnail-skill, blender-skill, remotion-ffmpeg-skill, hyperframes-skill, audio-production-skill, voice-enhance-skill, dubbing-skill, sound-design-skill, transcription-skill, diarization-skill, detection-skill, slide-sync-skill, qc-skill, media-analysis-skill, artifacts-skill, publish-skill, imagemagick-skill, stepcap, skillpact, system-intelligence, bdmvkit, vtskit, udfkit, dvdcc, oncemore. ffmpeg-skill has none, because it is complete.
