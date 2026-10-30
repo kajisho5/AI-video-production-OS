@@ -123,8 +123,8 @@ Artifact and skipping QC — is now fully fixed end to end (PRs #32-#35, `ffmpeg
   deliberately excluded (the copy preset needs a video stream) and is not otherwise known to be
   reachable today; a future item if it turns out to be. Tracked as `WORK_QUEUE.md` item 9,
   now fully resolved.
-- Deliberately not touched: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9) — a
-  real but wide-blast-radius rename, not a silent-`MISSING` bug like the three above.
+- Deliberately not touched at the time: subtitle-skill's tool-id naming issue (`DECISION_LOG.md` D9)
+  — since resolved on the Skill side (`subtitle-skill`#20, pinned by `video-production-agent`#84).
 - **Fixed this session, merged**: a `round(dur, 3)` vs. `TIME_EPS` rounding mismatch made
   `plan`/`render` spuriously fail with "exceeds asset duration" on any real, untrimmed asset
   whose duration's 4th decimal digit is `>= 5` — roughly half of all real-world durations,

@@ -107,6 +107,10 @@ warning above predicted:
    cleanly by Capability id (`subtitle.generate`, `subtitle.render` — exact 1:1 match with
    the Agent's own `SkillSpec` names).
 
+   **Resolved (2026-10-30)**: `subtitle-skill`#20 (v0.2.1) now publishes `subtitle/generate` /
+   `subtitle/render`, and `video-production-agent`#84 pins it; the Agent's diagnostic reports
+   `PROVIDES_VALID` for both (`DECISION_LOG.md` D9 update).
+
    By contrast, **`thumbnail-skill`'s real tool ids (`"thumbnail/render"`,
    `"thumbnail/extract_frame"`) already literal-match** the Agent's candidates exactly,
    despite the same *package*-id mismatch (`thumbnail-skill` vs `thumbnail`) — proving the
@@ -305,7 +309,8 @@ real-data regressions of this item's own qc-skill/subtitle-skill finding).
 
 **Run against all 10 registered Skills' real, current `provides[]`** (captured from each
 Skill's actual merged `main`, no live network): confirmed `qc-skill` (10/10) and
-`subtitle-skill` (2/2) as `PROVIDES_MISMATCH`. **Traced one level deeper afterward
+`subtitle-skill` (2/2) as `PROVIDES_MISMATCH` (`subtitle-skill` is `PROVIDES_VALID` since
+`subtitle-skill`#20 + `video-production-agent`#84). **Traced one level deeper afterward
 (`DECISION_LOG.md` D9) and split what looked like the same finding into two genuinely
 different ones**: `qc-skill`'s is not drift at all — its real CLI has one `run`
 subcommand, `check`/`inspect` are a field inside the request, so `provides[]`'s single

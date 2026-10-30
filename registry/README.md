@@ -51,8 +51,8 @@ python3 -m unittest discover -s registry/tests -t .
   false positives against the ecosystem's actual source (a comment merely *mentioning*
   "eval()/exec()" in `qc-skill`, and the safe, explicit `shell=False` several Skills
   actually use). Manually verified PASS against all 9 real Python Skills' source trees;
-  does not cover `ffmpeg-skill` (Node.js, not Python — a language-appropriate lint-rule
-  equivalent is future work).
+  also run against `ffmpeg-skill`: its implementation is Python too (`scripts/`, `mcp/`;
+  npm is only the installer), and `scripts/`+`mcp/` at 2.22.1 PASS (59 source files).
 - `tests/` — 62 tests: 21 against real captured `provides` data (`tests/fixtures/`,
   trimmed excerpts of `qc-skill`, `media-analysis-skill`, `video-editing-skill`,
   `transcription-skill` and `ffmpeg-skill`'s actual `contract`/`skill --json` output
@@ -93,8 +93,9 @@ python3 -m unittest discover -s registry/tests -t .
 - **Not a CI-integrated harness yet.** All eight `SKILL_SPEC.md` §8 checks are real
   functions a caller can invoke, but nothing here runs them automatically against every
   Skill on a schedule or in a shared CI job — a caller (a future CLI, or each Skill's own
-  CI) still wires them in per-Skill. `no_unsafe_shell_out` also has no non-Python
-  equivalent yet, so `ffmpeg-skill` (Node.js) is not covered by any check in this file.
+  CI) still wires them in per-Skill. `ffmpeg-skill` is not an exception: it is a Python
+  Skill distributed through npm, so `no_unsafe_shell_out` applies to its `scripts/` and
+  `mcp/` trees like any other Skill.
 
 ## Why it lives here, not a new repository
 

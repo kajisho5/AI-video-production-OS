@@ -287,3 +287,8 @@ unasked.
 **Why this belongs in the log**: distinguishing "the join key doesn't match" from "this
 is actually wrong" is exactly the kind of judgment call that gets silently lost if only
 the diagnostic's raw `PROVIDES_MISMATCH` label is trusted at face value next time.
+
+**Update (2026-10-30), `subtitle-skill` half resolved**: fixed on the Skill side without renaming the Agent's
+`SKILL_ID`. `subtitle-skill`#20 (v0.2.1) changed `provides[].tool_id` to `subtitle/generate` /
+`subtitle/render`; `video-production-agent`#84 pins that contract and its diagnostics test asserts
+`PROVIDES_VALID` for both. The `qc-skill` half is unchanged (no fix, by design).
