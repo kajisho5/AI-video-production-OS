@@ -139,11 +139,7 @@ Neither vendor ships a desktop MCP server. Community servers exist. Verified on 
 
 ## Tracking in the GitHub Project
 
-Each repository's `ECOSYSTEM_ROADMAP.md` arrives as a pull request named "Roadmap". Add those PRs, or issues cut from their steps, to the **AI Video Production Ecosystem** project. Two ways:
-- **Auto-add:** in the project, open Workflows → Auto-add to project, and filter by repository (`is:pr,issue label:roadmap`).
-- **By hand:** Add item → choose the repository.
-
-The project is private and has no API available to this tooling, so it is not populated automatically.
+The **AI Video Production Ecosystem** project (kajisho5 #1) is filled from this repository alone. `.github/workflows/project-sync.yml` runs hourly and adds every issue and pull request of the repositories in `ecosystem.json`. The other repositories need no setup. It needs the `PROJECT_TOKEN` secret here (see README, "GitHub Project"). Issues cut from the roadmap steps land in the project the same way.
 
 ## Per-repository roadmaps
 

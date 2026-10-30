@@ -205,6 +205,14 @@ posts what changed (new commits with their subjects, new version tags) on the is
 `skill-updates`, mentioning the owner, so GitHub notifies by mail and in the app. Locally:
 `python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json`.
 
+**GitHub Project.** `.github/workflows/project-sync.yml` adds the issues and pull requests of
+every repository in `ecosystem.json` to the project *AI Video Production Ecosystem* (kajisho5 #1)
+every hour, from this repository alone. It needs one secret here, `PROJECT_TOKEN`: a classic token
+with the `project` and `repo` scopes
+([create it](https://github.com/settings/tokens/new?scopes=project,repo&description=ai-video-os-project-sync)).
+Then add it under Settings → Secrets and variables → Actions → New repository secret, and run
+**Project sync** once by hand with `days` = `60` to bring in what already exists.
+
 **Codex** reads skills from `~/.agents/skills`; `install.sh` links every Skill there too
 (`--no-codex-skills` to skip).
 
