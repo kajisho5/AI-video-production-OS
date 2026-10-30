@@ -1,3 +1,14 @@
+## v0.7.8 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- Correct ffmpeg-skill's registry facts and record resolved agent work (#95)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.7 (2026-10-30)
 
 ## What's Changed
