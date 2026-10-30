@@ -92,7 +92,7 @@
      "role": "Observation only: measures facts about a media file",
      "owns": ["メディア計測"]},
     {"repo": "artifacts-skill", "plugin": true, "department": "verify", "install": "pip", "status": "active", "extras": ["all"],
-     "role": "Verifies AI-generated documents (scripts, captions, reports) and issues evidence-backed receipts",
+     "role": "Verifies AI-generated documents (scripts, caption scripts as documents, reports; caption files belong to subtitle-skill and qc-skill) and issues evidence-backed receipts",
      "owns": ["生成文書の検証"]},
 
     {"repo": "publish-skill", "department": "delivery", "install": "pip", "status": "scaffold",
