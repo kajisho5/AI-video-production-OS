@@ -1,3 +1,14 @@
+## v0.7.1 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- docs: one capability id per operation (audio fade, motion-graphics text overlay) (#88)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.0 (2026-10-30)
 
 ## What's Changed
