@@ -19,7 +19,7 @@
      "role": "Orchestrator: plans a production and calls the Skills below",
      "owns": ["制作計画", "スキルの呼び分け", "制作記録(ProductionReceipt)"]},
 
-    {"repo": "ingest-skill", "plugin": true, "department": "ingest", "install": "pip", "status": "scaffold",
+    {"repo": "ingest-skill", "plugin": true, "department": "ingest", "install": "pip", "status": "active",
      "role": "Media offload from cards, recorders and URLs with checksum-verified copies, dual backup and a clip inventory",
      "owns": ["素材取り込み(検証付きコピー)", "二重バックアップ", "素材台帳", "URL素材取得"]},
 
