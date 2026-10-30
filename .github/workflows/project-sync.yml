@@ -1,9 +1,11 @@
 name: Project sync
 
 # Hourly: adds the issues and pull requests of every repository in ecosystem.json (and this one) that
-# changed in the last two days to the GitHub Project "AI Video Production Ecosystem" (kajisho5 #1).
+# changed in the last 60 days to the GitHub Project "AI Video Production Ecosystem" (kajisho5 #1).
 # One token in this repository only; nothing is set up in the other repositories. Adding an item that
-# is already in the project changes nothing. Run it by hand with a larger `days` to backfill.
+# is already in the project is skipped (reading is cheap), so each run only adds what is missing.
+# Additions are paced for GitHub's write limits and a run stops after 50 minutes; a large backfill
+# completes over several hourly runs.
 # Needs the secret PROJECT_TOKEN (classic PAT, scopes `project` and `repo`); without it the run skips.
 
 on:
@@ -13,7 +15,7 @@ on:
     inputs:
       days:
         description: "Look back this many days (larger to backfill)"
-        default: "2"
+        default: "60"
         required: true
 
 permissions:
@@ -26,13 +28,13 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Add items to the project
         env:
           PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-          DAYS: ${{ inputs.days || '2' }}
+          DAYS: ${{ inputs.days || '60' }}
         run: python3 scripts/project-sync.py --days "$DAYS" --report project-sync.md
       - name: Job summary
         if: always()

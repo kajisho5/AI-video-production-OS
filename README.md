@@ -210,8 +210,9 @@ every repository in `ecosystem.json` to the project *AI Video Production Ecosyst
 every hour, from this repository alone. It needs one secret here, `PROJECT_TOKEN`: a classic token
 with the `project` and `repo` scopes
 ([create it](https://github.com/settings/tokens/new?scopes=project,repo&description=ai-video-os-project-sync)).
-Then add it under Settings → Secrets and variables → Actions → New repository secret, and run
-**Project sync** once by hand with `days` = `60` to bring in what already exists.
+Then add it under Settings → Secrets and variables → Actions → New repository secret. Each run
+looks back 60 days and adds only what the project does not have yet. Additions are paced for
+GitHub's write limits, so the first backfill finishes over a few hourly runs.
 
 **Codex** reads skills from `~/.agents/skills`; `install.sh` links every Skill there too
 (`--no-codex-skills` to skip).
