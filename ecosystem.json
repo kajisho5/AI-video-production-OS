@@ -81,7 +81,7 @@
      "role": "Face, text (OCR) and object detection",
      "owns": ["顔検出", "文字検出(OCR)", "物体検出"],
      "engines": [{"name": "YuNet", "note": "顔 / MIT / OpenCV"}, {"name": "Tesseract 5 (tessdata_best)", "note": "OCR / Apache-2.0 / jpn・jpn_vert / stepcap と共通"}, {"name": "YOLOX", "note": "物体 / Apache-2.0 / ONNXRuntime"}]},
-    {"repo": "slide-sync-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active",
+    {"repo": "slide-sync-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active", "extras": ["pdf"],
      "role": "Slide import, slide-change detection, slide text",
      "owns": ["スライド取込", "スライド切替検出"]},
 
