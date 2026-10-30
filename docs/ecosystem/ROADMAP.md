@@ -9,7 +9,7 @@ What every repository still needs, how the pieces connect, and the order to buil
 | Department | Repositories | Today |
 |---|---|---|
 | Command | video-production-agent | plans, approves, renders, records; brain = rules + Claude (API or the chat app via MCP); 10 adapters |
-| Ingest | ingest-skill | v0.1.0 verified offload on its PR branch; not wired |
+| Ingest | ingest-skill | active: verified single-read offload to several destinations, ASC MHL + xxHash64, card-aware inventory, `ingest fetch` (URL via yt-dlp); agent adapter not yet wired |
 | Engine | ffmpeg-skill | 42 tools, complete; agent uses 15 directly |
 | Visual | video-editing, color-grading, motion-graphics, subtitle, thumbnail | implemented and wired, with unexposed parameters and version drift |
 | Visual | blender, remotion-ffmpeg, hyperframes | implemented, not wired |
