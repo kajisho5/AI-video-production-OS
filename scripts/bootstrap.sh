@@ -4,12 +4,13 @@
 # running it directly from an OS checkout works the same.
 #
 # Usage:
-#   ./scripts/bootstrap.sh [--dir DIR] [--with-optional] [--no-update] [--no-claude-skills] [--dry-run]
+#   ./scripts/bootstrap.sh [--dir DIR] [--with-optional] [--no-update] [--no-claude-skills] [--no-codex-skills] [--dry-run]
 #
 #   --dir DIR            workspace (default: $AVOS_HOME or ~/ai-video-os)
 #   --with-optional      also install components marked "optional" (DVD/Blu-ray authoring)
 #   --no-update          do not `git pull` repositories that are already cloned
 #   --no-claude-skills   do not link Skills into ~/.claude/skills
+#   --no-codex-skills    do not link Skills into ~/.agents/skills (where Codex looks)
 #   --dry-run            print what would be done, change nothing
 #
 # What it does, per repository in ecosystem.json (except "planned" ones, which have no
@@ -21,8 +22,9 @@
 #      install=npm: `npm ci` in the checkout (needs Node.js; reported if missing).
 #      install=checkout: nothing to install; the agent runs it from the checkout.
 #      "path": the package lives in that subdirectory of the repository.
-#   3. If it has a SKILL.md, symlink it to ~/.claude/skills/<name from SKILL.md> so Claude Code
-#      sees it. An existing entry there that points somewhere else is reported, never replaced.
+#   3. If it has a SKILL.md (at its root, or skills/<name>/SKILL.md), symlink it to
+#      ~/.claude/skills/<name from SKILL.md> (Claude Code) and ~/.agents/skills/<name> (Codex).
+#      An existing entry there that points somewhere else is reported, never replaced.
 # Then checks ffmpeg/ffprobe and Blender (never installs system packages) and runs `video-agent doctor`
 # from the agent checkout, whose sibling-directory discovery finds every Skill in DIR.
 #
@@ -34,9 +36,11 @@ MANIFEST="$OS_ROOT/ecosystem.json"
 WORKSPACE="${AVOS_HOME:-$HOME/ai-video-os}"
 UPDATE=1
 LINK_SKILLS=1
+LINK_CODEX=1
 DRY_RUN=0
 WITH_OPTIONAL=0
 CLAUDE_SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
+CODEX_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.agents/skills}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -44,9 +48,10 @@ while [ $# -gt 0 ]; do
     --dir=*) WORKSPACE="${1#--dir=}"; shift ;;
     --no-update) UPDATE=0; shift ;;
     --no-claude-skills) LINK_SKILLS=0; shift ;;
+    --no-codex-skills) LINK_CODEX=0; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --with-optional) WITH_OPTIONAL=1; shift ;;
-    -h|--help) sed -n '2,26p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1 (see --help)" >&2; exit 2 ;;
   esac
 done
@@ -151,24 +156,35 @@ while IFS=$'\t' read -r repo install extras sub; do
   esac
 done <<< "$COMPONENTS"
 
-echo "--- 4. Claude Code skills ($CLAUDE_SKILLS_DIR) ---"
-if [ "$LINK_SKILLS" = 0 ]; then
-  echo "   skipped (--no-claude-skills)"
+echo "--- 4. Claude Code / Codex skills ---"
+# Each Skill is a folder with SKILL.md: the repository root, or skills/<name>/ inside it. It is linked into
+# every target directory: Claude Code reads ~/.claude/skills, Codex reads ~/.agents/skills.
+link_skill() {   # $1 skill folder, $2 target directory
+  local src="$1" target="$2" name link
+  name="$(sed -n 's/^name:[[:space:]]*//p' "$src/SKILL.md" | head -1 | tr -d "\"'\r")"
+  name="${name:-$(basename "$src")}"
+  link="$target/$name"
+  if [ -L "$link" ] && [ "$(readlink "$link")" = "$src" ]; then
+    echo "   $name: linked ($target)"
+  elif [ -e "$link" ] || [ -L "$link" ]; then
+    echo "!! $name: $link already exists and is not this checkout, left as is"; note "$name: ${target/#$HOME/\~} entry not replaced"
+  else
+    run ln -s "$src" "$link" && echo "   $name: linked -> $src ($target)"
+  fi
+}
+TARGETS=()
+[ "$LINK_SKILLS" = 1 ] && TARGETS+=("$CLAUDE_SKILLS_DIR")
+[ "$LINK_CODEX" = 1 ] && TARGETS+=("$CODEX_SKILLS_DIR")
+if [ "${#TARGETS[@]}" = 0 ]; then
+  echo "   skipped (--no-claude-skills --no-codex-skills)"
 else
-  run mkdir -p "$CLAUDE_SKILLS_DIR"
+  for target in "${TARGETS[@]}"; do run mkdir -p "$target"; done
   while IFS=$'\t' read -r repo _ _; do
     dir="$WORKSPACE/$repo"
-    [ -f "$dir/SKILL.md" ] || continue
-    name="$(sed -n 's/^name:[[:space:]]*//p' "$dir/SKILL.md" | head -1 | tr -d "\"'\r")"
-    name="${name:-$repo}"
-    link="$CLAUDE_SKILLS_DIR/$name"
-    if [ -L "$link" ] && [ "$(readlink "$link")" = "$dir" ]; then
-      echo "   $name: linked"
-    elif [ -e "$link" ] || [ -L "$link" ]; then
-      echo "!! $name: $link already exists and is not this checkout, left as is"; note "$name: ~/.claude/skills entry not replaced"
-    else
-      run ln -s "$dir" "$link" && echo "   $name: linked -> $dir"
-    fi
+    for src in "$dir" "$dir"/skills/*; do
+      [ -f "$src/SKILL.md" ] || continue
+      for target in "${TARGETS[@]}"; do link_skill "$src" "$target"; done
+    done
   done <<< "$COMPONENTS"
 fi
 

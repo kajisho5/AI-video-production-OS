@@ -1,0 +1,37 @@
+{
+  "name": "video-production-os",
+  "displayName": "AI Video Production OS",
+  "description": "The whole AI Video Production OS in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
+  "author": {
+    "name": "kajisho5",
+    "url": "https://github.com/kajisho5"
+  },
+  "homepage": "https://github.com/kajisho5/AI-video-production-OS",
+  "repository": "https://github.com/kajisho5/AI-video-production-OS",
+  "keywords": [
+    "video",
+    "audio",
+    "ffmpeg",
+    "production"
+  ],
+  "dependencies": [
+    "video-production-agent",
+    "ingest-skill",
+    "ffmpeg-skill",
+    "video-editing-skill",
+    "color-grading-skill",
+    "motion-graphics-skill",
+    "subtitle-skill",
+    "thumbnail-skill",
+    "blender-skill",
+    "remotion-ffmpeg-skill",
+    "hyperframes-skill",
+    "audio-production-skill",
+    "transcription-skill",
+    "qc-skill",
+    "media-analysis-skill",
+    "artifacts-skill",
+    "imagemagick-skill",
+    "stepcap"
+  ]
+}

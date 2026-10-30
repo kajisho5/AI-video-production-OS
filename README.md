@@ -165,12 +165,13 @@ Installing the OS installs the whole ecosystem — the agent and every Skill lis
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash
-# options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills
+# options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills --no-codex-skills
 ```
 
 Into `~/ai-video-os` (or `--dir`), this clones every repository (or fast-forwards an
 existing clone to the latest), `pip install -e`s the Python ones into `~/ai-video-os/.venv`,
-links every Skill that has a `SKILL.md` into `~/.claude/skills/` so Claude Code sees it,
+links every Skill that has a `SKILL.md` into `~/.claude/skills/` (Claude Code) and
+`~/.agents/skills/` (Codex),
 checks `ffmpeg`/`ffprobe` (prints the `apt`/`brew` command if missing — it never installs
 system packages itself) and finishes with a real `video-agent doctor`. Re-running it
 updates everything. It never deletes, resets or overwrites: a clone with local changes, or
@@ -179,6 +180,33 @@ repository with no package yet is cloned and reported as such. DVD/Blu-ray autho
 (`bdmvkit`, `vtskit`, `udfkit`, `dvdcc`, `oncemore`) is optional: add `--with-optional`. From a checkout,
 `./install.sh` does the same. To add a Skill to the ecosystem, add it to `ecosystem.json`
 (and to `docs/ecosystem/registry.json`; a test checks they agree).
+
+### From Claude Code: the plugin marketplace
+
+This repository is also a Claude Code plugin marketplace, generated from `ecosystem.json`
+(`scripts/marketplace.py`):
+
+```text
+/plugin marketplace add kajisho5/AI-video-production-OS
+/plugin install video-production-os@ai-video-production-os    # everything: the agent, every Skill, the routing skill
+/plugin install qc-skill@ai-video-production-os               # or just one Skill
+```
+
+`video-production-os` depends on every non-optional Skill, so it installs them all; its routing
+skill prefers the OS Skills that are installed and says so when it falls back to another skill,
+a plain tool or the model itself. Plugins carry the skills (`SKILL.md`); the Python packages and
+CLIs behind them still come from `install.sh` — run it with `--no-claude-skills` so Claude Code
+does not see each skill twice. Updates: turn on **auto-update** for `ai-video-production-os`
+under `/plugin` → Marketplaces (off by default for every non-Anthropic marketplace), and Claude
+Code reports `Plugin updated: <name>`; or run `/plugin marketplace update ai-video-production-os`.
+
+**Update notices.** `.github/workflows/skill-updates.yml` checks every repository daily and
+posts what changed (new commits with their subjects, new version tags) on the issue labelled
+`skill-updates`, mentioning the owner, so GitHub notifies by mail and in the app. Locally:
+`python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json`.
+
+**Codex** reads skills from `~/.agents/skills`; `install.sh` links every Skill there too
+(`--no-codex-skills` to skip).
 
 If you only want one piece rather than the whole ecosystem, the Skills are also usable
 standalone. `ffmpeg-skill` is genuinely published and installable on its own:
