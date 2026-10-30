@@ -1,3 +1,12 @@
+## v0.7.6 (2026-10-30)
+
+## What's Changed
+
+- Enable selected Trail of Bits plugins (#93)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.5 (2026-10-30)
 
 ## What's Changed
