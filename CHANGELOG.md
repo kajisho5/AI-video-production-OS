@@ -1,3 +1,14 @@
+## v0.3.1 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- docs: record the owner's decisions on translation, platform specs, URL download and NLEs (#80)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.3.0 (2026-10-30)
 
 ## What's Changed
