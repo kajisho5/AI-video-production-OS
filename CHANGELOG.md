@@ -1,3 +1,14 @@
+## v0.7.3 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- ecosystem: mark ingest-skill active (#90)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.2 (2026-10-30)
 
 ## What's Changed
