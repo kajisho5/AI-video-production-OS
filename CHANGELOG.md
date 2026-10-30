@@ -1,3 +1,14 @@
+## v0.2.1 (2026-10-30)
+
+## What's Changed
+
+## Other changes
+
+- Marketplace, update notices, Codex skills (ADR-013) and the ecosystem build roadmap (#78)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.2.0 (2026-10-29)
 
 ## What's Changed
