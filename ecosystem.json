@@ -73,7 +73,7 @@
      "role": "Speech to timestamped transcript (local faster-whisper)",
      "owns": ["文字起こし"],
      "engines": [{"name": "faster-whisper", "note": "ローカル"}]},
-    {"repo": "diarization-skill", "department": "recognize", "install": "pip", "status": "scaffold",
+    {"repo": "diarization-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active", "optional": true,
      "role": "Speaker diarization: fills the Transcript speaker_id that transcription-skill reserves",
      "owns": ["話者識別"],
      "engines": [{"name": "未選定", "note": "ローカル・商用可で選定"}]},

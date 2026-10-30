@@ -36,7 +36,7 @@ Never claim a result is verified, measured or approved unless a skill or the age
 | `dubbing-skill` (scaffold) -- CLI only, no skill yet | 音 | AIナレーション(TTS), 吹替・声の置換, 音声解説 |
 | `sound-design-skill` (scaffold) -- CLI only, no skill yet | 音 | BGM生成, 効果音 |
 | `transcription-skill` | 認識 | 文字起こし |
-| `diarization-skill` (scaffold) -- CLI only, no skill yet | 認識 | 話者識別 |
+| `diarization-skill` (optional) | 認識 | 話者識別 |
 | `detection-skill` (scaffold) -- CLI only, no skill yet | 認識 | 顔検出, 文字検出(OCR), 物体検出 |
 | `slide-sync-skill` | 認識 | スライド取込, スライド切替検出 |
 | `qc-skill` | 検証 | 規格判定(QC) |
