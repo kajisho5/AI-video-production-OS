@@ -73,8 +73,8 @@ Neither vendor ships a desktop MCP server. Community servers exist. Verified on 
 2. Claude imports the files through the NLE's MCP server (Resolve `ImportTimelineFromFile` / Premiere OTIO import), adds markers and queues the render. The agent's MCP server and the NLE's server sit side by side in the same chat app.
 3. Later, the human's edit comes back: the NLE exports OTIO, and the agent reads it as a new plan version.
 
-**Build vs reuse.**
-- **Reuse:** live NLE control. Don't fork the community servers. Pin a version, keep eval and script tools off, and opt out of telemetry where it exists.
+**Build vs reuse.** Neither NLE is available yet (see Decided), so the interchange files come first and live control waits.
+- **Later, reuse:** live NLE control. Don't fork the community servers. Pin a version, keep eval and script tools off, and opt out of telemetry where it exists.
 - **Build, first in the agent:** `timeline_export` through ffmpeg-skill `render --export-timeline` (agent step 4). No new repository is needed for that.
 - **Build, later as `nle-bridge-skill`:** round-trip ingest, FCP7 XML for Premiere, relink manifests and conform packages. This is `planned` in `ecosystem.json`; the repository does not exist yet.
 
@@ -125,17 +125,22 @@ Neither vendor ships a desktop MCP server. Community servers exist. Verified on 
    - system-intelligence reads ecosystem.json ownership and the contracts.
    - skillpact conformance runs as a non-blocking OS job.
 
+## Decided by the owner (2026-10-30)
+
+| Question | Decision |
+|---|---|
+| Who translates subtitles (字幕翻訳)? | **subtitle-skill**, as `ecosystem.json` already says. Its README's "translation is out of scope" is corrected. The MT engine gets an ADR in subtitle-skill. Dubbing builds on it. |
+| Who owns the platform specs (配信プラットフォーム仕様)? | **ffmpeg-skill** keeps the table (`_platforms.py`; nothing in ffmpeg-skill changes). publish-skill reads it and owns only upload-side limits (アップロード制限: file size, duration, rate limits). |
+| Who owns URL download (URL素材取得)? | **ingest-skill**. The agent's own yt-dlp call moves there; until then the agent keeps it. |
+| Premiere / Resolve | Neither is available here. Build the **interchange files** first (OTIO, FCP7 XML, SRT), which open in either NLE later. Live control through the community MCP servers waits until the software is at hand. |
+
 ## Decisions only the owner can make
 
 | Question | Options |
 |---|---|
-| Who translates subtitles (字幕翻訳)? | subtitle-skill README says out of scope; ecosystem.json says it owns it. Keep it there and choose an MT engine, or move the job. Dubbing waits on this. |
-| Who owns the platform specs (配信プラットフォーム仕様)? | The table lives in ffmpeg-skill `_platforms.py`. Recommendation: publish-skill reads it and owns only upload-side limits. |
-| Who owns URL download? | Today the agent calls yt-dlp itself. Options: ingest-skill, or keep it in the agent. |
 | Compliance checking | Recommendation: qc-skill judges against the spec, and ffmpeg-skill `check` is the engine's preflight. Record that split. |
 | Overlay / PiP / titles | The jobs are split by name. video-editing owns still overlay, motion-graphics owns titles, and ffmpeg-skill owns B-roll and screen compositing. Templates in remotion and hyperframes stay inside their own compositions. |
 | Engines for voice-enhance, diarization, detection, SFX | Each gets an ADR in its repo. The candidates listed there are unverified until that ADR checks the licences of both code and weights. |
-| Resolve Studio / Premiere 25.6+ | Required for live control; interchange files work without them. |
 
 ## Tracking in the GitHub Project
 

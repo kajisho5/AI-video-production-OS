@@ -31,7 +31,7 @@
         "source": "github",
         "repo": "kajisho5/ingest-skill"
       },
-      "description": "Media offload from cards and recorders with checksum-verified copies, dual backup and a clip inventory",
+      "description": "Media offload from cards, recorders and URLs with checksum-verified copies, dual backup and a clip inventory",
       "category": "ingest",
       "tags": [
         "ingest",

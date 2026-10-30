@@ -21,8 +21,8 @@ Never claim a result is verified, measured or approved unless a skill or the age
 | Skill | Department | Owns |
 |---|---|---|
 | `video-production-agent` | 司令塔 | 制作計画, スキルの呼び分け, 制作記録(ProductionReceipt) |
-| `ingest-skill` (scaffold) | 取込 | 素材取り込み(検証付きコピー), 二重バックアップ, 素材台帳 |
-| `ffmpeg-skill` | エンジン | FFmpeg実行, 書き出し規格の検査, マルチカム同期, Bロール・画面合成, 手ぶれ・傾き補正, プレビュー・縮小一覧, 納品レポート |
+| `ingest-skill` (scaffold) | 取込 | 素材取り込み(検証付きコピー), 二重バックアップ, 素材台帳, URL素材取得 |
+| `ffmpeg-skill` | エンジン | FFmpeg実行, 書き出し規格の検査, マルチカム同期, Bロール・画面合成, 手ぶれ・傾き補正, プレビュー・縮小一覧, 納品レポート, 配信プラットフォーム仕様 |
 | `video-editing-skill` | 映像 | カット・連結, 尺・画角合わせ, トランジション, 静止画オーバーレイ |
 | `color-grading-skill` | 映像 | 色補正, LUT, HDR→SDR |
 | `motion-graphics-skill` | 映像 | タイトル・テロップ |
@@ -42,7 +42,7 @@ Never claim a result is verified, measured or approved unless a skill or the age
 | `qc-skill` | 検証 | 規格判定(QC) |
 | `media-analysis-skill` | 検証 | メディア計測 |
 | `artifacts-skill` | 検証 | 生成文書の検証 |
-| `publish-skill` (scaffold) -- CLI only, no skill yet | 納品 | 配信先アップロード, 配信プラットフォーム仕様 |
+| `publish-skill` (scaffold) -- CLI only, no skill yet | 納品 | 配信先アップロード, アップロード制限 |
 | `bdmvkit` (optional) -- CLI only, no skill yet | 納品 | Blu-ray作成 |
 | `vtskit` (optional) -- CLI only, no skill yet | 納品 | DVD-Video作成 |
 | `udfkit` (optional) -- CLI only, no skill yet | 納品 | ディスクイメージ(UDF) |
