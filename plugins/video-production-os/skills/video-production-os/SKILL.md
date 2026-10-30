@@ -38,7 +38,7 @@ Never claim a result is verified, measured or approved unless a skill or the age
 | `transcription-skill` | 認識 | 文字起こし |
 | `diarization-skill` (scaffold) -- CLI only, no skill yet | 認識 | 話者識別 |
 | `detection-skill` (scaffold) -- CLI only, no skill yet | 認識 | 顔検出, 文字検出(OCR), 物体検出 |
-| `slide-sync-skill` (scaffold) -- CLI only, no skill yet | 認識 | スライド取込, スライド切替検出 |
+| `slide-sync-skill` -- CLI only, no skill yet | 認識 | スライド取込, スライド切替検出 |
 | `qc-skill` | 検証 | 規格判定(QC) |
 | `media-analysis-skill` | 検証 | メディア計測 |
 | `artifacts-skill` | 検証 | 生成文書の検証 |
