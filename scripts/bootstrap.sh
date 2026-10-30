@@ -167,7 +167,9 @@ link_skill() {   # $1 skill folder, $2 target directory
   if [ -L "$link" ] && [ "$(readlink "$link")" = "$src" ]; then
     echo "   $name: linked ($target)"
   elif [ -e "$link" ] || [ -L "$link" ]; then
-    echo "!! $name: $link already exists and is not this checkout, left as is"; note "$name: ${target/#$HOME/\~} entry not replaced"
+    local shown="$target"
+    case "$target" in "$HOME"/*) shown="~${target#"$HOME"}" ;; esac   # bash 3.2 (macOS) keeps a backslash in ${x/#$HOME/\~}
+    echo "!! $name: $link already exists and is not this checkout, left as is"; note "$name: $shown entry not replaced"
   else
     run ln -s "$src" "$link" && echo "   $name: linked -> $src ($target)"
   fi
