@@ -66,7 +66,8 @@ these rather than approximating them (`REPOSITORY_MAP.md`, video-editing-skill s
 | `audio.trim` | audio-production-skill (`TRIM`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
 | `audio.cut` | audio-production-skill (`CUT`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
 | `audio.silence_remove` | audio-production-skill (`SILENCE_REMOVE`) | audio-production-skill → ffmpeg-skill (`silence`) | EXPERIMENTAL | Explicit ranges only — no silence *detection* built in; detection is a separate `measure.audio.silence` capability (§4), composed by the caller, not this Skill. |
-| `audio.fade` (in/out) | audio-production-skill (`FADE_IN`, `FADE_OUT`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
+| `audio.fade_in` | audio-production-skill (`FADE_IN`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | Was one shared `audio.fade` until 2026-10-30; split so each id names one operation. |
+| `audio.fade_out` | audio-production-skill (`FADE_OUT`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | See `audio.fade_in`. |
 | `audio.normalize` | audio-production-skill (`NORMALIZE`, EBU R128) | audio-production-skill → ffmpeg-skill (`loudness`) | EXPERIMENTAL | — |
 | `audio.mix` | audio-production-skill (`MIX`) | audio-production-skill → ffmpeg-skill (`audio`) | EXPERIMENTAL | — |
 | `audio.mono` | audio-production-skill (`MONO`) | audio-production-skill → ffmpeg-skill | EXPERIMENTAL | — |
@@ -123,7 +124,8 @@ prompt unsanitized by a downstream Agent step. This is a live, present finding
 |---|---|---|---|---|
 | `motion_graphics.title_card` | motion-graphics-skill | motion-graphics-skill → ffmpeg-skill (`graphics`) | EXPERIMENTAL | — |
 | `motion_graphics.lower_third` | motion-graphics-skill (built-in fade/slide templates only) | motion-graphics-skill → ffmpeg-skill (`graphics`) | EXPERIMENTAL | Templates are fixed/built-in, not user-authorable animation. |
-| `motion_graphics.overlay` | motion-graphics-skill (free-form text, image/logo overlay) | motion-graphics-skill → ffmpeg-skill (`overlay`, `probe`) | EXPERIMENTAL | Image/logo overlay supports linear fade only — no scale/slide animation. See §1's naming note distinguishing this from `edit.overlay`. |
+| `motion_graphics.overlay` | motion-graphics-skill (image/logo overlay) | motion-graphics-skill → ffmpeg-skill (`overlay`, `probe`) | EXPERIMENTAL | Image/logo overlay supports linear fade only — no scale/slide animation. See §1's naming note distinguishing this from `edit.overlay`. |
+| `motion_graphics.text_overlay` | motion-graphics-skill (free-form text overlay) | motion-graphics-skill → ffmpeg-skill (`graphics`, `overlay`, `probe`) | EXPERIMENTAL | Shared `motion_graphics.overlay` until 2026-10-30; one id per element type. |
 
 Built entirely on ffmpeg-skill's `graphics`/`overlay`/`probe` tools — not Remotion, not
 Lottie, not After Effects (`REPOSITORY_MAP.md`). `motion-graphics-skill`'s own

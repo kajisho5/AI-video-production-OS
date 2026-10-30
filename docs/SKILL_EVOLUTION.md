@@ -224,7 +224,7 @@ Gain/mix/normalize/dynamics audio Skill delegating to ffmpeg-skill
 (`REPOSITORY_MAP.md`).
 
 ### Current Capabilities
-`audio.gain, audio.trim, audio.cut, audio.silence_remove, audio.fade (in/out),
+`audio.gain, audio.trim, audio.cut, audio.silence_remove, audio.fade_in, audio.fade_out,
 audio.normalize, audio.mix, audio.mono, audio.stereo, audio.downmix,
 audio.noise_reduction, audio.dynamics, audio.concat` (`CAPABILITY_MATRIX.md` §2).
 
@@ -458,7 +458,8 @@ Title cards/lower-thirds/overlays Skill built entirely on ffmpeg-skill's
 (`REPOSITORY_MAP.md`).
 
 ### Current Capabilities
-`motion_graphics.title_card, motion_graphics.lower_third, motion_graphics.overlay`
+`motion_graphics.title_card, motion_graphics.lower_third, motion_graphics.overlay,
+motion_graphics.text_overlay`
 (`CAPABILITY_MATRIX.md` §5).
 
 ### Target Role
