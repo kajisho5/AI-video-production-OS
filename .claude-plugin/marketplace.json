@@ -183,6 +183,19 @@
       ]
     },
     {
+      "name": "slide-sync-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/slide-sync-skill"
+      },
+      "description": "Slide import, slide-change detection, slide text",
+      "category": "recognition",
+      "tags": [
+        "recognition",
+        "認識"
+      ]
+    },
+    {
       "name": "qc-skill",
       "source": {
         "source": "github",

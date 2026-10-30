@@ -80,7 +80,7 @@
     {"repo": "detection-skill", "department": "recognize", "install": "pip", "status": "scaffold",
      "role": "Face, text (OCR) and object detection",
      "owns": ["顔検出", "文字検出(OCR)", "物体検出"]},
-    {"repo": "slide-sync-skill", "department": "recognize", "install": "pip", "status": "active",
+    {"repo": "slide-sync-skill", "plugin": true, "department": "recognize", "install": "pip", "status": "active",
      "role": "Slide import, slide-change detection, slide text",
      "owns": ["スライド取込", "スライド切替検出"]},
 
