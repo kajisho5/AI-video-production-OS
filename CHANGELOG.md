@@ -1,3 +1,18 @@
+## v0.5.0 (2026-10-30)
+
+## What's Changed
+
+## Features
+
+- feat: slide-sync-skill is a plugin (#84)
+
+## Other changes
+
+- feat: slide-sync-skill is a plugin (#84)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.4.0 (2026-10-30)
 
 ## What's Changed
