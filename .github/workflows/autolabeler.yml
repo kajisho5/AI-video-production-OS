@@ -1,7 +1,7 @@
 name: autolabeler
 
-# Labels PRs (feature/fix/major/chore/docs/ci, from .github/release-drafter.yml's
-# `autolabeler`) so that by the time a PR merges, release.yml's release-drafter dry-run
+# Labels PRs (feature/fix/chore/docs/ci, from .github/release-drafter.yml's
+# `autolabeler`; `major` is only ever applied by hand -- see that file) so that by the time a PR merges, release.yml's release-drafter dry-run
 # has a label to resolve the next version from -- without this, every PR would be an
 # unlabeled default patch bump forever.
 #
@@ -29,6 +29,6 @@ jobs:
       # which also drafts/updates a GitHub Release -- something this PR-triggered job
       # must never do). It reads .github/release-drafter.yml's `autolabeler` section and
       # only calls the labels API; it never checks out or executes the PR's own code.
-      - uses: release-drafter/release-drafter/autolabeler@v7
+      - uses: release-drafter/release-drafter/autolabeler@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
