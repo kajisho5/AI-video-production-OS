@@ -215,6 +215,11 @@ posts what changed (new commits with their subjects, new version tags) on the is
 `skill-updates`, mentioning the owner, so GitHub notifies by mail and in the app. Locally:
 `python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json`.
 
+**SkillPact conformance.** `.github/workflows/skillpact-conformance.yml` checks, weekly, every
+repository in `ecosystem.json` that has a `skill.contract.json` with
+[SkillPact](https://github.com/kajisho5/skillpact)'s Action and reports the level (L1 / L2 / L3)
+in the run's summary. It never blocks anything (ADR-014).
+
 **GitHub Project.** `.github/workflows/project-sync.yml` adds the issues and pull requests of
 every repository in `ecosystem.json` to the project *AI Video Production Ecosystem* (kajisho5 #1)
 every hour, from this repository alone. It needs one secret here, `PROJECT_TOKEN`: a classic token

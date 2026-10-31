@@ -1,0 +1,112 @@
+name: SkillPact conformance
+
+# Non-blocking SkillPact conformance of the ecosystem's Skills (ADR-014; skillpact's
+# ECOSYSTEM_ROADMAP.md step 4). Every repository in ecosystem.json that has a
+# skill.contract.json at its root (scripts/skillpact-satellites.py finds them) is checked out
+# and run through kajisho5/skillpact's reusable Action: the contract must validate (L1) and its
+# declared tests run in SkillPact's bubblewrap sandbox (L2 when they pass). The bar here is L1;
+# each Skill's own CI sets its own min-level.
+#
+# It reports, it never blocks: the per-repository step and job are continue-on-error, and this
+# workflow is not a required check. The table of levels is the run's job summary.
+#
+# The Action is pinned to a full commit SHA (kajisho5/skillpact#33's merge commit), as
+# skillpact's README asks; Dependabot (github-actions) moves it.
+
+on:
+  pull_request:
+    paths:
+      - "ecosystem.json"
+      - "scripts/skillpact-satellites.py"
+      - ".github/workflows/skillpact-conformance.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ecosystem.json"
+      - "scripts/skillpact-satellites.py"
+      - ".github/workflows/skillpact-conformance.yml"
+  schedule:
+    - cron: "23 4 * * 3" # weekly -- the Skills change without any change here
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+      count: ${{ steps.list.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        name: Repositories with a skill.contract.json
+        run: python3 scripts/skillpact-satellites.py list --github-output
+
+  conformance:
+    needs: discover
+    if: needs.discover.outputs.count != '0'
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    name: conformance (${{ matrix.repo }})
+    # Linux for the bubblewrap sandbox (L2 / L3); 24.04 as in imagemagick-skill's own skillpact.yml.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: kajisho5/${{ matrix.repo }}
+          # The directory must carry the repository's name: SkillPact checks that SKILL.md's
+          # `name` matches the skill directory.
+          path: ${{ matrix.repo }}
+          persist-credentials: false
+      - name: Install what the contract requires (${{ matrix.apt || 'nothing known' }})
+        if: matrix.apt != ''
+        env:
+          APT_PACKAGES: ${{ matrix.apt }}
+        run: |
+          sudo apt-get update -q
+          # shellcheck disable=SC2086 # a space-separated package list
+          sudo apt-get install -y -q $APT_PACKAGES
+      - id: skillpact
+        continue-on-error: true
+        uses: kajisho5/skillpact@90895aa3920b503e77c29fa5ff231aeba8251a32 # skillpact #33 merge commit
+        with:
+          path: ${{ matrix.repo }}
+          min-level: L1
+      - name: Record the result
+        if: always()
+        env:
+          REPO: ${{ matrix.repo }}
+          LEVEL: ${{ steps.skillpact.outputs.level }}
+          OUTCOME: ${{ steps.skillpact.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/result"
+          python3 -c 'import json, os; print(json.dumps({"repo": os.environ["REPO"], "level": os.environ["LEVEL"] or "none", "outcome": os.environ["OUTCOME"]}))' \
+            > "$RUNNER_TEMP/result/result-$REPO.json"
+          cat "$RUNNER_TEMP/result/result-$REPO.json"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "::warning title=SkillPact ($REPO)::level ${LEVEL:-none}, below L1 or the check failed (non-blocking)"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skillpact-${{ matrix.repo }}
+          path: ${{ runner.temp }}/result/
+          if-no-files-found: ignore
+
+  summary:
+    needs: [discover, conformance]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        if: needs.discover.outputs.count != '0'
+        with:
+          pattern: skillpact-*
+          path: results
+      - name: Job summary
+        run: python3 scripts/skillpact-satellites.py summary results | tee -a "$GITHUB_STEP_SUMMARY"
