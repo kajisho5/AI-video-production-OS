@@ -17,14 +17,23 @@
   --slate: #5b6270;
   --slate-2: #8a909c;
 
-  --mark: #ffe14d;
-  --mark-ink: #16181d;
+  --mark: #17d16a;
+  --mark-ink: #101114;
 
-  --ok: #1f9d55;
+  /* Velisa ink (header) and key green (the verified dot). */
+  --ink: #101114;
+  --ink-2: #1a1c21;
+  --ink-line: #2a2d34;
+  --ink-mute: #3a3f49;
+  --ink-dim: #a3a9b4;
+  --green: #00a63e;
+  --green-hi: #17d16a;
+
+  --ok: #00a63e;
   --warn: #b7791f;
   --fail: #d64545;
   --unk: #6b7280;
-  --ok-ink: #157a40;
+  --ok-ink: #0b7a33;
   --warn-ink: #85560f;
   --fail-ink: #b42f2f;
   --unk-ink: #4e5562;
@@ -53,13 +62,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #000000;
+    --paper: #0b0c0e;
     --mist: #181818;
     --mist-2: #272727;
     --graphite: #f2f3f5;
     --slate: #a3a9b4;
     --slate-2: #6f7682;
-    --ok-ink: #4cc383;
+    --ok-ink: #17d16a;
     --warn-ink: #e0a84a;
     --fail-ink: #f07272;
     --unk-ink: #a3a9b4;
@@ -68,13 +77,13 @@
 }
 
 :root[data-theme="dark"] {
-  --paper: #000000;
+  --paper: #0b0c0e;
   --mist: #181818;
   --mist-2: #272727;
   --graphite: #f2f3f5;
   --slate: #a3a9b4;
   --slate-2: #6f7682;
-  --ok-ink: #4cc383;
+  --ok-ink: #17d16a;
   --warn-ink: #e0a84a;
   --fail-ink: #f07272;
   --unk-ink: #a3a9b4;

@@ -1050,3 +1050,44 @@ mark {
 .site-footer .meta {
   font-size: 13px;
 }
+
+
+/* ---- Velisa: the header is ink in every scheme, with the wordmark. ---- */
+.site-header {
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  border-bottom-color: var(--ink-line);
+  color: #ffffff;
+}
+.site-header .brand img {
+  width: auto;
+  height: 24px;
+  border-radius: 0;
+}
+@media (min-width: 768px) {
+  .site-header .brand img { height: 28px; }
+}
+.site-header .pages,
+.site-header .lang {
+  border-color: var(--ink-line);
+  background: var(--ink-2);
+  border-radius: 9999px;
+}
+.site-header .pages a,
+.site-header .lang button {
+  color: var(--ink-dim);
+  border-radius: 9999px;
+}
+.site-header .pages a:hover,
+.site-header .lang button:hover { color: #ffffff; }
+.site-header .pages a[aria-current="page"],
+.site-header .lang button[aria-pressed="true"] {
+  background: var(--ink-mute);
+  color: #ffffff;
+}
+.site-header .btn-line {
+  border-color: var(--ink-mute);
+  color: #ffffff;
+  border-radius: 9999px;
+}
+.site-header .btn-line:hover { border-color: #ffffff; }
+.site-header :focus-visible { outline-color: var(--green-hi); }

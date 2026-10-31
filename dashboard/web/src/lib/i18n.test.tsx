@@ -54,7 +54,7 @@ describe("UI language", () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Ecosystem dashboard");
     expect(document.documentElement.lang).toBe("en");
-    expect(document.title).toBe("AI Video Production OS — Ecosystem dashboard");
+    expect(document.title).toBe("Velisa — Ecosystem dashboard");
     expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toMatch(/^A read-only view/);
     expect(screen.getByRole("button", { name: "EN" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "JA" })).toHaveAttribute("aria-pressed", "false");
@@ -65,7 +65,7 @@ describe("UI language", () => {
     render(<App />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("エコシステムダッシュボード");
     expect(document.documentElement.lang).toBe("ja");
-    expect(document.title).toBe("AI Video Production OS — エコシステムダッシュボード");
+    expect(document.title).toBe("Velisa — エコシステムダッシュボード");
     expect(screen.getByRole("button", { name: "JA" })).toHaveAttribute("aria-pressed", "true");
   });
 

@@ -38,11 +38,11 @@ const en = {
   "common.generatedAt": "Generated {date}",
 
   // Page metadata
-  "meta.dashboard.title": "AI Video Production OS — Ecosystem dashboard",
-  "meta.dashboard.description": "A read-only view of the real GitHub state of the AI Video Production OS ecosystem.",
-  "meta.controlRoom.title": "Ecosystem Control Room — AI Video Production OS",
+  "meta.dashboard.title": "Velisa — Ecosystem dashboard",
+  "meta.dashboard.description": "A read-only view of the real GitHub state of the Velisa ecosystem.",
+  "meta.controlRoom.title": "Ecosystem Control Room — Velisa",
   "meta.controlRoom.description":
-    "The AI Video Production OS development control plane: roadmap, running tasks, PR and CI state, and System Intelligence findings in one read-only view.",
+    "The Velisa development control plane: roadmap, running tasks, PR and CI state, and System Intelligence findings in one read-only view.",
 
   // Ecosystem Dashboard
   "dashboard.title": "Ecosystem dashboard",
@@ -135,7 +135,7 @@ const en = {
 
   // Control Room
   "controlRoom.title": "Ecosystem Control Room",
-  "controlRoom.lede": "AI Video Production OS: a cross-repository view of development (read-only control plane).",
+  "controlRoom.lede": "Velisa: a cross-repository view of development (read-only control plane).",
   "controlRoom.lede2.before": "The OS's current state is on the ",
   "controlRoom.lede2.link": "Ecosystem dashboard",
   "controlRoom.lede2.after": ".",
@@ -227,11 +227,11 @@ const ja: Record<MessageKey, string> = {
   "common.unknown": "不明",
   "common.generatedAt": "{date} 生成",
 
-  "meta.dashboard.title": "AI Video Production OS — エコシステムダッシュボード",
-  "meta.dashboard.description": "AI Video Production OS エコシステムの実際のGitHub状態を映す、読み取り専用の観測レイヤー。",
-  "meta.controlRoom.title": "Ecosystem Control Room — AI Video Production OS",
+  "meta.dashboard.title": "Velisa — エコシステムダッシュボード",
+  "meta.dashboard.description": "Velisa エコシステムの実際のGitHub状態を映す、読み取り専用の観測レイヤー。",
+  "meta.controlRoom.title": "Ecosystem Control Room — Velisa",
   "meta.controlRoom.description":
-    "AI Video Production OSエコシステムの開発コントロールプレーン — ロードマップ・実行中タスク・PR/CI状態・System Intelligenceの所見を一箇所に集約する読み取り専用ビュー。",
+    "Velisaエコシステムの開発コントロールプレーン — ロードマップ・実行中タスク・PR/CI状態・System Intelligenceの所見を一箇所に集約する読み取り専用ビュー。",
 
   "dashboard.title": "エコシステムダッシュボード",
   "dashboard.lede.before": "読み取り専用の観測レイヤー。開発の進み具合は",
@@ -322,7 +322,7 @@ const ja: Record<MessageKey, string> = {
   "graph.dependsOn": "が依存",
 
   "controlRoom.title": "Ecosystem Control Room",
-  "controlRoom.lede": "AI Video Production OS — 開発状況の横断ビュー（読み取り専用・制御プレーン）",
+  "controlRoom.lede": "Velisa — 開発状況の横断ビュー（読み取り専用・制御プレーン）",
   "controlRoom.lede2.before": "OSの現状は",
   "controlRoom.lede2.link": "エコシステムダッシュボード",
   "controlRoom.lede2.after": "で見られます。",

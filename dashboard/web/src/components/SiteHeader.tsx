@@ -27,8 +27,7 @@ export function SiteHeader({ current }: { current: Page }) {
       <header className="site-header">
         <div className="wrap bar">
           <a className="brand" href={withLang(BASE, lang)}>
-            <img src={`${BASE}icons/favicon-64.png`} alt="" width={28} height={28} />
-            AI Video Production OS
+            <img src={`${BASE}icons/velisa-horizontal-on-dark.svg`} alt="Velisa" width={129} height={28} />
           </a>
           <nav className="pages" aria-label={t("header.pages")}>
             <a href={withLang(BASE, lang)} aria-current={current === "dashboard" ? "page" : undefined}>
