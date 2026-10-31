@@ -1,5 +1,8 @@
 # Renaming this repository
 
+Renamed from `AI-video-production-OS` to `Velisa` on 2026-10-31; the old Pages URL
+`https://kajisho5.github.io/AI-video-production-OS/` no longer resolves.
+
 The public site and the dashboard follow the repository's name on their own; a rename needs
 only the small manual steps below.
 
@@ -8,7 +11,7 @@ only the small manual steps below.
 - **GitHub Pages paths.** `dashboard/web/vite.config.ts` takes the base path from
   `GITHUB_REPOSITORY`, so the dashboard is built for `/<new-name>/dashboard/`.
 - **Landing page and redirect pages (`site/`).** The deploy workflow rewrites
-  `https://kajisho5.github.io/AI-video-production-OS/` and `kajisho5/AI-video-production-OS`
+  `https://kajisho5.github.io/Velisa/` and `kajisho5/Velisa`
   in every HTML file to the current owner and name: canonical and Open Graph URLs, GitHub
   links, the install one-liner.
 - **Repository list on the landing page.** Read from `ecosystem.json` copied into the site, not

@@ -11,7 +11,7 @@
 
 **An open foundation for AI-native video production — not another AI video generator.**
 
-[Website](https://kajisho5.github.io/AI-video-production-OS/) · [Dashboard](https://kajisho5.github.io/AI-video-production-OS/dashboard/) · [Architecture](#the-core-idea) · [Status](#current-status) · [Ecosystem](#the-ecosystem-today) · [Build a Skill](#skill-author-experience) · [Roadmap](#roadmap) · [Docs](docs/)
+[Website](https://kajisho5.github.io/Velisa/) · [Dashboard](https://kajisho5.github.io/Velisa/dashboard/) · [Architecture](#the-core-idea) · [Status](#current-status) · [Ecosystem](#the-ecosystem-today) · [Build a Skill](#skill-author-experience) · [Roadmap](#roadmap) · [Docs](docs/)
 
 </div>
 
@@ -171,7 +171,7 @@ Installing the OS installs the whole ecosystem — the agent and every Skill lis
 [`ecosystem.json`](ecosystem.json) — with one command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kajisho5/Velisa/main/install.sh | bash
 # options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills --no-codex-skills
 ```
 
@@ -194,7 +194,7 @@ This repository is also a Claude Code plugin marketplace, generated from `ecosys
 (`scripts/marketplace.py`):
 
 ```text
-/plugin marketplace add kajisho5/AI-video-production-OS
+/plugin marketplace add kajisho5/Velisa
 /plugin install video-production-os@ai-video-production-os    # everything: the agent, every Skill, the routing skill
 /plugin install qc-skill@ai-video-production-os               # or just one Skill
 ```
