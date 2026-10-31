@@ -49,3 +49,7 @@ web/  favicon.svg (switches with dark mode) · favicon.ico · favicon-16/32/48.p
   <img alt="Velisa" src="brand/velisa/velisa-readme-banner-light.svg" width="640">
 </picture>
 ```
+
+## 8. Design system
+
+Design system: <https://claude.ai/artifact/GA5Zz35b9cYqivgVcv5BXy> (the source of truth for colour, type, spacing, radius and components across the landing page, the dashboard, the Control Room and README visuals). Green means verified only (the dot, PASS); UNKNOWN / planned is a hollow ring, never a filled dot. This file stays the source of truth for the logo itself.

@@ -305,6 +305,7 @@ section.blk{padding:112px 0}
 .repos a,.repos .repo{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;line-height:20px;padding:6px 12px;border-radius:9999px;background:var(--ink-2);border:1px solid var(--ink-line);color:#E8EAED;text-decoration:none;transition:border-color 300ms var(--ease)}
 .repos a:hover{border-color:#8A909C}
 .repos .d{width:7px;height:7px;border-radius:9999px}
+.repos .d.ring{background:transparent;border:1.5px solid var(--unk)}
 .sk{height:34px;width:140px;border-radius:9999px;background:var(--ink-2);animation:pulse 1600ms var(--ease) infinite}
 @keyframes pulse{50%{opacity:0.5}}
 @media(prefers-reduced-motion:reduce){.sk{animation:none}}
@@ -723,7 +724,10 @@ Let’s finish it.</h2>
           a.href = "https://github.com/" + encodeURIComponent(m.org) + "/" + encodeURIComponent(c.repo);
           a.title = c.role || "";
         }
-        var d = document.createElement("span"); d.className = "d"; d.style.background = COLOR[st];
+        var d = document.createElement("span");
+        // Green means verified only; planned / unknown is a hollow ring, never a filled dot.
+        if (st === "planned") d.className = "d ring";
+        else { d.className = "d"; d.style.background = COLOR[st]; }
         var s = document.createElement("span"); s.className = "sr"; s.textContent = st;
         a.appendChild(d); a.appendChild(s); a.appendChild(document.createTextNode(c.repo));
         repos.appendChild(a);
