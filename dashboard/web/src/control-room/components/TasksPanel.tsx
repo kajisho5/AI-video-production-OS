@@ -28,26 +28,30 @@ export function TasksPanel({ tasks }: { tasks: Task[] }) {
 
 function TaskGroup({ title, tasks, emptyText }: { title: string; tasks: Task[]; emptyText: string }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <h3 style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 8px 0" }}>{title}</h3>
+    <div className="task-group">
+      <h3>{title}</h3>
       {tasks.length === 0 ? (
-        <p className="footer-note">{emptyText}</p>
+        <p className="empty">{emptyText}</p>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+        <ul className="rows">
           {tasks.map((t) => (
-            <li key={t.id} className="panel" style={{ padding: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                <strong style={{ fontSize: 13.5 }}>
+            <li key={t.id} className="row">
+              <div className="row-head">
+                <strong className="row-title">
                   {t.id}. {t.title}
                 </strong>
                 <StatusChip label={lifecycleLabelJa(t.status)} tone={lifecycleTone(t.status)} />
               </div>
-              {t.isRecommendedNext && <div className="status-chip neutral" style={{ marginTop: 6 }}>推奨タスク</div>}
-              {t.phaseId !== UNKNOWN && <div className="footer-note">{t.phaseId}</div>}
+              {t.isRecommendedNext && (
+                <div className="chips">
+                  <span className="status-chip mark">推奨タスク</span>
+                </div>
+              )}
+              {t.phaseId !== UNKNOWN && <div className="note">{t.phaseId}</div>}
               {t.pullRequests.length > 0 && (
-                <div style={{ marginTop: 6 }}>
+                <div>
                   {t.pullRequests.map((pr, i) => (
-                    <div key={i} className="footer-note">
+                    <div key={i} className="note">
                       {pr.repoSlug === UNKNOWN ? "リポジトリ不明" : pr.repoSlug}#{pr.number} —{" "}
                       {pr.resolution === "resolved" && pr.state ? (pr.state.merged ? "マージ済み" : pr.state.state === "open" ? (pr.state.draft ? "Draft" : "Open") : "Closed") : pr.resolution === "not_found" ? "見つかりません" : pr.resolution === "ambiguous_repo" ? "リポジトリ特定不可" : "未解決"}
                     </div>

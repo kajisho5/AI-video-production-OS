@@ -24,54 +24,40 @@ export function OverviewPanel({ overview }: { overview: OsOverview }) {
           <div className="stat-label">オープンIssue</div>
         </div>
         <div className="stat">
-          <div className="stat-value" style={overview.ciFailingCount > 0 ? { color: "var(--status-bad)" } : undefined}>
-            {overview.ciFailingCount}
-          </div>
+          <div className={overview.ciFailingCount > 0 ? "stat-value is-fail" : "stat-value"}>{overview.ciFailingCount}</div>
           <div className="stat-label">CI失敗</div>
         </div>
       </div>
 
-      <div style={{ marginTop: "var(--space-4)" }}>
-        <div className="panel-title" style={{ marginBottom: "var(--space-2)" }}>
-          成熟度分布（Skill/Provider/Extension {overview.maturityDistribution.totalRepos}件 — MATURITY_MODEL.md参照）
-        </div>
+      <h3 className="sub-title">
+        成熟度分布（Skill/Provider/Extension {overview.maturityDistribution.totalRepos}件 — MATURITY_MODEL.md参照）
+      </h3>
+      <div className="dist">
         {overview.maturityDistribution.counts.map((count, level) => (
-          <div key={level} style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginBottom: 4 }}>
-            <div style={{ width: 150, fontSize: 12, color: "var(--text-secondary)", flexShrink: 0 }}>
+          <div key={level} className="dist-row">
+            <div className="dist-label">
               {level}. {MATURITY_LEVEL_NAMES_JA[level as 0 | 1 | 2 | 3 | 4 | 5 | 6]}
             </div>
-            <div style={{ flex: 1, background: "var(--border)", borderRadius: 3, height: 10, position: "relative" }}>
-              <div
-                style={{
-                  width: `${(count / maxCount) * 100}%`,
-                  background: "var(--status-neutral)",
-                  height: "100%",
-                  borderRadius: 3,
-                  minWidth: count > 0 ? 3 : 0,
-                }}
-              />
+            <div className="dist-track">
+              <div className="dist-fill" style={{ width: `${(count / maxCount) * 100}%`, minWidth: count > 0 ? 3 : 0 }} />
             </div>
-            <div className="mono" style={{ width: 20, textAlign: "right", fontSize: 12 }}>
-              {count}
-            </div>
+            <div className="dist-count">{count}</div>
           </div>
         ))}
       </div>
 
       {overview.recentlyChangedRepos.length > 0 && (
-        <div style={{ marginTop: "var(--space-4)" }}>
-          <div className="panel-title" style={{ marginBottom: "var(--space-2)" }}>
-            最近の更新
-          </div>
-          <div style={{ fontSize: 13, display: "flex", flexDirection: "column", gap: 4 }}>
+        <>
+          <h3 className="sub-title">最近の更新</h3>
+          <ul className="recent">
             {overview.recentlyChangedRepos.slice(0, 6).map((r) => (
-              <div key={r.slug} style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
+              <li key={r.slug}>
                 <span className="mono">{r.slug.split("/")[1]}</span>
                 <span>{new Date(r.lastUpdatedAt).toLocaleString()}</span>
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
+          </ul>
+        </>
       )}
     </Section>
   );

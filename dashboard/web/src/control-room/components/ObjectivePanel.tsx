@@ -7,8 +7,8 @@ import { Section } from "../../components/Section.js";
 export function ObjectivePanel({ objective }: { objective: Objective }) {
   return (
     <Section title="現在の目標 (Current Objective)" defaultOpen>
-      <p style={{ fontSize: 15, lineHeight: 1.6 }}>{objective.statement}</p>
-      <div className="footer-note" style={{ marginTop: 8 }}>
+      <p className="objective">{objective.statement}</p>
+      <div className="note" style={{ marginTop: "var(--space-3)" }}>
         出典: <span className="mono">{objective.evidence.locator}</span>
       </div>
     </Section>

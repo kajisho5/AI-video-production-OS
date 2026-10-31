@@ -1,33 +1,38 @@
-/* Design tokens for the Ecosystem Dashboard -- the first real UI this ecosystem has
- * ever had (docs/DESIGN_SYSTEM.md section 7 explicitly deferred this to "if and when
- * a UI is actually built"; docs/adr/ADR-011-ecosystem-dashboard.md is that decision).
- * Deliberately restrained: a technical control/observation surface, not a marketing
- * SaaS dashboard -- few colors, all load-bearing (each one means one specific status),
- * high information density, no decorative gradients/shadows/illustration. */
+/* Design tokens for the Ecosystem Dashboard and the Control Room.
+ *
+ * Same visual language as the landing page (public/lp/index.html, its <style> block is
+ * the reference): white, mist, graphite and slate, one highlighter yellow used sparingly,
+ * and four verdict colors. Each verdict color means one thing:
+ *   ok   = measured and passing      warn = measured, needs attention
+ *   fail = measured and failing      unk  = not known (never shown as a pass or a fail)
+ * "In progress" is not a verdict, so it gets no verdict color (graphite outline chip).
+ *
+ * The --*-ink variants are the same hues, adjusted so 12px chip text on its own tint
+ * stays readable (4.5:1) in each scheme; dots and fills use the base color. */
 :root {
-  --bg-canvas: #0a0d12;
-  --bg-panel: #12161d;
-  --bg-panel-raised: #171c24;
-  --border: #232933;
-  --border-strong: #333c4a;
+  --paper: #ffffff;
+  --mist: #eef0f3;
+  --mist-2: #e2e5ea;
+  --graphite: #16181d;
+  --slate: #5b6270;
+  --slate-2: #8a909c;
 
-  --text-primary: #e6e9ee;
-  --text-secondary: #9aa4b2;
-  --text-muted: #626c7a;
+  --mark: #ffe14d;
+  --mark-ink: #16181d;
 
-  --status-ok: #38e0a6;
-  --status-ok-bg: #0f2b23;
-  --status-warn: #e0b038;
-  --status-warn-bg: #2b2410;
-  --status-bad: #e05a4f;
-  --status-bad-bg: #2b1512;
-  --status-unknown: #6b7482;
-  --status-unknown-bg: #1a1e26;
-  --status-neutral: #5b8ce0;
-  --status-neutral-bg: #10192b;
+  --ok: #1f9d55;
+  --warn: #b7791f;
+  --fail: #d64545;
+  --unk: #6b7280;
+  --ok-ink: #157a40;
+  --warn-ink: #85560f;
+  --fail-ink: #b42f2f;
+  --unk-ink: #4e5562;
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --font-sans: "Manrope", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -35,11 +40,43 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
+  --space-7: 48px;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  --radius-chip: 6px;
+  --radius-btn: 8px;
+  --radius-panel: 12px;
 
   --touch-target-min: 44px;
 
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #000000;
+    --mist: #181818;
+    --mist-2: #272727;
+    --graphite: #f2f3f5;
+    --slate: #a3a9b4;
+    --slate-2: #6f7682;
+    --ok-ink: #4cc383;
+    --warn-ink: #e0a84a;
+    --fail-ink: #f07272;
+    --unk-ink: #a3a9b4;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #000000;
+  --mist: #181818;
+  --mist-2: #272727;
+  --graphite: #f2f3f5;
+  --slate: #a3a9b4;
+  --slate-2: #6f7682;
+  --ok-ink: #4cc383;
+  --warn-ink: #e0a84a;
+  --fail-ink: #f07272;
+  --unk-ink: #a3a9b4;
   color-scheme: dark;
 }

@@ -1,42 +1,60 @@
 @import "./tokens.css";
 
+/* Layout and components for both pages. Follows the landing page's rules
+ * (public/lp/index.html): a plain sticky header bar with a hairline under it,
+ * left-aligned content at most 1200px wide, hairlines between list rows, 12px radius
+ * for the few bordered panels, 8px buttons, 6px chips, no gradients, no shadows, and
+ * motion only as a response to something the user did. */
+
 * {
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  height: 100%;
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--bg-canvas);
-  color: var(--text-primary);
+  background: var(--paper);
+  color: var(--graphite);
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 24px;
   -webkit-font-smoothing: antialiased;
   /* iPhone Safari safe-area support for notch/home-indicator */
-  padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  /* Defense-in-depth: the page itself must never scroll horizontally (task
-   * requirement). Any content genuinely wider than the viewport (the desktop repo
-   * table) scrolls inside its own .table-scroll container instead. */
+  /* Defense-in-depth: the page itself must never scroll horizontally. Anything
+   * genuinely wider than the viewport (the desktop repo table) scrolls inside its own
+   * .table-scroll container instead. */
   overflow-x: hidden;
 }
 
 h1,
 h2,
 h3 {
-  font-weight: 600;
-  margin: 0 0 var(--space-2) 0;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+:lang(ja) h1,
+:lang(ja) h2,
+:lang(ja) h3,
+:lang(ja) p,
+:lang(ja) li,
+:lang(ja) td {
+  word-break: auto-phrase;
 }
 
 a {
-  color: var(--status-neutral);
+  color: inherit;
+  text-underline-offset: 3px;
 }
 
 button {
@@ -46,190 +64,551 @@ button {
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--graphite);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 code,
 .mono {
   font-family: var(--font-mono);
+  font-size: 0.92em;
   font-variant-numeric: tabular-nums;
 }
 
-.app-shell {
-  max-width: 1280px;
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: 0 16px;
 }
 
 @media (min-width: 768px) {
-  .app-shell {
-    padding: var(--space-6);
+  .wrap {
+    padding: 0 40px;
   }
 }
 
-.panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  background: var(--graphite);
+  color: var(--paper);
+  padding: 8px 12px;
+  border-radius: var(--radius-btn);
+  z-index: 100;
+  text-decoration: none;
+  transition: top 300ms var(--ease);
 }
 
-.panel-title {
+.skip:focus {
+  top: 16px;
+}
+
+/* ---- Header: a plain bar, not a floating pill. ---- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding-top: env(safe-area-inset-top);
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--mist-2);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 24px;
+  row-gap: 0;
+  min-height: 64px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--touch-target-min);
+  margin-right: auto;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+/* Page switch between the Dashboard and the Control Room: a segmented control, the
+ * same shape as the landing page's language switch. */
+.pages {
+  display: flex;
+  border: 1px solid var(--mist-2);
+  border-radius: var(--radius-btn);
+  padding: 2px;
   font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  margin-bottom: var(--space-3);
-}
-
-/* Mobile-first card grid: single column by default, more columns as space allows.
- * Desktop gets a denser multi-column layout; mobile never needs horizontal scroll. */
-.card-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-3);
-}
-
-@media (min-width: 640px) {
-  .card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
-}
-
-@media (min-width: 640px) {
-  .stat-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.stat {
-  background: var(--bg-panel-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-}
-
-.stat-value {
-  font-family: var(--font-mono);
-  font-size: 28px;
+  line-height: 20px;
   font-weight: 600;
-  line-height: 1;
 }
 
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 12px;
-  margin-top: var(--space-2);
-}
-
-.status-chip {
+.pages a {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 600;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-chip);
+  color: var(--slate);
+  text-decoration: none;
   white-space: nowrap;
-  /* Inside a non-wrapping flex row (e.g. .bottleneck-row), a flex item's default
-   * min-width:auto lets it shrink below its own nowrap text's width under space
-   * pressure, so the unclipped text visually spills into the next sibling instead of
-   * the chip keeping its shape. Most visible with a long, space-free Japanese label
-   * (no natural wrap point) next to a mono repo slug -- found during Japanese
-   * localization. flex-shrink:0 keeps the chip at its natural content width always;
-   * the sibling already shrinks instead (.bottleneck-row > * { min-width: 0 }). */
-  flex-shrink: 0;
+  transition: background 300ms var(--ease), color 300ms var(--ease);
 }
 
-.status-chip.ok {
-  background: var(--status-ok-bg);
-  color: var(--status-ok);
-}
-.status-chip.warn {
-  background: var(--status-warn-bg);
-  color: var(--status-warn);
-}
-.status-chip.bad {
-  background: var(--status-bad-bg);
-  color: var(--status-bad);
-}
-.status-chip.unknown {
-  background: var(--status-unknown-bg);
-  color: var(--status-unknown);
-  border: 1px dashed var(--status-unknown);
-}
-.status-chip.neutral {
-  background: var(--status-neutral-bg);
-  color: var(--status-neutral);
+.pages a:hover {
+  color: var(--graphite);
 }
 
-/* Collapsible section, used heavily on mobile to keep the most important information
- * reachable without endless scrolling, per the task's mobile-UX requirements. */
+.pages a[aria-current="page"] {
+  background: var(--graphite);
+  color: var(--paper);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: var(--radius-btn);
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 300ms var(--ease), background 300ms var(--ease);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-line {
+  border-color: var(--mist-2);
+  color: var(--graphite);
+}
+
+.btn-line:hover {
+  border-color: var(--graphite);
+}
+
+/* Narrow screens: brand and landing-page link on the first row, the page switch as a
+ * full-width row under them, each segment a full 44px touch target. */
+@media (max-width: 767px) {
+  .bar {
+    min-height: 56px;
+    column-gap: 12px;
+  }
+  .pages {
+    order: 3;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .pages a {
+    flex: 1;
+    min-height: 40px;
+  }
+  .btn {
+    min-height: var(--touch-target-min);
+  }
+}
+
+/* ---- Page heading ---- */
+
+.page-head {
+  padding: 40px 0 32px;
+}
+
+@media (min-width: 768px) {
+  .page-head {
+    padding: 56px 0 40px;
+  }
+}
+
+.page-head h1 {
+  font-size: 26px;
+  line-height: 34px;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .page-head h1 {
+    font-size: 40px;
+    line-height: 48px;
+  }
+}
+
+:lang(ja) .page-head h1 {
+  letter-spacing: -0.01em;
+}
+
+.lede {
+  color: var(--slate);
+  font-size: 16px;
+  line-height: 26px;
+  margin-top: 12px;
+  max-width: 720px;
+}
+
+.lede a {
+  color: var(--graphite);
+  font-weight: 600;
+}
+
+main {
+  padding-bottom: 32px;
+}
+
+/* ---- Collapsible sections: hairline-separated, like the landing page's FAQ. ---- */
+
+.section {
+  border-top: 1px solid var(--mist-2);
+}
+
+.section:last-of-type {
+  border-bottom: 1px solid var(--mist-2);
+}
+
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   width: 100%;
   min-height: var(--touch-target-min);
-  padding: var(--space-2) 0;
+  padding: 20px 0;
   text-align: left;
 }
 
 .section-header h2 {
-  font-size: 15px;
-  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.01em;
 }
 
 .section-chevron {
-  color: var(--text-muted);
-  transition: transform 0.15s ease;
   flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid var(--slate);
+  border-bottom: 2px solid var(--slate);
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 300ms var(--ease);
 }
 
 .section-chevron.open {
-  transform: rotate(90deg);
+  transform: translateY(2px) rotate(-135deg);
 }
 
-.repo-card {
-  background: var(--bg-panel-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
+.section-body {
+  padding-bottom: 32px;
 }
 
-.repo-card-header {
+@media (prefers-reduced-motion: reduce) {
+  .section-chevron,
+  .pages a,
+  .btn,
+  .skip {
+    transition: none;
+  }
+}
+
+.sub-title {
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 700;
+  margin: 32px 0 12px;
+}
+
+.sub-title:first-child {
+  margin-top: 0;
+}
+
+.sub-title .note-inline {
+  font-weight: 500;
+  color: var(--slate);
+}
+
+.empty,
+.note {
+  max-width: 880px;
+  color: var(--slate);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.empty {
+  padding: 16px 0;
+}
+
+/* ---- Overview numbers: one bordered panel, cells split by hairlines. ---- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--mist-2);
+  border: 1px solid var(--mist-2);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.stat {
+  padding: 20px;
+  background: var(--paper);
+}
+
+.stat-value {
+  font-size: 36px;
+  line-height: 40px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value.is-fail {
+  color: var(--fail-ink);
+}
+
+.stat-label {
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
+  margin-top: 8px;
+}
+
+/* Maturity distribution */
+.dist {
+  display: grid;
+  gap: 6px;
+  max-width: 760px;
+}
+
+.dist-row {
+  display: grid;
+  grid-template-columns: minmax(0, 160px) minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.dist-label {
+  color: var(--slate);
+}
+
+.dist-track {
+  height: 10px;
+  border-radius: 3px;
+  background: var(--mist);
+}
+
+.dist-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--graphite);
+}
+
+.dist-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Recently changed */
+.recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 760px;
+  border-top: 1px solid var(--mist-2);
+}
+
+.recent li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mist-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.recent li > :first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.recent li > :last-child {
+  color: var(--slate);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Status chips: the landing page's verdict chips. ---- */
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+  /* Inside a non-wrapping flex row (e.g. .bottleneck-row), a flex item's default
+   * min-width:auto lets it shrink below its own nowrap text's width under space
+   * pressure, so the unclipped text spills into the next sibling. Most visible with a
+   * long, space-free Japanese label next to a repo slug. flex-shrink:0 keeps the chip
+   * at its natural width; the sibling shrinks instead (.bottleneck-row > * { min-width: 0 }). */
+  flex-shrink: 0;
+}
+
+.status-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-chip.ok {
+  color: var(--ok-ink);
+  background: color-mix(in srgb, var(--ok) 12%, transparent);
+}
+.status-chip.warn {
+  color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+}
+.status-chip.bad {
+  color: var(--fail-ink);
+  background: color-mix(in srgb, var(--fail) 12%, transparent);
+}
+/* UNKNOWN keeps a dashed edge so "we don't know" can never be read as a measured value. */
+.status-chip.unknown {
+  color: var(--unk-ink);
+  background: color-mix(in srgb, var(--unk) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--unk) 45%, transparent);
+  border: 1px dashed transparent;
+  padding: 1px 7px;
+}
+/* In progress / not a verdict: graphite outline with a hollow dot. */
+.status-chip.neutral {
+  color: var(--graphite);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--mist-2);
+}
+.status-chip.neutral::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+/* The one highlighter use: the recommended next task. */
+.status-chip.mark {
+  color: var(--mark-ink);
+  background: var(--mark);
+}
+
+.status-chip.wrap {
+  white-space: normal;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+a .status-chip {
+  text-decoration: none;
+}
+
+a:hover > .status-chip {
+  text-decoration: underline;
+}
+
+.type-badge {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--slate);
+  border: 1px solid var(--mist-2);
+  border-radius: var(--radius-chip);
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* ---- Repositories ---- */
+
+.repo-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--mist-2);
+}
+
+.repo-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mist-2);
+}
+
+.repo-row-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  gap: 8px;
 }
 
-.repo-card-header > * {
+.repo-row-header > * {
   min-width: 0;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .repo-name {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
 }
 
 .repo-name a {
-  color: var(--text-primary);
   text-decoration: none;
 }
 
@@ -238,19 +617,44 @@ code,
 }
 
 .repo-role {
-  color: var(--text-secondary);
-  font-size: 12.5px;
-  margin: var(--space-1) 0 var(--space-2) 0;
+  color: var(--slate);
+  font-size: 14px;
+  line-height: 22px;
+  margin: 4px 0 0;
 }
 
 .repo-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 6px 16px;
   align-items: center;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: var(--space-2);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--slate);
+  margin-top: 10px;
+}
+
+.repo-prs {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--slate);
+}
+
+.repo-prs li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.repo-prs a {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .table-scroll {
@@ -274,140 +678,331 @@ code,
   }
 }
 
+/* The repo table is the one report-like object: bordered, mist header, hairline rows. */
+.report {
+  border: 1px solid var(--mist-2);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+}
+
 table.repo-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 table.repo-table th {
   text-align: left;
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-strong);
+  color: var(--slate);
+  background: var(--mist);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--mist-2);
   white-space: nowrap;
 }
 
 table.repo-table td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mist-2);
   vertical-align: top;
 }
 
-.type-badge {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-strong);
-  border-radius: 3px;
-  padding: 1px 5px;
+table.repo-table tr:last-child td {
+  border-bottom: 0;
+}
+
+table.repo-table td.num {
+  text-align: right;
+}
+
+table.repo-table th.num {
+  text-align: right;
+}
+
+table.repo-table .repo-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+table.repo-table .repo-link:hover {
+  text-decoration: underline;
+}
+
+.dim {
+  color: var(--slate-2);
+}
+
+/* ---- Rows: every list on both pages is hairline-separated, never a card grid. ---- */
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--mist-2);
+}
+
+.row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mist-2);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.row-head > :first-child {
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.row-body {
+  max-width: 880px;
+  font-size: 15px;
+  line-height: 24px;
+  margin-top: 6px;
+}
+
+.row .chips,
+.row .note,
+.row .meta {
+  margin-top: 6px;
+}
+
+.row-head .note {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.row-head .status-chip {
+  margin-top: 3px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
 }
 
 .bottleneck-row {
   display: flex;
-  gap: var(--space-2);
+  gap: 12px;
   align-items: flex-start;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-
-.bottleneck-row:last-child {
-  border-bottom: none;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mist-2);
+  font-size: 15px;
+  line-height: 24px;
 }
 
 /* Flex items default to min-width:auto, which lets long unbroken content (a mono repo
- * slug, a long word in a summary) force the container wider than the viewport instead
- * of wrapping -- this is what caused real horizontal overflow on a 390px viewport
- * during mobile verification. min-width:0 lets the item shrink to wrap normally. */
+ * slug) force the container wider than the viewport instead of wrapping -- this caused
+ * real horizontal overflow on a 390px viewport once. min-width:0 lets it wrap. */
 .bottleneck-row > * {
   min-width: 0;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
-.footer-note {
-  color: var(--text-muted);
-  font-size: 12px;
-  text-align: center;
-  padding: var(--space-5) 0 var(--space-3) 0;
+.slug {
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
 }
+
+/* Agent facts: a definition list, label over value. */
+.facts {
+  margin: 0;
+  border-top: 1px solid var(--mist-2);
+  max-width: 880px;
+}
+
+.fact {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--mist-2);
+}
+
+@media (min-width: 768px) {
+  .fact {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+.fact dt {
+  color: var(--slate);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.fact dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fact .evidence {
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
+  margin-top: 2px;
+}
+
+/* Next task: the highlighter marks the task id. */
+mark {
+  background: var(--mark);
+  color: var(--mark-ink);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.next-task {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.objective {
+  font-size: 18px;
+  line-height: 30px;
+  max-width: 820px;
+}
+
+.task-group + .task-group {
+  margin-top: 32px;
+}
+
+.task-group h3 {
+  font-size: 15px;
+  line-height: 24px;
+  margin-bottom: 8px;
+}
+
+/* ---- Banners and states ---- */
 
 .error-banner {
-  background: var(--status-bad-bg);
-  color: var(--status-bad);
-  border: 1px solid var(--status-bad);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--fail) 45%, transparent);
+  background: color-mix(in srgb, var(--fail) 6%, var(--paper));
+  border-radius: var(--radius-panel);
+  padding: 20px;
+  margin-bottom: 32px;
+  font-size: 14px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
+.error-banner strong {
+  display: block;
+  color: var(--fail-ink);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.error-banner .detail {
+  margin-top: 4px;
+}
+
+.error-banner .hint {
+  margin-top: 8px;
+  color: var(--slate);
+}
+
+.error-banner ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
 }
 
 .loading-state {
-  color: var(--text-secondary);
-  padding: var(--space-6);
-  text-align: center;
+  color: var(--slate);
+  padding: 32px 0;
+  border-top: 1px solid var(--mist-2);
 }
 
-.maturity-bar {
-  display: flex;
-  gap: 2px;
-  height: 8px;
-  margin: var(--space-2) 0;
-}
-
-.maturity-bar-segment {
-  flex: 1;
-  background: var(--border);
-  border-radius: 2px;
-}
-
-.maturity-bar-segment.filled {
-  background: var(--status-neutral);
-}
-
-.maturity-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: var(--space-2);
-}
+/* ---- Ecosystem graph ---- */
 
 .graph-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  display: grid;
+  gap: 16px;
+}
+
+.graph-tier-label {
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .graph-tier {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 6px;
   align-items: center;
 }
 
-.graph-tier-label {
-  width: 100%;
-  color: var(--text-muted);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: var(--space-2);
+.graph-node {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--mist-2);
+  overflow-wrap: anywhere;
 }
 
-.graph-node {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  background: var(--bg-panel-raised);
+.edges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--mist-2);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.edges li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--mist-2);
+}
+
+.edges li > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .graph-arrow {
-  color: var(--text-muted);
+  color: var(--slate-2);
+}
+
+.edges .to {
+  color: var(--slate);
+}
+
+/* ---- Footer ---- */
+
+.site-footer {
+  border-top: 1px solid var(--mist-2);
+  padding: 24px 0 48px;
+}
+
+.site-footer .meta {
+  font-size: 13px;
 }

@@ -43,18 +43,18 @@ export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: "var(--space-4)" }}>
-        <div className="panel-title">依存関係</div>
-        <div style={{ fontSize: 12.5, display: "flex", flexDirection: "column", gap: 4 }}>
-          {[...edgesByFrom.entries()].map(([from, tos]) => (
-            <div key={from}>
-              <span className="mono">{from.split("/")[1]}</span>
-              <span className="graph-arrow"> {"->"} </span>
-              {tos.map((to) => to.split("/")[1]).join(", ")}
-            </div>
-          ))}
-        </div>
-      </div>
+      <h3 className="sub-title">依存関係</h3>
+      <ul className="edges">
+        {[...edgesByFrom.entries()].map(([from, tos]) => (
+          <li key={from}>
+            <span className="mono">{from.split("/")[1]}</span>
+            <span className="graph-arrow" aria-label="が依存">
+              {"→"}
+            </span>
+            <span className="to">{tos.map((to) => to.split("/")[1]).join(", ")}</span>
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }

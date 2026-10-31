@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 
 /** Collapsible on all sizes, but defaults open on wide viewports and closed on narrow
  * ones -- desktop can afford everything visible at once (task: "allow richer... detailed
@@ -7,16 +7,19 @@ import { useState, type ReactNode } from "react";
 export function Section({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   const initial = defaultOpen ?? (typeof window !== "undefined" ? window.innerWidth >= 768 : true);
   const [open, setOpen] = useState(initial);
+  const bodyId = useId();
 
   return (
-    <div className="panel">
-      <button className="section-header" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+    <section className="section">
+      <button className="section-header" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-controls={bodyId}>
         <h2>{title}</h2>
-        <span className={`section-chevron ${open ? "open" : ""}`} aria-hidden="true">
-          &#9656;
-        </span>
+        <span className={`section-chevron ${open ? "open" : ""}`} aria-hidden="true" />
       </button>
-      {open && <div>{children}</div>}
-    </div>
+      {open && (
+        <div className="section-body" id={bodyId}>
+          {children}
+        </div>
+      )}
+    </section>
   );
 }

@@ -292,3 +292,23 @@ the diagnostic's raw `PROVIDES_MISMATCH` label is trusted at face value next tim
 `SKILL_ID`. `subtitle-skill`#20 (v0.2.1) changed `provides[].tool_id` to `subtitle/generate` /
 `subtitle/render`; `video-production-agent`#84 pins that contract and its diagnostics test asserts
 `PROVIDES_VALID` for both. The `qc-skill` half is unchanged (no fix, by design).
+
+## D10 — The Dashboard and Control Room take the landing page's visual language, not their own
+
+**Context**: the Dashboard (`/`) and Control Room (`/control-room.html`) were styled as a
+dark-only "control surface" (blue for in-progress, uppercase labels, boxed cards), while the
+landing page (`/lp/`) served from the same site had its own light/dark system. A visitor
+moving between them saw two unrelated products.
+
+**Decision**: restyle both pages to the landing page's system (tokens copied from
+`dashboard/web/public/lp/index.html` into `dashboard/web/src/styles/tokens.css`): light and
+dark schemes, Manrope, sticky plain header with a Dashboard / Control Room switch and a link
+to `lp/`, hairline-separated rows instead of card grids. Status chips map onto the four
+verdict colors only (ok / warn / fail / unknown); "in progress" stays non-verdict (graphite
+outline). Chip text uses slightly darker/lighter "ink" variants of the same hues so 12px text
+keeps 4.5:1 contrast in both schemes. Data, sections, behavior, the PWA manifest/workbox
+config and the token-safety checks are unchanged; the UI stays Japanese (no i18n yet).
+
+**Why**: one site, one visual language; the verdict colors already mean pass/warn/fail/unknown
+on the landing page's QC report, so reusing them keeps "green" meaning the same thing on every
+page.
