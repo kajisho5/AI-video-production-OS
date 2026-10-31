@@ -1,3 +1,14 @@
+## v0.7.40 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- chore(deps): dashboard/web deps + audit overrides, setup-python v7, release-drafter v7 config (#131)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.39 (2026-10-31)
 
 ## What's Changed
