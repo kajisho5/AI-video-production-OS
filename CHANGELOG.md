@@ -1,3 +1,21 @@
+## v0.7.32 (2026-10-31)
+
+## What's Changed
+
+- build(deps-dev): bump @testing-library/jest-dom from 6.9.1 to 7.0.1 in /dashboard/web (#49)
+- build(deps-dev): bump jsdom from 25.0.1 to 30.0.1 in /dashboard/web (#50)
+- build(deps-dev): bump tsx from 4.23.13 to 4.23.15 in /dashboard/control-room (#62)
+- build(deps-dev): bump tsx from 4.23.13 to 4.23.15 in /dashboard/aggregator (#59)
+
+## Other changes
+
+- chore: set VERSION to 0.7.32 to resume releases (#128)
+- ci: non-blocking SkillPact conformance of the Skills (skillpact roadmap step 4) (#127)
+- build(deps): TypeScript 7, React 19.3, release-drafter v7, action-gh-release v3 (#117)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.30 (2026-10-31)
 
 ## What's Changed
