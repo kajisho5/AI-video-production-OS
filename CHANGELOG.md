@@ -1,3 +1,12 @@
+## v0.7.22 (2026-10-31)
+
+## What's Changed
+
+- Landing page: before/after slider made with the skills themselves (#110)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.21 (2026-10-31)
 
 ## What's Changed
