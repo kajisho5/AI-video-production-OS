@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { RepoList } from "./RepoList.js";
 import type { RepoStatus } from "@ecosystem/types";
 import { UNKNOWN } from "@ecosystem/types";
+import { renderInLang } from "../test/renderInLang.js";
 
 function repo(overrides: Partial<RepoStatus> = {}): RepoStatus {
   return {
@@ -39,13 +40,22 @@ describe("RepoList", () => {
   });
 
   it("renders UNKNOWN CI distinctly, never as if it were failing or passing", () => {
-    render(<RepoList repos={[repo({ ci: { conclusion: UNKNOWN, workflowName: UNKNOWN, runUrl: UNKNOWN, updatedAt: UNKNOWN } })]} />);
-    const chips = screen.getAllByText(/CI 不明/);
-    expect(chips.length).toBeGreaterThan(0);
+    const unknownCi = repo({ ci: { conclusion: UNKNOWN, workflowName: UNKNOWN, runUrl: UNKNOWN, updatedAt: UNKNOWN } });
+    const { unmount } = render(<RepoList repos={[unknownCi]} />);
+    expect(screen.getAllByText(/CI unknown/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/CI passing|CI failing/)).toBeNull();
+    unmount();
+    renderInLang("ja", <RepoList repos={[unknownCi]} />);
+    expect(screen.getAllByText(/CI 不明/).length).toBeGreaterThan(0);
   });
 
-  it("renders 'provides: なし' distinctly from 不明 when the fact is actually documented as false", () => {
-    render(<RepoList repos={[repo({ providesPublished: { value: false, source: "documented", detail: "PR still open" } })]} />);
+  it("renders 'provides: no' distinctly from unknown when the fact is actually documented as false", () => {
+    const documentedFalse = repo({ providesPublished: { value: false, source: "documented", detail: "PR still open" } });
+    const { unmount } = render(<RepoList repos={[documentedFalse]} />);
+    expect(screen.getAllByText(/provides: no/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/provides: unknown/)).toBeNull();
+    unmount();
+    renderInLang("ja", <RepoList repos={[documentedFalse]} />);
     expect(screen.getAllByText(/provides: なし/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/provides: 不明/)).toBeNull();
   });
@@ -56,15 +66,13 @@ describe("RepoList", () => {
   });
 
   it("flags a PR with a real merge conflict visibly", () => {
-    render(
-      <RepoList
-        repos={[
-          repo({
-            openPullRequests: [{ number: 24, title: "Add provides", url: "https://x", draft: true, mergeableState: "dirty", updatedAt: "t", isStale: false }],
-          }),
-        ]}
-      />,
-    );
+    const conflicted = repo({
+      openPullRequests: [{ number: 24, title: "Add provides", url: "https://x", draft: true, mergeableState: "dirty", updatedAt: "t", isStale: false }],
+    });
+    const { unmount } = render(<RepoList repos={[conflicted]} />);
+    expect(screen.getAllByText("Merge conflict").length).toBeGreaterThan(0);
+    unmount();
+    renderInLang("ja", <RepoList repos={[conflicted]} />);
     expect(screen.getAllByText("競合あり").length).toBeGreaterThan(0);
   });
 });

@@ -189,6 +189,39 @@ code,
   color: var(--paper);
 }
 
+/* EN/JA switch: the landing page's `.lang` control, two small buttons with aria-pressed. */
+.lang {
+  display: flex;
+  border: 1px solid var(--mist-2);
+  border-radius: var(--radius-btn);
+  padding: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.lang button {
+  min-height: 34px;
+  min-width: 36px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--slate);
+  font: inherit;
+  cursor: pointer;
+  transition: background 300ms var(--ease), color 300ms var(--ease);
+}
+
+.lang button:hover {
+  color: var(--graphite);
+}
+
+.lang button[aria-pressed="true"] {
+  background: var(--graphite);
+  color: var(--paper);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -219,20 +252,30 @@ code,
   border-color: var(--graphite);
 }
 
-/* Narrow screens: brand and landing-page link on the first row, the page switch as a
- * full-width row under them, each segment a full 44px touch target. */
+/* Narrow screens: brand and landing-page link on the first row; the page switch and the
+ * EN/JA switch share the row under them, each segment a 40px-tall touch target. */
 @media (max-width: 767px) {
   .bar {
     min-height: 56px;
-    column-gap: 12px;
+    column-gap: 8px;
   }
   .pages {
     order: 3;
-    width: 100%;
+    /* A 60% basis never fits beside the brand, so the switches always start row two. */
+    flex: 1 1 60%;
+    min-width: 0;
     margin-bottom: 10px;
   }
   .pages a {
     flex: 1;
+    min-height: 40px;
+    padding: 0 8px;
+  }
+  .lang {
+    order: 4;
+    margin-bottom: 10px;
+  }
+  .lang button {
     min-height: 40px;
   }
   .btn {
@@ -335,6 +378,7 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .section-chevron,
   .pages a,
+  .lang button,
   .btn,
   .skip {
     transition: none;

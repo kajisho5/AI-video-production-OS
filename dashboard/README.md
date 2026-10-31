@@ -140,6 +140,20 @@ a verdict and is a graphite outline chip. The highlighter yellow marks only the 
 next task. The header links the two pages to each other and back to the landing page
 (`lp/`). See `src/styles/tokens.css` and `docs/ecosystem/DECISION_LOG.md` D10.
 
+## Language
+
+Both pages are English by default with a Japanese switch (EN/JA in the header), following
+the landing page's rule exactly: `?lang=ja` (or `?lang=en`) in the URL wins, else
+`localStorage["avos-lang"]`, else English. The key is shared with the landing page on the
+same origin, so a choice made there carries over. Toggling writes the key, updates
+`<html lang>`, the title and description, and the URL (`?lang=ja` or no param), and the
+header's links keep `?lang=ja` so a shared link opens in Japanese. The strings live in
+`web/src/lib/i18n.ts` (`en` is the source; `ja` is typed against its keys, so a missing
+translation fails `npm run typecheck`). Only UI chrome is translated: snapshot data (repo
+names and roles, PR titles, roadmap and WORK_QUEUE.md text, evidence) is shown as
+generated. The static HTML and the PWA manifest are English. See
+`docs/ecosystem/DECISION_LOG.md` D11.
+
 ## Mobile / PWA
 
 - Mobile-first CSS (`src/styles/global.css`): single-column cards below 640px, a denser

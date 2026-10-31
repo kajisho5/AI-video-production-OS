@@ -1,6 +1,7 @@
 import type { EcosystemGraph, RepoType } from "@ecosystem/types";
 import { Section } from "./Section.js";
-import { REPO_TYPE_LABEL_JA } from "../lib/labels.js";
+import { repoTypeLabel } from "../lib/labels.js";
+import { useI18n } from "../lib/i18n.js";
 
 const TIER_ORDER: RepoType[] = ["OS", "Agent", "Skill", "Provider", "Extension"];
 
@@ -13,6 +14,7 @@ const TIER_ORDER: RepoType[] = ["OS", "Agent", "Skill", "Provider", "Extension"]
  * repository-level tiers plus real dependency edges is what is actually backed by
  * evidence today. */
 export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
+  const { t } = useI18n();
   const nodesByType = new Map<RepoType, string[]>();
   for (const node of graph.nodes) {
     const list = nodesByType.get(node.type) ?? [];
@@ -28,11 +30,11 @@ export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
   }
 
   return (
-    <Section title="エコシステム構成図">
+    <Section title={t("graph.title")}>
       <div className="graph-list">
         {TIER_ORDER.filter((t) => nodesByType.has(t)).map((type) => (
           <div key={type}>
-            <div className="graph-tier-label">{REPO_TYPE_LABEL_JA[type]}</div>
+            <div className="graph-tier-label">{repoTypeLabel(t, type)}</div>
             <div className="graph-tier">
               {nodesByType.get(type)!.map((slug) => (
                 <span key={slug} className="graph-node" title={slug}>
@@ -43,12 +45,12 @@ export function EcosystemGraphPanel({ graph }: { graph: EcosystemGraph }) {
           </div>
         ))}
       </div>
-      <h3 className="sub-title">依存関係</h3>
+      <h3 className="sub-title">{t("graph.dependencies")}</h3>
       <ul className="edges">
         {[...edgesByFrom.entries()].map(([from, tos]) => (
           <li key={from}>
             <span className="mono">{from.split("/")[1]}</span>
-            <span className="graph-arrow" aria-label="が依存">
+            <span className="graph-arrow" aria-label={t("graph.dependsOn")}>
               {"→"}
             </span>
             <span className="to">{tos.map((to) => to.split("/")[1]).join(", ")}</span>
