@@ -1,9 +1,11 @@
 /** Shared header for both pages: brand, the Dashboard / Control Room switch, and a link
- * back to the landing page. Every URL is relative to Vite's base path, so it resolves
+ * back to the landing page (the site root, one level above this app's base path). Every URL is relative to Vite's base path, so it resolves
  * under GitHub Pages' project subpath and in local dev alike. */
 type Page = "dashboard" | "control-room";
 
 const BASE = import.meta.env.BASE_URL;
+// The landing page is the site root; the dashboard is built under <site>/dashboard/.
+const SITE = `${BASE}../`;
 
 export function SiteHeader({ current }: { current: Page }) {
   return (
@@ -25,7 +27,7 @@ export function SiteHeader({ current }: { current: Page }) {
               コントロールルーム
             </a>
           </nav>
-          <a className="btn btn-line" href={`${BASE}lp/`}>
+          <a className="btn btn-line" href={SITE}>
             紹介ページ
           </a>
         </div>

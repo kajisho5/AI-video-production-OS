@@ -3,9 +3,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// base is set for GitHub Pages project-site hosting (https://<user>.github.io/AI-video-production-OS/).
+// The app lives under /dashboard/ of the GitHub Pages project site
+// (https://<user>.github.io/AI-video-production-OS/dashboard/); the site root is the landing page in site/.
 // Override with VITE_BASE_PATH for local dev or a different deployment target.
-const base = process.env.VITE_BASE_PATH ?? "/AI-video-production-OS/";
+const base = process.env.VITE_BASE_PATH ?? "/AI-video-production-OS/dashboard/";
 
 export default defineConfig({
   base,
@@ -23,9 +24,6 @@ export default defineConfig({
       // fabricated one.
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-        // /lp/ is a static landing page, not the app: never answer its navigations with the
-        // dashboard shell.
-        navigateFallbackDenylist: [/\/lp\//],
         runtimeCaching: [
           {
             urlPattern: /\/data\/ecosystem-snapshot\.json$/,

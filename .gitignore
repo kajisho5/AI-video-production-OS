@@ -11,3 +11,4 @@ dist/
 .si-state/
 .si-repos/
 ecosystem-audit.md
+_site/

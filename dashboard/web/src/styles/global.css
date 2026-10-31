@@ -1,7 +1,7 @@
 @import "./tokens.css";
 
 /* Layout and components for both pages. Follows the landing page's rules
- * (public/lp/index.html): a plain sticky header bar with a hairline under it,
+ * (site/index.html): a plain sticky header bar with a hairline under it,
  * left-aligned content at most 1200px wide, hairlines between list rows, 12px radius
  * for the few bordered panels, 8px buttons, 6px chips, no gradients, no shadows, and
  * motion only as a response to something the user did. */

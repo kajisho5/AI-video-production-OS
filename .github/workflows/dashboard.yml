@@ -1,8 +1,9 @@
 name: Ecosystem Dashboard
 
-# Builds and deploys two read-only pages to GitHub Pages from one dashboard/web build:
-#   /                the Ecosystem Dashboard (dashboard/, current OS/repo state)
-#   /control-room.html   the Ecosystem Control Room (dashboard/control-room, cross-repo
+# Builds and deploys the GitHub Pages site:
+#   /                              the landing page (site/, static, no build step)
+#   /dashboard/                    the Ecosystem Dashboard (dashboard/web, current OS/repo state)
+#   /dashboard/control-room.html   the Ecosystem Control Room (dashboard/control-room, cross-repo
 #                    development read model: roadmap, tasks, PR/CI state, SI findings)
 # See docs/adr/ADR-011-ecosystem-dashboard.md for the Dashboard's architecture and
 # dashboard/control-room/src/types.ts for the Control Room's read model.
@@ -27,6 +28,7 @@ on:
     branches: [main]
     paths:
       - "dashboard/**"
+      - "site/**"
       - "docs/ROADMAP.md"
       - "docs/ecosystem/registry.json"
       - "docs/ecosystem/capability-status.json"
@@ -137,11 +139,25 @@ jobs:
           fi
           echo "Clean: no token pattern found in dashboard/web/dist/"
 
+      # The landing page is the site root and the dashboard build goes under dashboard/.
+      # site/ also carries the redirects for the old /lp/ and /control-room.html URLs and a
+      # sw.js that retires the service worker the dashboard used to register at the root.
+      - name: Assemble the site
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          cp -R site/. _site/
+          cp -R dashboard/web/dist _site/dashboard
+          if grep -rE "gh[ps]_[A-Za-z0-9]{20,}" _site/ ; then
+            echo "::error::A GitHub token literal was found in the assembled site."
+            exit 1
+          fi
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dashboard/web/dist
+          path: _site
 
       - id: deployment
         uses: actions/deploy-pages@v4
