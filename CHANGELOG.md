@@ -1,3 +1,14 @@
+## v0.7.26 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- Point everything at the renamed repository (kajisho5/Velisa) (#114)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.25 (2026-10-31)
 
 ## What's Changed
