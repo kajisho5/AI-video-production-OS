@@ -1,3 +1,14 @@
+## v0.7.38 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- build(deps): bump actions/configure-pages from 5 to 6 (#118)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.37 (2026-10-31)
 
 ## What's Changed
