@@ -38,6 +38,7 @@ svg/  velisa-symbol(.svg|-on-dark|-black|-white|-small|-small-on-dark)
       velisa-horizontal(-on-dark|-black|-white)  velisa-stacked(-on-dark)
       velisa-wordmark(-white)  velisa-app-icon(-full)  velisa-readme-banner-(dark|light)
 png/  1200 px PNG of the main versions
+      velisa-social-preview.png (1280×640, GitHub Settings → Social preview; .svg source beside it)
 web/  favicon.svg (switches with dark mode) · favicon.ico · favicon-16/32/48.png
       apple-touch-icon.png · icon-192/512.png · maskable-512.png · site.webmanifest · head-snippet.html
 ```
