@@ -1,3 +1,12 @@
+## v0.7.17 (2026-10-31)
+
+## What's Changed
+
+- Landing page: play footage inside the hero monitor (#105)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.16 (2026-10-31)
 
 ## What's Changed
