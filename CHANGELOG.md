@@ -1,3 +1,14 @@
+## v0.7.34 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- ecosystem: maturity evidence for all 34 roster repos; register measure.audio.noise\_floor (#130)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.33 (2026-10-31)
 
 ## What's Changed
