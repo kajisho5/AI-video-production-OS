@@ -1,3 +1,12 @@
+## v0.7.9 (2026-10-31)
+
+## What's Changed
+
+- Record voice-enhance-skill's selected engines (#96)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.8 (2026-10-30)
 
 ## What's Changed
