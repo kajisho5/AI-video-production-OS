@@ -1,6 +1,6 @@
 /* Design tokens for the Ecosystem Dashboard and the Control Room.
  *
- * Same visual language as the landing page (public/lp/index.html, its <style> block is
+ * Same visual language as the landing page (site/index.html, its <style> block is
  * the reference): white, mist, graphite and slate, one highlighter yellow used sparingly,
  * and four verdict colors. Each verdict color means one thing:
  *   ok   = measured and passing      warn = measured, needs attention

@@ -11,7 +11,7 @@
 
 **An open foundation for AI-native video production — not another AI video generator.**
 
-[Landing page](https://kajisho5.github.io/AI-video-production-OS/lp/) · [Architecture](#the-core-idea) · [Status](#current-status) · [Ecosystem](#the-ecosystem-today) · [Build a Skill](#skill-author-experience) · [Roadmap](#roadmap) · [Docs](docs/)
+[Website](https://kajisho5.github.io/AI-video-production-OS/) · [Dashboard](https://kajisho5.github.io/AI-video-production-OS/dashboard/) · [Architecture](#the-core-idea) · [Status](#current-status) · [Ecosystem](#the-ecosystem-today) · [Build a Skill](#skill-author-experience) · [Roadmap](#roadmap) · [Docs](docs/)
 
 </div>
 
