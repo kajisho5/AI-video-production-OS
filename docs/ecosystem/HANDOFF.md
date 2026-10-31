@@ -6,7 +6,7 @@ directory; this page only orients and points.
 
 ## What this project is
 
-`AI-video-production-OS`: the architecture, the Capability/Skill/Provider/Runtime model,
+`Velisa`: the architecture, the Capability/Skill/Provider/Runtime model,
 and (as of Phase 1) a small real `registry/` library, for an ecosystem of 10 independent
 video-processing Skill repositories plus one orchestrating Agent
 (`video-production-agent`). See the main `README.md` and `docs/ARCHITECTURE.md` for the
@@ -66,7 +66,7 @@ touching registry/discovery work again.
 - **`dashboard/`** (Ecosystem Dashboard, built 2026-09-05): read-only, mobile-first, PWA
   web dashboard over the ecosystem's real GitHub state. **Live**, not just built: GitHub
   Pages was manually enabled 2026-09-06 and the deploy workflow has run successfully —
-  `https://kajisho5.github.io/AI-video-production-OS/`. 61 tests, all passing. See
+  `https://kajisho5.github.io/Velisa/`. 61 tests, all passing. See
   `dashboard/README.md`, `docs/adr/ADR-011-ecosystem-dashboard.md`,
   `docs/ecosystem/MATURITY_MODEL.md`, and `WORK_QUEUE.md` item 7 for the small remaining
   real gaps (PR mergeability check is bounded to 8 per repo, no snapshot history).

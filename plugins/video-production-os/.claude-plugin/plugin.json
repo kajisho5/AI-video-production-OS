@@ -1,7 +1,7 @@
 {
   "name": "video-production-os",
-  "displayName": "AI Video Production OS",
-  "description": "The whole AI Video Production OS in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
+  "displayName": "Velisa",
+  "description": "The whole of Velisa in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
   "author": {
     "name": "kajisho5",
     "url": "https://github.com/kajisho5"

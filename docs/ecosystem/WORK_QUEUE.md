@@ -238,7 +238,7 @@ MATURITY_MODEL.md` for the maturity ladder it renders. 61 tests, all passing, no
 access required by any of them.
 
 **GitHub Pages is enabled and the site is genuinely live**, confirmed by fetching
-`https://kajisho5.github.io/AI-video-production-OS/data/ecosystem-snapshot.json`
+`https://kajisho5.github.io/Velisa/data/ecosystem-snapshot.json`
 directly (2026-09-06) and finding data this session never fed it: a real open PR count
 and a real PR-body detail on `video-production-agent` (a merge conflict on a real,
 specific PR number about multi-source sync) neither present in, nor derivable from, the

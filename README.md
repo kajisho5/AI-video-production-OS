@@ -1,15 +1,18 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="brand/app-icon-dark.png">
-    <img src="brand/app-icon.png" width="128" alt="AI-video-production-OS app icon">
+    <source media="(prefers-color-scheme: dark)" srcset="brand/velisa/velisa-readme-banner-dark.svg">
+    <img src="brand/velisa/velisa-readme-banner-light.svg" width="640" alt="Velisa">
   </picture>
 </p>
 
 <div align="center">
 
-# AI Video Production OS
+# Velisa
 
-**An open foundation for AI-native video production — not another AI video generator.**
+**Verified Execution Layer for Intent, Skills & Agents**
+
+An open foundation for AI-native video production — not another AI video generator.
+<sub>Formerly AI Video Production OS.</sub>
 
 [Website](https://kajisho5.github.io/Velisa/) · [Dashboard](https://kajisho5.github.io/Velisa/dashboard/) · [Architecture](#the-core-idea) · [Status](#current-status) · [Ecosystem](#the-ecosystem-today) · [Build a Skill](#skill-author-experience) · [Roadmap](#roadmap) · [Docs](docs/)
 

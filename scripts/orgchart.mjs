@@ -78,7 +78,7 @@ function overview() {
   const cols = departments.filter((d) => !["command", "engine"].includes(d.id));
   const colW = 230, gap = 18, half = colW / 2;
   const body = `
-<h1>AI Video Production OS 組織図<small>ecosystem.json から生成</small></h1>
+<h1>Velisa 組織図<small>ecosystem.json から生成</small></h1>
 <p class="lead">司令塔が各部門のスキルを呼び分け、各スキルは実行基盤の ffmpeg-skill の上で動く。</p>
 <div class="top"><div class="node"><div class="dept-label">司令塔 COMMAND</div>
   <div class="repo">${esc(agent.repo)}${badges(agent)}</div><div class="owns">${agent.owns.map(esc).join(" ・ ")}</div></div></div>

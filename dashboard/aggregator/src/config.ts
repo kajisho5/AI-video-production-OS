@@ -2,7 +2,7 @@
  * Loads the two structured ecosystem-state files this project maintains
  * (docs/ecosystem/registry.json, docs/ecosystem/capability-status.json).
  * These are read from disk, not fetched over the network -- the aggregator always
- * runs with a checkout of AI-video-production-OS available (it IS this repo's own
+ * runs with a checkout of Velisa available (it IS this repo's own
  * CI job).
  */
 import { readFileSync } from "node:fs";

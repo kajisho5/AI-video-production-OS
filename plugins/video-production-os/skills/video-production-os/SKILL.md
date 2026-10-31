@@ -1,9 +1,9 @@
 ---
 name: video-production-os
-description: Route any video, audio, subtitle, QC or delivery task to the right AI Video Production OS skill - prefer the OS skills that are installed, fall back to other installed skills or plain tools, and say so when you do. Use when asked to edit, finish, clean up, subtitle, grade, mix, check or deliver a video or recording, or to ingest or back up footage.
+description: Route any video, audio, subtitle, QC or delivery task to the right Velisa skill - prefer the OS skills that are installed, fall back to other installed skills or plain tools, and say so when you do. Use when asked to edit, finish, clean up, subtitle, grade, mix, check or deliver a video or recording, or to ingest or back up footage.
 ---
 
-# AI Video Production OS: which skill to use
+# Velisa: which skill to use
 
 Every OS skill also works on its own, so any of them may be missing. Decide per task, in this order, and tell the user which level you used.
 
@@ -11,7 +11,7 @@ Every OS skill also works on its own, so any of them may be missing. Decide per 
 2. **No OS skill for this job here**: use another skill that is installed, or a standard tool already on the machine (for example ffmpeg / ffprobe). Say that this step is outside the OS: no contract, no provenance record, no OS QA.
 3. **Nothing installed fits**: do it yourself only if it is safe to do with the tools you have, explain exactly what you did, and verify the output (play / probe it, or `video-agent check` when the agent is installed). Otherwise stop and name the skill that would do it.
 
-At levels 2 and 3, say which OS skill would cover the job and how to add it: `/plugin install <skill>@ai-video-production-os` in Claude Code, or `./install.sh` from AI-video-production-OS for everything (CLIs, Python packages, Codex skills).
+At levels 2 and 3, say which OS skill would cover the job and how to add it: `/plugin install <skill>@ai-video-production-os` in Claude Code, or `./install.sh` from Velisa for everything (CLIs, Python packages, Codex skills).
 
 Never claim a result is verified, measured or approved unless a skill or the agent reported it. A measurement that is missing is unknown, not zero.
 

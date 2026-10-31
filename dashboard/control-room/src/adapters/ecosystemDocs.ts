@@ -11,7 +11,7 @@ import type { Evidence, Phase, RoadmapDrift, Task } from "../types.js";
 import { UNKNOWN } from "../types.js";
 
 export interface RepoRoot {
-  root: string; // absolute path to a checkout of kajisho5/AI-video-production-OS
+  root: string; // absolute path to a checkout of kajisho5/Velisa
 }
 
 function read(root: string, relPath: string): string {

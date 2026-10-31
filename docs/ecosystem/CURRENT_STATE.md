@@ -11,7 +11,7 @@ snapshot those two feed into.
 ## The one-paragraph version
 
 All ten Skill repositories now publish a `provides` field (Capability ids) in their
-machine-readable contracts — the `AI-video-production-OS` Phase 2 rollout, **complete as
+machine-readable contracts — the `Velisa` Phase 2 rollout, **complete as
 of 2026-09-06**. A real,
 tested `registry/` library (Phase 1) exists in this repo to consume that field: register
 contracts, detect collisions, resolve them by a 3-tier policy. Separately, and **without
@@ -45,7 +45,7 @@ ids and found `CAPABILITY_MISSING` nowhere.
   12 UI), all passing, none requiring network access. **Live**, not just built: GitHub
   Pages was manually enabled 2026-09-06 and `.github/workflows/dashboard.yml` (hourly +
   on-demand) has run successfully against the real network at
-  `https://kajisho5.github.io/AI-video-production-OS/`. `MATURITY_MODEL.md` level 6
+  `https://kajisho5.github.io/Velisa/`. `MATURITY_MODEL.md` level 6
   ("Distributed") is also now a real live npm/PyPI registry lookup
   (`dashboard/aggregator/src/packageRegistry.ts`), not merely a documented claim. See
   `docs/ecosystem/MATURITY_MODEL.md` for the full ladder.
@@ -78,7 +78,7 @@ ids and found `CAPABILITY_MISSING` nowhere.
     artifact with provenance — demonstrated in its own README as a real command sequence,
     not a mockup.
   - Its own Skill→Tool selection layer (`SkillRegistry.select_tool`, `ToolRouter`),
-    already solving the exact problem `AI-video-production-OS` `docs/ROADMAP.md` Phase 4
+    already solving the exact problem `Velisa` `docs/ROADMAP.md` Phase 4
     describes as future work ("real registry-driven discovery") — solved independently,
     with a different mechanism (static registration + declared-order tool candidates, not
     Capability-id-based discovery), and predating this project's `registry/` library.

@@ -20,7 +20,7 @@ than the prose here, and re-verify before acting on anything time-sensitive.
 | `media-analysis-skill` | Media measurement/observation | `ffprobe`/`ffmpeg` directly |
 | `transcription-skill` | Speech-to-text | local ASR engines (faster-whisper etc.) |
 | `video-production-agent` | Orchestrator/Agent, consumes all of the above | all 10 Skills + `ffmpeg-skill` |
-| `AI-video-production-OS` | Architecture, `registry/` library, this doc set | none (describes the others) |
+| `Velisa` | Architecture, `registry/` library, this doc set | none (describes the others) |
 
 New Skills may appear at any time — this roster is not authoritative on its own; re-check
 `video-production-agent`'s README and its `VIDEO_AGENT_*_DIR` environment variables for the
@@ -40,7 +40,7 @@ in `qc-skill`'s completeness test) that had to be fixed, not just merged around.
 `docs/ecosystem/DECISION_LOG.md` and `docs/ecosystem/capability-status.json` for the
 full evidence trail.
 
-## `AI-video-production-OS` itself
+## `Velisa` itself
 
 - **PR #1** (`claude/ai-video-production-os-arch-fck6fy` → `main`): the whole architecture
   + `registry/` + this doc set. Open, draft, no CI configured on this repo (0 checks), no
@@ -74,7 +74,7 @@ pipeline across all 9 Skills before this project's `provides`/`registry/` work s
 
 ## Environments and access notes
 
-- This session's repo scope originally covered the 10 Skills + `AI-video-production-OS`;
+- This session's repo scope originally covered the 10 Skills + `Velisa`;
   `video-production-agent` was added mid-session via `add_repo` (push access) and cloned to
   `/home/user/video-production-agent`.
 - Every Skill repo also has a push-enabled clone under `/home/user/<repo>` from the
