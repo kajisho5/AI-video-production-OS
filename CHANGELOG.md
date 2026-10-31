@@ -1,3 +1,12 @@
+## v0.7.11 (2026-10-31)
+
+## What's Changed
+
+- ecosystem.json: Chatterbox engine note from dubbing-skill ADR-001 (#99)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.10 (2026-10-31)
 
 ## What's Changed
