@@ -98,7 +98,7 @@
     {"repo": "publish-skill", "department": "delivery", "install": "pip", "status": "scaffold",
      "role": "Upload and metadata for delivery platforms; reads the platform specs from ffmpeg-skill",
      "owns": ["配信先アップロード", "アップロード制限"]},
-    {"repo": "nle-bridge-skill", "department": "delivery", "install": "pip", "status": "planned",
+    {"repo": "nle-bridge-skill", "plugin": true, "department": "delivery", "install": "pip", "status": "active",
      "role": "Timeline interchange with Premiere Pro and DaVinci Resolve: OTIO / FCP7 XML / EDL + SRT export, conform packages, round trip of the editor's changes",
      "owns": ["NLE連携(タイムライン受け渡し)"]},
 

@@ -32,6 +32,7 @@
     "qc-skill",
     "media-analysis-skill",
     "artifacts-skill",
+    "nle-bridge-skill",
     "imagemagick-skill",
     "stepcap"
   ]
