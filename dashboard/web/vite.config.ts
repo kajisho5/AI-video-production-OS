@@ -6,7 +6,10 @@ import { VitePWA } from "vite-plugin-pwa";
 // The app lives under /dashboard/ of the GitHub Pages project site
 // (https://<user>.github.io/AI-video-production-OS/dashboard/); the site root is the landing page in site/.
 // Override with VITE_BASE_PATH for local dev or a different deployment target.
-const base = process.env.VITE_BASE_PATH ?? "/AI-video-production-OS/dashboard/";
+// In GitHub Actions the path follows the repository's current name (GITHUB_REPOSITORY is
+// "<owner>/<name>"), so renaming the repository does not break the deployed dashboard.
+const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1];
+const base = process.env.VITE_BASE_PATH ?? `/${repoName ?? "AI-video-production-OS"}/dashboard/`;
 
 export default defineConfig({
   base,

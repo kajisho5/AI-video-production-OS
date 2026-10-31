@@ -148,6 +148,15 @@ jobs:
           mkdir -p _site
           cp -R site/. _site/
           cp -R dashboard/web/dist _site/dashboard
+          cp ecosystem.json _site/ecosystem.json
+          # site/ is written with this repository's original address. Rewrite it to the
+          # repository's current owner/name so links, canonical URLs and the install command
+          # follow a rename without editing the pages.
+          owner="${GITHUB_REPOSITORY%%/*}"; name="${GITHUB_REPOSITORY#*/}"
+          site_url="https://${owner,,}.github.io/${name}/"
+          find _site -name '*.html' -exec sed -i \
+            -e "s#https://kajisho5.github.io/AI-video-production-OS/#${site_url}#g" \
+            -e "s#kajisho5/AI-video-production-OS#${GITHUB_REPOSITORY}#g" {} +
           if grep -rE "gh[ps]_[A-Za-z0-9]{20,}" _site/ ; then
             echo "::error::A GitHub token literal was found in the assembled site."
             exit 1

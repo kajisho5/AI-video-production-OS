@@ -619,8 +619,10 @@ Let’s finish it.</h2>
   // live repository list
   var COLOR = { active: "var(--ok)", scaffold: "var(--warn)", planned: "var(--unk)" };
   var repos = document.getElementById("repos");
-  fetch("https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/ecosystem.json")
-    .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+  // ecosystem.json is copied into the site at deploy time; the raw GitHub copy is only a fallback.
+  function getJSON(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); }); }
+  getJSON("ecosystem.json")
+    .catch(function () { return getJSON("https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/ecosystem.json"); })
     .then(function (m) {
       repos.textContent = "";
       (m.components || []).forEach(function (c) {
