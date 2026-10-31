@@ -1,3 +1,14 @@
+## v0.7.21 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- Dashboard and Control Room: the landing page's visual language (#109)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.20 (2026-10-31)
 
 ## What's Changed
