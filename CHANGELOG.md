@@ -1,3 +1,12 @@
+## v0.7.18 (2026-10-31)
+
+## What's Changed
+
+- Landing page: higher-resolution hero clip (#106)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.17 (2026-10-31)
 
 ## What's Changed
