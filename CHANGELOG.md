@@ -1,3 +1,12 @@
+## v0.7.15 (2026-10-31)
+
+## What's Changed
+
+- Landing page: English by default, Japanese as a switch, new design (#103)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.14 (2026-10-31)
 
 ## What's Changed
