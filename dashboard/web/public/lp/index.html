@@ -255,6 +255,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
       <a href="#start" data-i="nav.start">Setup</a>
       <a href="#price" data-i="nav.price">Price</a>
       <a href="#faq" data-i="nav.faq">FAQ</a>
+      <a href="../" data-i="nav.dash">Dashboard</a>
     </nav>
     <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="ja" aria-pressed="false">JA</button></div>
     <a class="btn btn-solid btn-sm hide-sm" href="#start" data-i="cta.short">Set it up</a>
@@ -273,7 +274,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
       <div class="shade" aria-hidden="true"></div>
       <div class="safe" aria-hidden="true"></div>
       <div class="safe t" aria-hidden="true"></div>
-      <div class="hud" aria-hidden="true"><span class="rec"><i></i><span data-i="hud.file">pino.mp4</span></span><span class="tc" id="tc">00:00:09:12</span></div>
+      <div class="hud" aria-hidden="true"><span class="rec"><i></i><span data-i="hud.file">pino.mp4</span></span><span class="tc" id="tc">00:00:12:02</span></div>
       <div class="caption">
         <h1 id="hero-h"><span class="sr" id="hero-sr">Finish your videos just by asking.</span><span id="hero-vis" aria-hidden="true"></span></h1>
       </div>
@@ -282,7 +283,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
     <div class="timeline" id="tl" aria-hidden="true">
       <div class="lane v" id="laneV"></div>
       <div class="lane" id="laneA"></div>
-      <div class="tl-meta"><span id="tl-l" data-i="tl.before">Before: 9.5 s, 2 filler words</span><span id="tl-r"></span></div>
+      <div class="tl-meta"><span id="tl-l" data-i="tl.before">Before: 12.1 s, 2 filler words</span><span id="tl-r"></span></div>
     </div>
 
     <div class="intro">
@@ -312,6 +313,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
       <div class="ask"><q data-i="a3.q">I can barely hear myself over the AC.</q><p data-i="a3.p">Reduces noise and room echo, evens out loud and quiet moments, and lowers the music while someone talks.</p></div>
       <div class="ask"><q data-i="a4.q">Make a thumbnail and upload it, unlisted.</q><p data-i="a4.p">Renders a readable cover and publishes to YouTube or Vimeo. Nothing leaves your computer until you ask.</p></div>
       <div class="ask"><q data-i="a5.q">Split the talk at every slide change.</q><p data-i="a5.p">Detects when slides change and pulls their text, so chapters line up with what was on screen.</p></div>
+      <div class="ask"><q data-i="a7.q">Make a 15 second vertical short of my budgie.</q><p data-i="a7.p">Picks the liveliest moments, reframes them to 9:16, and exports a file ready to post.</p></div>
       <div class="ask"><q data-i="a6.q">Put the recital on a DVD for my parents.</q><p data-i="a6.p">Authors a DVD or Blu-ray with a menu and chapters, ready to burn.</p></div>
     </div>
   </div>
@@ -387,7 +389,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
       <details><summary><span data-i="q3">Will my video be uploaded without me knowing?</span><i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a" data-i="a3">No. Processing happens on your computer. Publishing to YouTube or Vimeo runs only when you ask, and each component publicly declares what it sends and where.</div></details>
       <details><summary><span data-i="q4">What happens to my original file?</span><i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a" data-i="a4">Nothing. Results are written as new files, and every step is recorded so it can be redone or undone.</div></details>
       <details><summary><span data-i="q5">What computer do I need?</span><i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a" data-i="a5">One that can run a bash command in a terminal. Some components need extra tools such as FFmpeg, and each one says what it needs.</div></details>
-      <details><summary><span data-i="q6">What can it not do yet?</span><i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a" data-i="a6">AI narration and dubbing, music and sound effect generation, and direct exchange with Premiere Pro or DaVinci Resolve are still being built. Progress is public on the live dashboard.</div></details>
+      <details><summary><span data-i="q6">What can it not do yet?</span><i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a"><span data-i="a6">AI narration and dubbing, music and sound effect generation, and direct exchange with Premiere Pro or DaVinci Resolve are still being built. Progress is public on the </span><a href="../" data-i="a6.l">live dashboard</a><span data-i="a6.e">.</span></div></details>
     </div>
   </div>
 </section>
@@ -442,9 +444,9 @@ Let’s finish it.</h2>
 
   var JA = {
     "skip": "本文へスキップ",
-    "nav.ask": "できること", "nav.checks": "検品", "nav.start": "はじめかた", "nav.price": "料金", "nav.faq": "よくある質問",
+    "nav.ask": "できること", "nav.checks": "検品", "nav.start": "はじめかた", "nav.price": "料金", "nav.faq": "よくある質問", "nav.dash": "ダッシュボード",
     "cta.short": "はじめる", "cta.main": "無料ではじめる", "cta.gh": "GitHub を見る",
-    "hud.file": "pino.mp4", "hero.replay": "カットをもう一度", "tl.before": "カット前：9.5 秒、言いよどみ 2 か所",
+    "hud.file": "pino.mp4", "hero.replay": "カットをもう一度", "tl.before": "カット前：12.1 秒、言いよどみ 2 か所",
     "intro.p": "動画に必要なことを AI に伝えるだけ。間と言いよどみのカット、字幕、音量の調整、サムネイル、投稿まで。仕上がりは AI が実際に測ってから、あなたに返します。",
     "fact.1": "あなたのパソコンで動作", "fact.2": "MIT ライセンスで無料", "fact.3": "Claude Code と Codex で使えます",
     "ask.h": "人に頼むように、頼めばいい。", "ask.p": "タイムラインもメニューもいりません。実際の頼み方と、そのあと起きることです。",
@@ -453,6 +455,7 @@ Let’s finish it.</h2>
     "a3.q": "エアコンの音で自分の声が聞こえない。", "a3.p": "雑音と部屋の響きを抑え、大きい声と小さい声の差をならし、話している間は BGM を下げます。",
     "a4.q": "サムネを作って、限定公開で上げておいて。", "a4.p": "読みやすい表紙を作り、YouTube か Vimeo に投稿します。頼むまで、何もパソコンの外に出ません。",
     "a5.q": "スライドが変わるところで区切って。", "a5.p": "スライドの切り替わりを見つけて文字も読み取るので、チャプターが画面の内容とそろいます。",
+    "a7.q": "うちのインコの動画を、15 秒の縦型ショートにして。", "a7.p": "いちばん動きのある場面を選び、9:16 に切り出して、すぐ投稿できるファイルにします。",
     "a6.q": "発表会を DVD にして、両親に渡したい。", "a6.p": "メニューとチャプターつきの DVD や Blu-ray を、焼くだけの状態で作ります。",
     "qc.h": "見せる前に、自分の仕事を確かめる。", "qc.p": "AI の「できました」は何の証明にもなりません。仕上がったファイルを毎回測り、その結果を報告します。",
     "rep.title": "検品レポート", "rep.1": "音量", "rep.2": "真っ黒な画面", "rep.3": "字幕の読む速さ", "rep.3m": "2 行が速い", "rep.4": "音割れ", "rep.5": "点滅", "rep.5m": "未測定",
@@ -472,7 +475,7 @@ Let’s finish it.</h2>
     "q3": "知らないうちにアップロードされませんか？", "a3": "されません。処理はあなたのパソコンの中です。YouTube や Vimeo への投稿は頼んだときだけ動き、どの部品が何をどこへ送るかは公開されています。",
     "q4": "元のファイルはどうなりますか？", "a4": "そのままです。結果は新しいファイルとして書き出し、すべての工程を記録するので、やり直しも取り消しもできます。",
     "q5": "どんなパソコンが必要ですか？", "a5": "ターミナルで bash のコマンドを実行できるパソコンです。FFmpeg など追加の道具が必要な部品もあり、それぞれに書いてあります。",
-    "q6": "まだできないことは？", "a6": "AI のナレーションと吹き替え、BGM と効果音の生成、Premiere Pro や DaVinci Resolve との直接のやり取りは開発中です。進み具合は公開ダッシュボードで見られます。",
+    "q6": "まだできないことは？", "a6": "AI のナレーションと吹き替え、BGM と効果音の生成、Premiere Pro や DaVinci Resolve との直接のやり取りは開発中です。進み具合は", "a6.l": "公開ダッシュボード", "a6.e": "で見られます。",
     "dev.h": "小さく、開かれた部品でできています", "dev.p": "部品ごとに独立したリポジトリと、機械が読める契約があります。単体でも使え、自分の部品を加えれば AI から呼べます。一覧は GitHub からその場で読み込んでいます。",
     "dev.dash": "進捗ダッシュボード", "k.1": "稼働中", "k.2": "開発中", "k.3": "計画中",
     "close.h": "もう撮ってある？\nじゃあ、仕上げよう。",
@@ -480,8 +483,8 @@ Let’s finish it.</h2>
   };
   // Headline tokens: [text, isFiller]. Removing the fillers leaves the real sentence.
   var HERO = {
-    en: { tokens: [["Finish your ", 0], ["um, ", 1], ["videos just by ", 0], ["uh, like, ", 1], ["asking.", 0]], final: "Finish your videos just by asking.", tc: ["00:00:09:12", "00:00:06:03"], after: "After: 6.1 s, filler removed" },
-    ja: { tokens: [["撮った動画を、", 0], ["えーっと、", 1], ["話しかけるだけで", 0], ["、あの、", 1], ["仕上げる。", 0]], final: "撮った動画を、話しかけるだけで仕上げる。", tc: ["00:00:09:12", "00:00:06:03"], after: "カット後：6.1 秒、言いよどみを除去" }
+    en: { tokens: [["Finish your ", 0], ["um, ", 1], ["videos just by ", 0], ["uh, like, ", 1], ["asking.", 0]], final: "Finish your videos just by asking.", tc: ["00:00:12:02", "00:00:08:14"], after: "After: 8.6 s, filler removed" },
+    ja: { tokens: [["撮った動画を、", 0], ["えーっと、", 1], ["話しかけるだけで", 0], ["、あの、", 1], ["仕上げる。", 0]], final: "撮った動画を、話しかけるだけで仕上げる。", tc: ["00:00:12:02", "00:00:08:14"], after: "カット後：8.6 秒、言いよどみを除去" }
   };
   var META = {
     en: { title: "AI Video Production OS: finish your videos by asking", desc: document.querySelector('meta[name="description"]').content },
