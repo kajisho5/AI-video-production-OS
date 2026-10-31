@@ -18,6 +18,15 @@ updates:
     labels:
       - "chore"
       - "dependencies"
+    # React and its type packages must move together (a react/@types/react major split
+    # leaves the tree uninstallable), so Dependabot proposes them as one PR.
+    groups:
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
 
   - package-ecosystem: "npm"
     directory: "/dashboard/control-room"
@@ -26,6 +35,11 @@ updates:
     labels:
       - "chore"
       - "dependencies"
+    # CI (dashboard.yml) runs on Node 22, so @types/node majors beyond that would type
+    # APIs the runtime does not have.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "npm"
     directory: "/dashboard/aggregator"
@@ -34,6 +48,11 @@ updates:
     labels:
       - "chore"
       - "dependencies"
+    # CI (dashboard.yml) runs on Node 22, so @types/node majors beyond that would type
+    # APIs the runtime does not have.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   # No pip/pyproject.toml ecosystem entry: registry/ and poc/capability-contract/ are
   # dependency-free (standard library only -- confirmed by inspection, no
