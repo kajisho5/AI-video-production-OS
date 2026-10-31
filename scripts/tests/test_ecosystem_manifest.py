@@ -62,6 +62,19 @@ class ManifestTests(unittest.TestCase):
         roster = {r["name"] for r in registry["repos"]} - {"Velisa"}
         self.assertEqual(roster, set(REPOS))
 
+    def test_capability_status_covers_the_roster(self):
+        # docs/ecosystem/MATURITY_MODEL.md: a repo with no entry renders every documented level as UNKNOWN, so a new
+        # component must get an entry (fields it has no evidence for stay absent, never guessed) in the same change.
+        registry = json.loads((ROOT / "docs" / "ecosystem" / "registry.json").read_text(encoding="utf-8"))
+        status = json.loads((ROOT / "docs" / "ecosystem" / "capability-status.json").read_text(encoding="utf-8"))
+        self.assertEqual(set(status["repos"]), {r["slug"] for r in registry["repos"]})
+        for slug, entry in status["repos"].items():
+            with self.subTest(repo=slug):
+                self.assertRegex(entry.get("as_of", ""), r"^\d{4}-\d{2}-\d{2}$")
+                for field in ("provides", "os_integration", "verified_e2e"):
+                    if field + ("_published" if field == "provides" else "") in entry:
+                        self.assertTrue(entry.get(field + "_evidence"), f"{slug}: {field} is set without {field}_evidence")
+
 
 def _env(home: Path) -> dict:
     env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}

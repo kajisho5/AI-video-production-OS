@@ -38,6 +38,23 @@ noteworthy.
 
 ---
 
+### 2026-10-31 — `capability-status.json`: all 34 roster repos re-checked; `measure.audio.noise_floor` registered
+
+- **Repo(s)**: `kajisho5/Velisa` (read-only reads of every repo in `docs/ecosystem/registry.json`, and of
+  `kajisho5/video-production-agent` main @21d3685)
+- **PR(s)**: this PR
+- **What changed**: `docs/ecosystem/capability-status.json` grew from 12 to all 34 `registry.json` repos. Each Skill /
+  Extension entry now records, from primary sources read 2026-10-31: the latest main-branch CI run, the file defining its
+  `contract --json` entrypoint and the line emitting `provides[]`, whether the agent's `default_registry()` has a real
+  adapter for it (13 do; 14 are phase-2 `ECOSYSTEM_JOB_SKILLS` handoffs only; 5 are not named at all), the agent test
+  class exercising it on real media, and a live npm / PyPI lookup with the owner checked (two same-named packages on
+  npm / PyPI belong to other people and are not recorded). Anything without evidence is left absent (UNKNOWN), with a
+  `*_note` saying why. `scripts/tests/test_ecosystem_manifest.py` now fails if the file stops covering the roster.
+  `docs/CAPABILITY_MATRIX.md` §8c gains `measure.audio.noise_floor` (72 rows).
+- **Why**: `docs/ecosystem/MATURITY_MODEL.md` renders every documented level of a repo with no entry as UNKNOWN, so 22
+  repos had no maturity beyond level 1; the new Capability is media-analysis-skill#21 (its ADR-029).
+- **Status**: draft
+
 ### 2026-09-06 — `video-production-agent`: read-only provides/Capability consumption diagnostic (WORK_QUEUE item 8)
 
 - **Repo(s)**: `kajisho5/video-production-agent`
