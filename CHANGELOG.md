@@ -1,3 +1,14 @@
+## v0.7.29 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- build(deps): bump actions/upload-pages-artifact from 3 to 5 (#53)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.28 (2026-10-31)
 
 ## What's Changed
