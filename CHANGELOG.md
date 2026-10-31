@@ -1,3 +1,14 @@
+## v0.7.28 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- build(deps): bump actions/deploy-pages from 4 to 5 (#42)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.27 (2026-10-31)
 
 ## What's Changed
