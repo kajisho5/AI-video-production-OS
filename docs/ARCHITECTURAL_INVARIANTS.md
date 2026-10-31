@@ -1,7 +1,7 @@
 # Architectural Invariants
 
 Status: **Derived, draft, 2026-09-05.** This document states properties that must remain
-true of the AI Video Production OS, each as a testable invariant, with the evidence that
+true of Velisa, each as a testable invariant, with the evidence that
 currently enforces it — or the honest gap, if it doesn't yet. Tags follow
 `DESIGN_SYSTEM.md` §2, plus one enforcement-status label per invariant, used
 consistently:

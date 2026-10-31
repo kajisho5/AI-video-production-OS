@@ -1,5 +1,5 @@
 {
-  "name": "video-production-os",
+  "name": "velisa",
   "displayName": "Velisa",
   "description": "The whole of Velisa in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
   "author": {

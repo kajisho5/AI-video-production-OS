@@ -12,7 +12,7 @@ Two ways to keep the "last check" state:
                  Used by .github/workflows/skill-updates.yml.
 
 Usage:
-  python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json
+  python3 scripts/skill-updates.py --state ~/.velisa/updates.json
   python3 scripts/skill-updates.py --issue [--report FILE]
 Exit codes: 0 checked (changes or not), 1 the API could not be read for every repository.
 """
@@ -131,7 +131,7 @@ def report(org: str, found: List[Dict[str, Any]], errors: List[str], notify: Opt
         lines.append("### Could not read")
         lines += [f"- {e}" for e in errors]
     lines.append("")
-    lines.append("Update: Claude Code `/plugin marketplace update ai-video-production-os` (or turn on auto-update for it under `/plugin` → Marketplaces); CLIs and Python packages: re-run `./install.sh`.")
+    lines.append("Update: Claude Code `/plugin marketplace update velisa` (or turn on auto-update for it under `/plugin` → Marketplaces); CLIs and Python packages: re-run `./install.sh`.")
     return "\n".join(lines) + "\n"
 
 

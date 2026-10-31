@@ -6,9 +6,9 @@ Writes two files, both generated (edit ecosystem.json, not them):
                                                         source, no version, so installs track each repository's
                                                         commits unless its own plugin.json pins a version),
                                                         plus the meta plugin below
-  plugins/video-production-os/.claude-plugin/plugin.json the meta plugin: depends on every non-optional plugin,
+  plugins/velisa/.claude-plugin/plugin.json             the meta plugin: depends on every non-optional plugin,
                                                         so installing it installs the whole OS; its own skill
-                                                        (skills/video-production-os/SKILL.md, hand-written)
+                                                        (skills/velisa/SKILL.md, hand-written)
                                                         says which skill to use for what; its "who owns
                                                         what" table is regenerated here too
 
@@ -25,8 +25,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
-MARKETPLACE_NAME = "ai-video-production-os"
-META = "video-production-os"
+MARKETPLACE_NAME = "velisa"
+META = "velisa"
 META_DIR = f"plugins/{META}"
 
 

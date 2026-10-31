@@ -188,7 +188,7 @@ carries two independent axes — `skill.version` (the npm/`package.json` version
 through releases) and `contract_version` (frozen at `"1.0"` across that entire span). This
 document adds nothing new here. To restate precisely in this document's terms: **the npm
 package version *is* `ffmpeg-skill`'s `skill.version`** — there is no separate "npm
-version" concept to reconcile against it. `AI Video Production OS`'s own version (were one
+version" concept to reconcile against it. Velisa's own version (were one
 to exist as a single number, which it does not today per `REPOSITORY_MAP.md`'s framing of
 `video-production-agent` at `0.1.0`) is independent of both axes, exactly as the addendum
 §5 states: `ffmpeg-skill 0.x` and any OS-level version evolve on separate cadences, with

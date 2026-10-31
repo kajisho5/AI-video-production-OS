@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Install the whole AI Video Production ecosystem into one workspace directory, driven by
+# Install the whole Velisa ecosystem into one workspace directory, driven by
 # ../ecosystem.json (the single list of repositories). Normally reached through ../install.sh;
 # running it directly from an OS checkout works the same.
 #
 # Usage:
 #   ./scripts/bootstrap.sh [--dir DIR] [--with-optional] [--no-update] [--no-claude-skills] [--no-codex-skills] [--dry-run]
 #
-#   --dir DIR            workspace (default: $AVOS_HOME or ~/ai-video-os)
+#   --dir DIR            workspace (default: $VELISA_HOME, else $AVOS_HOME, else ~/velisa-workspace;
+#                        ~/ai-video-os instead when only that pre-rename workspace exists)
 #   --with-optional      also install components marked "optional" (DVD/Blu-ray authoring)
 #   --no-update          do not `git pull` repositories that are already cloned
 #   --no-claude-skills   do not link Skills into ~/.claude/skills
@@ -33,7 +34,18 @@ set -euo pipefail
 
 OS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="$OS_ROOT/ecosystem.json"
-WORKSPACE="${AVOS_HOME:-$HOME/ai-video-os}"
+# Workspace: $VELISA_HOME; else $AVOS_HOME (its name before the rename to Velisa); else ~/velisa-workspace,
+# unless only the pre-rename default ~/ai-video-os exists -- then that one, so an existing install keeps
+# being updated in place (docs/RENAMING.md, ADR-015). ../install.sh resolves it the same way.
+if [ -n "${VELISA_HOME:-}" ]; then
+  WORKSPACE="$VELISA_HOME"
+elif [ -n "${AVOS_HOME:-}" ]; then
+  WORKSPACE="$AVOS_HOME"
+elif [ ! -e "$HOME/velisa-workspace" ] && [ -d "$HOME/ai-video-os" ]; then
+  WORKSPACE="$HOME/ai-video-os"
+else
+  WORKSPACE="$HOME/velisa-workspace"
+fi
 UPDATE=1
 LINK_SKILLS=1
 LINK_CODEX=1
@@ -51,7 +63,7 @@ while [ $# -gt 0 ]; do
     --no-codex-skills) LINK_CODEX=0; shift ;;
     --dry-run) DRY_RUN=1; shift ;;
     --with-optional) WITH_OPTIONAL=1; shift ;;
-    -h|--help) sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,32p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown option: $1 (see --help)" >&2; exit 2 ;;
   esac
 done

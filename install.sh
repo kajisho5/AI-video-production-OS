@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command install of the AI Video Production ecosystem: the OS, the agent and every Skill
+# One-command install of the Velisa ecosystem: the OS, the agent and every Skill
 # listed in ecosystem.json.
 #
 #   curl -fsSL https://raw.githubusercontent.com/kajisho5/Velisa/main/install.sh | bash
@@ -9,7 +9,18 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/kajisho5/Velisa"
-WORKSPACE="${AVOS_HOME:-$HOME/ai-video-os}"
+# Workspace: $VELISA_HOME; else $AVOS_HOME (its name before the rename to Velisa); else ~/velisa-workspace,
+# unless only the pre-rename default ~/ai-video-os exists -- then that one, so an existing install keeps
+# being updated in place (docs/RENAMING.md, ADR-015). scripts/bootstrap.sh resolves it the same way.
+if [ -n "${VELISA_HOME:-}" ]; then
+  WORKSPACE="$VELISA_HOME"
+elif [ -n "${AVOS_HOME:-}" ]; then
+  WORKSPACE="$AVOS_HOME"
+elif [ ! -e "$HOME/velisa-workspace" ] && [ -d "$HOME/ai-video-os" ]; then
+  WORKSPACE="$HOME/ai-video-os"
+else
+  WORKSPACE="$HOME/velisa-workspace"
+fi
 args=("$@")
 while [ $# -gt 0 ]; do
   case "$1" in

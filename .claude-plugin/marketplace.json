@@ -1,5 +1,5 @@
 {
-  "name": "ai-video-production-os",
+  "name": "velisa",
   "description": "Velisa (formerly AI Video Production OS): production skills for video, audio, subtitles, QC and delivery, and the agent that plans with them.",
   "owner": {
     "name": "kajisho5",
@@ -7,8 +7,8 @@
   },
   "plugins": [
     {
-      "name": "video-production-os",
-      "source": "./plugins/video-production-os",
+      "name": "velisa",
+      "source": "./plugins/velisa",
       "description": "Installs the whole of Velisa (formerly AI Video Production OS): every Skill below except the optional disc-authoring kits, and the routing skill that picks the right one.",
       "category": "os"
     },

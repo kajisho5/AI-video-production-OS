@@ -61,7 +61,7 @@ describe("RepoList", () => {
   });
 
   it("does not render a provides chip for non-Skill repo types", () => {
-    render(<RepoList repos={[repo({ type: "OS", name: "AI-video-production-OS" })]} />);
+    render(<RepoList repos={[repo({ type: "OS", name: "Velisa" })]} />);
     expect(screen.queryByText(/provides:/)).toBeNull();
   });
 
