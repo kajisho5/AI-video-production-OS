@@ -1,3 +1,12 @@
+## v0.7.20 (2026-10-31)
+
+## What's Changed
+
+- Landing page: dashboard links, a pet request, matching timings (#108)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.19 (2026-10-31)
 
 ## What's Changed
