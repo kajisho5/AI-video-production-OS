@@ -58,7 +58,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: kajisho5/${{ matrix.repo }}
-          path: satellite
+          # The directory must carry the repository's name: SkillPact checks that SKILL.md's
+          # `name` matches the skill directory.
+          path: ${{ matrix.repo }}
           persist-credentials: false
       - name: Install what the contract requires (${{ matrix.apt || 'nothing known' }})
         if: matrix.apt != ''
@@ -72,7 +74,7 @@ jobs:
         continue-on-error: true
         uses: kajisho5/skillpact@90895aa3920b503e77c29fa5ff231aeba8251a32 # skillpact #33 merge commit
         with:
-          path: satellite
+          path: ${{ matrix.repo }}
           min-level: L1
       - name: Record the result
         if: always()
