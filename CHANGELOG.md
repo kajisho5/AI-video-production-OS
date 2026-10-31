@@ -1,3 +1,12 @@
+## v0.7.31 (2026-10-31)
+
+## What's Changed
+
+- build(deps-dev): bump tsx from 4.23.13 to 4.23.15 in /dashboard/aggregator (#59)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.30 (2026-10-31)
 
 ## What's Changed
