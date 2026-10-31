@@ -1,3 +1,14 @@
+## v0.7.23 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- Pages: landing page at the site root, dashboard under /dashboard/ (#111)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.22 (2026-10-31)
 
 ## What's Changed
