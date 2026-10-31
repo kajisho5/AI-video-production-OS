@@ -4,198 +4,271 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AI Video Production OS</title>
-<meta name="description" content="編集・カラー・音声・字幕・QC・納品を、独立した Skill とエージェントがつなぐオープンな契約と実行基盤。何をしたか、なぜそうなったかが記録に残る映像制作のための OS です。MIT ライセンス。">
-<meta name="theme-color" content="#000000">
+<meta name="description" content="撮った動画を、AI に話しかけるだけで仕上げる。無音やえーっとのカット、字幕、音量の調整、サムネイル、YouTube への投稿まで。仕上がりは AI が実際に測って確かめます。オープンソースで無料。">
+<meta name="theme-color" content="#F6F3EE">
 <link rel="icon" type="image/png" href="icon.png">
 <link rel="canonical" href="https://kajisho5.github.io/AI-video-production-OS/lp/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="AI Video Production OS">
-<meta property="og:description" content="映像制作を、検証できる工程に。独立した Skill とエージェントをつなぐ、オープンな契約と実行基盤。">
+<meta property="og:title" content="AI Video Production OS · 話しかけるだけで、動画が仕上がる">
+<meta property="og:description" content="カット、字幕、音量、サムネイル、投稿まで。仕上がりは AI が測って確かめる。オープンソースで無料。">
 <meta property="og:url" content="https://kajisho5.github.io/AI-video-production-OS/lp/">
 <meta property="og:image" content="https://kajisho5.github.io/AI-video-production-OS/lp/icon.png">
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type": "Question", "name": "AI で動画を生成するツールですか？", "acceptedAnswer": {"@type": "Answer", "text": "違います。プロンプトから MP4 を作る生成ツールではなく、実際の素材に対する編集・音声・字幕・QC・納品といった工程を、検証と記録つきで実行するための基盤です。"}},
-    {"@type": "Question", "name": "料金はかかりますか？", "acceptedAnswer": {"@type": "Answer", "text": "OS と各リポジトリは MIT ライセンスで無料です。任意で導入する AI エンジンや外部サービスは、それぞれのライセンスと料金に従います。"}},
-    {"@type": "Question", "name": "Premiere Pro や DaVinci Resolve の代わりになりますか？", "acceptedAnswer": {"@type": "Answer", "text": "なりませんし、目指していません。NLE とのタイムライン連携（nle-bridge-skill）は計画中で、まだ実装されていません。"}}
+    {"@type": "Question", "name": "動画編集の経験がなくても使えますか？", "acceptedAnswer": {"@type": "Answer", "text": "使えます。やりたいことを普段の言葉で伝えれば、AI が手順を組み立てて実行します。編集ソフトの操作を覚える必要はありません。"}},
+    {"@type": "Question", "name": "本当に無料ですか？", "acceptedAnswer": {"@type": "Answer", "text": "AI Video Production OS とすべての部品は MIT ライセンスのオープンソースで、無料です。話しかける相手の AI（Claude Code や Codex など）の利用料は、それぞれのサービスの料金に従います。"}},
+    {"@type": "Question", "name": "動画がネットに勝手にアップロードされませんか？", "acceptedAnswer": {"@type": "Answer", "text": "されません。処理は基本的にあなたのパソコンの中で行います。YouTube への投稿のように外に送る機能は、あなたが頼んだときだけ動きます。"}}
   ]
 }
 </script>
 <style>
 :root{
-  --bg:#000000; --bg-2:#181818; --bg-3:#1F1F1F; --bg-4:#272727; --line:#313131;
-  --text:#FFFFFF; --text-2:#B4B4B4; --text-3:#8A8A8A;
-  --accent:#F2B84B; --ok:#5BD49A; --warn:#F2B84B; --fail:#F2695C; --unknown:#9B9B9B;
+  --paper:#F6F3EE; --card:#FFFFFF; --card-2:#FBF9F5; --ink:#2B2B2F; --ink-2:#5E5D63; --ink-3:#8C8A90; --line:#E6E0D6;
+  --red:#E5484D; --red-soft:#FDECEC; --blue:#3E63DD; --blue-soft:#EAF0FD; --yellow:#C98F00; --yellow-soft:#FDF4DC; --green:#2F9E6E; --green-soft:#E5F5EC;
+  --frame:#1F1F1F; --h1-from:#000000; --h1-to:#666666; --glass:rgba(255,255,255,0.72);
   --ease:cubic-bezier(0.32,0.72,0,1);
-  --font:"Geist","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
-  --mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --font:"Manrope","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131209; --card:#1F1F1F; --card-2:#181818; --ink:#F4F2EE; --ink-2:#B9B6AF; --ink-3:#8C8A86; --line:#313131;
+    --red-soft:#3A1F20; --blue-soft:#1E2640; --yellow:#E9A912; --yellow-soft:#3A3018; --green-soft:#1A3328;
+    --frame:#000000; --h1-from:#FFFFFF; --h1-to:#9B9B9B; --glass:rgba(31,31,31,0.72); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131209; --card:#1F1F1F; --card-2:#181818; --ink:#F4F2EE; --ink-2:#B9B6AF; --ink-3:#8C8A86; --line:#313131;
+  --red-soft:#3A1F20; --blue-soft:#1E2640; --yellow:#E9A912; --yellow-soft:#3A3018; --green-soft:#1A3328;
+  --frame:#000000; --h1-from:#FFFFFF; --h1-to:#9B9B9B; --glass:rgba(31,31,31,0.72); color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:24px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:24px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}
-h1,h2,h3{font-weight:600;text-wrap:balance;letter-spacing:-0.01em}
+h1,h2,h3{font-weight:700;text-wrap:balance;letter-spacing:-0.02em}
 p{text-wrap:pretty}
+h1,h2,h3,p,li,.bubble,.ask{word-break:auto-phrase}
 .wrap{max-width:1120px;margin:0 auto;padding:0 16px}
 @media(min-width:768px){.wrap{padding:0 32px}}
-.skip{position:absolute;left:16px;top:-48px;background:var(--text);color:var(--bg);padding:8px 12px;border-radius:8px;z-index:100;transition:top 400ms var(--ease)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:16px;top:-48px;background:var(--ink);color:var(--paper);padding:8px 12px;border-radius:8px;z-index:100;transition:top 400ms var(--ease)}
 .skip:focus{top:16px}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
 
-/* nav: floating glass pill */
-.nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:center;pointer-events:none}
-.pill{pointer-events:auto;margin-top:24px;display:flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:9999px;background:rgba(24,24,24,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;font-size:14px;line-height:20px;white-space:nowrap}
+/* nav */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:center;pointer-events:none;padding:0 16px}
+.pill{pointer-events:auto;margin-top:24px;display:flex;align-items:center;gap:8px;padding:4px 4px 4px 12px;border-radius:9999px;background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);max-width:100%}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:14px;line-height:20px;white-space:nowrap}
 .brand img{width:24px;height:24px;border-radius:6px}
 .links{display:none;gap:4px;margin-left:16px}
-.links a{font-size:14px;line-height:20px;color:var(--text-2);text-decoration:none;padding:4px 12px;border-radius:9999px;transition:all 500ms var(--ease)}
-.links a:hover{color:var(--text);background:var(--bg-4)}
-.links a[aria-current="page"]{color:var(--text)}
+.links a{font-size:14px;line-height:20px;color:var(--ink-2);text-decoration:none;padding:4px 12px;border-radius:9999px;transition:all 500ms var(--ease)}
+.links a:hover{color:var(--ink);background:var(--card)}
 @media(min-width:880px){.links{display:flex}}
-.btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-weight:600;font-size:16px;line-height:24px;padding:8px 12px;border-radius:9999px;border:1px solid transparent;cursor:pointer;text-decoration:none;transition:all 500ms var(--ease)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;font-weight:600;font-size:16px;line-height:24px;padding:8px 12px;border-radius:9999px;border:1px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap;transition:all 500ms var(--ease)}
 .btn:active{transform:scale(0.98)}
 .btn-sm{font-size:14px;line-height:20px}
-.btn-primary{background:var(--text);color:var(--bg)}
-.btn-primary:hover{background:#E4E4E4;transform:translateY(-1px)}
-.btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
-.btn-ghost:hover{background:var(--bg-3)}
-.burger{position:relative;width:40px;height:40px;border-radius:9999px;border:0;background:transparent;cursor:pointer;color:var(--text)}
+.btn-lg{padding:12px 24px}
+.btn-primary{background:var(--ink);color:var(--paper)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--paper)}
+.burger{position:relative;width:40px;height:40px;border-radius:9999px;border:0;background:transparent;cursor:pointer;color:var(--ink);flex:none}
 .burger span{position:absolute;left:12px;width:16px;height:2px;background:currentColor;border-radius:2px;transition:all 700ms var(--ease)}
 .burger span:nth-child(1){top:15px}.burger span:nth-child(2){top:23px}
 .burger[aria-expanded="true"] span:nth-child(1){top:19px;transform:rotate(45deg)}
 .burger[aria-expanded="true"] span:nth-child(2){top:19px;transform:rotate(-45deg)}
 @media(min-width:880px){.burger{display:none}}
-.menu{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,0.8);backdrop-filter:blur(64px);-webkit-backdrop-filter:blur(64px);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:96px 32px;opacity:0;visibility:hidden;transition:all 700ms var(--ease)}
+.nav-cta{display:none}
+@media(min-width:480px){.nav-cta{display:inline-flex}}
+.menu{position:fixed;inset:0;z-index:40;background:var(--glass);backdrop-filter:blur(64px);-webkit-backdrop-filter:blur(64px);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:96px 32px;opacity:0;visibility:hidden;transition:all 700ms var(--ease)}
 .menu.open{opacity:1;visibility:visible}
-.menu a{font-size:30px;line-height:36px;font-weight:600;text-decoration:none;transform:translateY(48px);opacity:0;transition:all 700ms var(--ease)}
+.menu a{font-size:30px;line-height:36px;font-weight:700;text-decoration:none;transform:translateY(48px);opacity:0;transition:all 700ms var(--ease)}
 .menu.open a{transform:none;opacity:1}
 .menu.open a:nth-child(1){transition-delay:100ms}.menu.open a:nth-child(2){transition-delay:150ms}.menu.open a:nth-child(3){transition-delay:200ms}.menu.open a:nth-child(4){transition-delay:250ms}.menu.open a:nth-child(5){transition-delay:300ms}
 
 /* reveal */
 .rv{transform:translateY(64px);filter:blur(12px);opacity:0;transition:transform 900ms var(--ease),filter 900ms var(--ease),opacity 900ms var(--ease)}
 .rv.in{transform:none;filter:none;opacity:1}
-@media(prefers-reduced-motion:reduce){.rv{transform:none;filter:none;opacity:1;transition:none}.w{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.rv{transform:none;filter:none;opacity:1;transition:none}.w,.step-line{transition:none!important}}
 
 section{padding:96px 0}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;line-height:16px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:16px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:20px;font-weight:600;color:var(--ink-2);margin-bottom:16px}
+.eyebrow .d{width:8px;height:8px;border-radius:9999px;background:var(--red)}
 .h2{font-size:30px;line-height:36px;max-width:680px}
-@media(min-width:768px){.h2{font-size:36px;line-height:40px}}
-.lead{color:var(--text-2);font-size:18px;line-height:28px;max-width:680px;margin-top:16px}
+@media(min-width:768px){.h2{font-size:48px;line-height:1.1}}
+.lead{color:var(--ink-2);font-size:18px;line-height:28px;max-width:680px;margin-top:16px}
 
 /* hero */
-.hero{padding:160px 0 64px}
-.hero h1{font-size:36px;line-height:40px;max-width:680px;background:linear-gradient(90deg,#FFFFFF,#9B9B9B);-webkit-background-clip:text;background-clip:text;color:transparent}
-@media(min-width:640px){.hero h1{font-size:60px;line-height:1.05}}
-@media(min-width:1024px){.hero h1{font-size:72px;line-height:1.05}}
-.hero .sub{max-width:680px;margin-top:24px;color:var(--text-2);font-size:18px;line-height:28px}
-.cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:40px}
-.cmd{min-width:0;display:flex;align-items:center;gap:8px;max-width:100%;padding:4px 4px 4px 16px;border-radius:9999px;background:var(--bg-2);border:1px solid var(--line);font-family:var(--mono);font-size:14px;line-height:20px;color:var(--text-2)}
-.cmd code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.cmd .btn{flex:none}
-.copied{font-size:14px;line-height:20px;color:var(--ok);min-height:20px;margin-top:8px}
-.proof{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:40px;color:var(--text-3);font-size:14px;line-height:20px}
-.proof b{color:var(--text);font-family:var(--mono);font-weight:500}
+.hero{padding:144px 0 64px;text-align:center}
+.hero .eyebrow{padding:4px 12px;border-radius:9999px;background:var(--card);border:1px solid var(--line)}
+.hero h1{font-size:36px;line-height:1.15;max-width:960px;margin:0 auto;background:linear-gradient(90deg,var(--h1-from),var(--h1-to));-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:4px}
+@media(min-width:640px){.hero h1{font-size:60px;line-height:1.1}}
+@media(min-width:1024px){.hero h1{font-size:72px;line-height:1.08}}
+.hero .sub{max-width:680px;margin:24px auto 0;color:var(--ink-2);font-size:18px;line-height:28px}
+.cta-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;margin-top:40px}
+.textlink{font-weight:600;color:var(--ink-2);text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 12px;border-radius:9999px;transition:all 500ms var(--ease)}
+.textlink:hover{color:var(--ink);background:var(--card)}
+.works{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 24px;margin-top:32px;font-size:14px;line-height:20px;color:var(--ink-3)}
+.works span{display:inline-flex;align-items:center;gap:8px}
 
-/* hero visual: a run log */
-.console{min-width:0;margin-top:64px;border-radius:24px;background:var(--bg-2);border:1px solid var(--line);padding:8px}
-.console-in{border-radius:16px;background:var(--bg);border:1px solid var(--bg-4);overflow:hidden}
-.console-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--bg-4);font-family:var(--mono);font-size:12px;line-height:16px;color:var(--text-3)}
-.dot{width:8px;height:8px;border-radius:9999px;background:var(--bg-4)}
-.log{padding:16px;font-family:var(--mono);font-size:12px;line-height:20px;color:var(--text-2);overflow-x:auto}
-@media(min-width:768px){.log{font-size:14px;line-height:24px;padding:24px}}
-.log div{white-space:pre;opacity:0;transform:translateY(8px);transition:all 600ms var(--ease)}
-.log.play div{opacity:1;transform:none}
-.k{color:var(--text-3)}.s-ok{color:var(--ok)}.s-warn{color:var(--warn)}.s-un{color:var(--unknown)}.s-acc{color:var(--accent)}
+/* hero demo */
+.demo{margin-top:64px;border-radius:32px;background:var(--card);border:1px solid var(--line);padding:8px;text-align:left;box-shadow:0 24px 64px rgba(43,43,47,0.08)}
+.demo-in{border-radius:24px;background:var(--card-2);border:1px solid var(--line);display:grid;overflow:hidden}
+@media(min-width:900px){.demo-in{grid-template-columns:minmax(0,5fr) minmax(0,6fr)}}
+.chat{padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.bubble{align-self:flex-end;max-width:90%;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:16px 16px 4px 16px;font-size:14px;line-height:20px}
+.agent{display:flex;gap:12px;align-items:flex-start}
+.av{flex:none;width:32px;height:32px;border-radius:9999px;background:var(--yellow-soft);color:var(--yellow);display:grid;place-items:center;font-size:16px}
+.steps-list{list-style:none;display:grid;gap:8px;flex:1;min-width:0}
+.step-line{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:20px;color:var(--ink-2);opacity:0;transform:translateY(8px);transition:all 600ms var(--ease)}
+.step-line i{flex:none;margin-top:2px;color:var(--green)}
+.step-line.q i{color:var(--yellow)}
+.demo.play .step-line{opacity:1;transform:none}
+.step-line b{color:var(--ink);font-weight:600}
+.result{padding:24px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:16px;min-width:0}
+@media(min-width:900px){.result{border-top:0;border-left:1px solid var(--line)}}
+.screen{position:relative;aspect-ratio:16/9;border-radius:16px;background:var(--frame);overflow:hidden}
+.screen .slide{position:absolute;left:8%;top:14%;width:46%;height:56%;border-radius:8px;background:#2E3A5C}
+.screen .slide::before{content:"";position:absolute;left:12%;top:18%;width:60%;height:10%;border-radius:4px;background:#8FA6E8}
+.screen .slide::after{content:"";position:absolute;left:12%;top:40%;width:76%;height:34%;border-radius:4px;background:#45537A}
+.screen .person{position:absolute;right:12%;bottom:0;width:26%;height:72%}
+.screen .person .hd{position:absolute;left:50%;top:0;width:44%;aspect-ratio:1;border-radius:9999px;background:#E2B48E;transform:translateX(-50%)}
+.screen .person .bd{position:absolute;left:0;right:0;bottom:0;height:62%;border-radius:48px 48px 0 0;background:#3E63DD}
+.screen .cap{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);background:rgba(0,0,0,0.72);color:#FFFFFF;font-size:12px;line-height:16px;padding:4px 12px;border-radius:6px;white-space:nowrap}
+@media(min-width:640px){.screen .cap{font-size:14px;line-height:20px}}
+.screen .badge{position:absolute;left:12px;top:12px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.6);color:#FFFFFF;font-size:12px;line-height:16px;padding:2px 8px;border-radius:9999px}
+.screen .badge .rec{width:6px;height:6px;border-radius:9999px;background:var(--red)}
+.timeline{display:flex;gap:2px;height:32px;align-items:center}
+.timeline span{flex:1;border-radius:2px;background:var(--blue);opacity:0.85}
+.timeline span.cut{background:var(--line);opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:12px;line-height:16px;font-weight:600;padding:4px 8px;border-radius:9999px}
+.chip.g{background:var(--green-soft);color:var(--green)}.chip.b{background:var(--blue-soft);color:var(--blue)}.chip.y{background:var(--yellow-soft);color:var(--yellow)}.chip.r{background:var(--red-soft);color:var(--red)}
+.demo-note{font-size:12px;line-height:16px;color:var(--ink-3);text-align:center;margin-top:16px}
 
-/* problem / solution */
-.ps{display:grid;gap:16px;margin-top:48px}
-@media(min-width:768px){.ps{grid-template-columns:1fr 1fr}}
-.card{border-radius:24px;background:var(--bg-2);border:1px solid var(--line);padding:32px}
-.card h3{font-size:20px;line-height:28px;display:flex;align-items:center;gap:8px}
-.card ul{list-style:none;margin-top:24px;display:grid;gap:12px}
-.card li{display:flex;gap:12px;color:var(--text-2)}
-.card li i{flex:none;margin-top:4px;font-size:16px}
-.card.after{background:var(--bg-3)}
+/* pillars */
+.pillars{display:grid;gap:16px;margin-top:48px}
+@media(min-width:768px){.pillars{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pillar{border-radius:24px;background:var(--card);border:1px solid var(--line);padding:32px}
+.pillar .num{font-size:14px;line-height:20px;font-weight:700}
+.pillar h3{font-size:24px;line-height:32px;margin-top:12px}
+.pillar p{color:var(--ink-2);margin-top:8px}
 
-/* tagline reveal */
-.tagline{padding:128px 0}
-.tagline p{font-size:36px;line-height:40px;font-weight:600;max-width:880px;text-wrap:balance}
+/* use cases */
+.cases{display:grid;gap:16px;margin-top:48px}
+@media(min-width:640px){.cases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px){.cases{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.case{border-radius:24px;background:var(--card);border:1px solid var(--line);padding:24px;transition:all 700ms var(--ease)}
+.case:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(43,43,47,0.08)}
+.case .ic{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:24px}
+.case h3{font-size:18px;line-height:28px;margin-top:16px}
+.case p{color:var(--ink-2);font-size:14px;line-height:20px;margin-top:8px}
+.case .ask{margin-top:16px;padding:12px;border-radius:12px;background:var(--card-2);border:1px solid var(--line);font-size:14px;line-height:20px;color:var(--ink)}
+.case .ask::before{content:"「";color:var(--ink-3)}.case .ask::after{content:"」";color:var(--ink-3)}
+
+/* tagline */
+.tagline{padding:128px 0;text-align:center}
+.tagline p{font-size:36px;line-height:1.2;font-weight:700;max-width:880px;margin:0 auto;text-wrap:balance;letter-spacing:-0.02em}
 @media(min-width:768px){.tagline p{font-size:48px;line-height:1.15}}
-@media(min-width:1024px){.tagline p{font-size:60px;line-height:1.1}}
-.w{color:rgba(255,255,255,0.28);transition:color 700ms var(--ease)}
-.w.on{color:var(--text)}
+@media(min-width:1024px){.tagline p{font-size:60px;line-height:1.12}}
+.w{color:var(--ink);opacity:0.28;transition:opacity 700ms var(--ease)}
+.w.on{opacity:1}
 
-/* benefits */
-.grid{display:grid;gap:16px;margin-top:48px}
-@media(min-width:768px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}}
-.feat{border-radius:24px;background:var(--bg-2);border:1px solid var(--line);padding:32px;transition:all 700ms var(--ease)}
-.feat:hover{background:var(--bg-3);transform:translateY(-2px)}
-.feat .ic{width:40px;height:40px;border-radius:12px;background:var(--bg-4);display:grid;place-items:center;font-size:20px;color:var(--accent)}
-.feat h3{font-size:18px;line-height:28px;margin-top:24px}
-.feat p{color:var(--text-2);margin-top:8px;font-size:14px;line-height:20px}
-.feat code,.faq code{font-family:var(--mono);font-size:12px;line-height:16px;background:var(--bg-4);padding:2px 4px;border-radius:4px;color:var(--text)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-.chip{font-family:var(--mono);font-size:12px;line-height:16px;padding:2px 8px;border-radius:9999px;border:1px solid var(--line)}
-.c-ok{color:var(--ok)}.c-warn{color:var(--warn)}.c-fail{color:var(--fail)}.c-un{color:var(--unknown)}
-
-/* steps */
-.steps{display:grid;gap:16px;margin-top:48px;counter-reset:s}
-@media(min-width:1024px){.steps{grid-template-columns:repeat(3,1fr)}}
-.step{min-width:0;border-radius:24px;border:1px solid var(--line);padding:32px;position:relative}
-.step .n{font-family:var(--mono);font-size:12px;line-height:16px;color:var(--accent)}
-.step h3{font-size:20px;line-height:28px;margin-top:12px}
-.step p{color:var(--text-2);margin-top:8px;font-size:14px;line-height:20px}
-.snip{margin-top:24px;border-radius:12px;background:var(--bg-2);border:1px solid var(--bg-4);padding:12px;font-family:var(--mono);font-size:12px;line-height:20px;color:var(--text-2);overflow-x:auto;white-space:pre}
-
-/* ecosystem */
-.eco-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
-.legend{display:flex;gap:16px;font-size:12px;line-height:16px;color:var(--text-3)}
+/* features */
+.feature{display:grid;gap:32px;align-items:center;margin-top:64px}
+@media(min-width:900px){.feature{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:64px}.feature.flip .fx{order:2}}
+.feature h3{font-size:30px;line-height:36px}
+.feature p{color:var(--ink-2);font-size:18px;line-height:28px;margin-top:16px}
+.feature ul{list-style:none;margin-top:24px;display:grid;gap:12px}
+.feature li{display:flex;gap:12px;color:var(--ink-2)}
+.feature li i{flex:none;margin-top:4px;color:var(--green)}
+.fx{border-radius:32px;background:var(--card);border:1px solid var(--line);padding:32px;min-width:0}
+.wave{display:flex;align-items:center;gap:3px;height:96px}
+.wave span{flex:1;border-radius:2px;background:var(--blue)}
+.wave span.x{background:var(--red);opacity:0.35}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;font-size:12px;line-height:16px;color:var(--ink-3)}
 .legend span{display:inline-flex;align-items:center;gap:4px}
-.ld{width:8px;height:8px;border-radius:9999px;display:inline-block}
-.groups{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-top:48px}
-@media(min-width:768px){.groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.group{min-width:0;border-radius:24px;background:var(--bg-2);border:1px solid var(--line);padding:24px}
-.group h3{font-size:14px;line-height:20px;color:var(--text-3);font-weight:500;display:flex;align-items:center;gap:8px}
-.repos{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin-top:16px}
-.repo{display:flex;align-items:baseline;gap:12px;padding:8px 12px;margin:0 -12px;border-radius:12px;text-decoration:none;transition:background 500ms var(--ease)}
-.repo:hover{background:var(--bg-4)}
-.repo .nm{font-family:var(--mono);font-size:14px;line-height:20px;white-space:nowrap}
-.repo .rl{font-size:12px;line-height:16px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.repo .st{flex:none;align-self:center}
-.sk{height:20px;border-radius:8px;background:var(--bg-4);animation:pulse 1600ms var(--ease) infinite}
+.legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.meter{margin-top:24px;display:grid;gap:8px}
+.meter .row{display:flex;justify-content:space-between;font-size:14px;line-height:20px}
+.meter .bar{height:8px;border-radius:9999px;background:var(--card-2);border:1px solid var(--line);overflow:hidden}
+.meter .bar span{display:block;height:100%;border-radius:9999px;background:var(--green)}
+.subs{display:grid;gap:8px}
+.sub-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:baseline;padding:12px;border-radius:12px;background:var(--card-2);border:1px solid var(--line);font-size:14px;line-height:20px}
+.sub-row time{font-size:12px;line-height:16px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.checks{display:grid;gap:8px}
+.check{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:12px;background:var(--card-2);border:1px solid var(--line);font-size:14px;line-height:20px}
+.disc{position:relative;width:min(240px,70%);aspect-ratio:1;margin:0 auto;border-radius:9999px;background:var(--blue-soft);border:1px solid var(--line);box-shadow:inset 0 0 0 16px var(--card-2),inset 0 0 0 17px var(--line),inset 0 0 0 48px var(--yellow-soft),inset 0 0 0 49px var(--line)}
+.disc::after{content:"";position:absolute;left:50%;top:50%;width:22%;aspect-ratio:1;border-radius:9999px;background:var(--card);border:1px solid var(--line);transform:translate(-50%,-50%)}
+.disc-cap{text-align:center;margin-top:24px;font-size:14px;line-height:20px;color:var(--ink-2)}
+
+/* start */
+.start{display:grid;gap:16px;margin-top:48px}
+@media(min-width:1024px){.start{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.st{border-radius:24px;background:var(--card);border:1px solid var(--line);padding:32px;min-width:0}
+.st .n{width:32px;height:32px;border-radius:9999px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-size:14px;line-height:20px;font-weight:700}
+.st h3{font-size:20px;line-height:28px;margin-top:16px}
+.st p{color:var(--ink-2);font-size:14px;line-height:20px;margin-top:8px}
+.code{display:flex;align-items:center;gap:8px;margin-top:16px;padding:4px 4px 4px 12px;border-radius:12px;background:var(--card-2);border:1px solid var(--line);font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;font-size:12px;line-height:16px;color:var(--ink);min-width:0}
+.code code{overflow-x:auto;white-space:nowrap;flex:1;min-width:0;padding:8px 0}
+.copy{flex:none;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:all 500ms var(--ease)}
+.copy:hover{background:var(--paper)}
+.copy:active{transform:scale(0.96)}
+.st a.inline{font-weight:600}
+.status{font-size:14px;line-height:20px;color:var(--green);min-height:20px;margin-top:16px;text-align:center}
+
+/* price */
+.price{display:grid;gap:16px;margin-top:48px}
+@media(min-width:900px){.price{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.pcard{border-radius:24px;background:var(--card);border:1px solid var(--line);padding:32px}
+.pcard .amt{font-size:48px;line-height:1;font-weight:700;margin-top:16px}
+.pcard .amt small{font-size:16px;line-height:24px;color:var(--ink-3);font-weight:500;margin-left:8px}
+.pcard ul{list-style:none;margin-top:24px;display:grid;gap:12px}
+.pcard li{display:flex;gap:12px;color:var(--ink-2)}
+.pcard li i{flex:none;margin-top:4px;color:var(--green)}
+.pcard.alt{background:var(--card-2)}
+.pcard.alt li i{color:var(--ink-3)}
+
+/* dev */
+.dev{border-radius:32px;background:var(--card);border:1px solid var(--line);padding:32px}
+@media(min-width:768px){.dev{padding:48px}}
+.cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:32px}
+.cloud a{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:20px;padding:4px 12px;border-radius:9999px;border:1px solid var(--line);background:var(--card-2);text-decoration:none;transition:all 500ms var(--ease)}
+.cloud a:hover{background:var(--paper);transform:translateY(-1px)}
+.cloud .dot{width:8px;height:8px;border-radius:9999px}
+.sk{height:28px;width:120px;border-radius:9999px;background:var(--line);animation:pulse 1600ms var(--ease) infinite}
 @keyframes pulse{50%{opacity:0.45}}
-.err{margin-top:48px;border-radius:24px;border:1px solid var(--line);padding:24px;color:var(--text-2)}
+.err{color:var(--ink-2)}
+.dev-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
 
 /* faq */
 .faq{margin-top:48px;max-width:880px;display:grid;gap:8px}
-.faq details{border-radius:16px;background:var(--bg-2);border:1px solid var(--line);transition:background 500ms var(--ease)}
-.faq details[open]{background:var(--bg-3)}
+.faq details{border-radius:16px;background:var(--card);border:1px solid var(--line)}
 .faq summary{list-style:none;cursor:pointer;padding:20px 24px;font-weight:600;display:flex;justify-content:space-between;gap:16px}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary i{flex:none;transition:transform 600ms var(--ease);margin-top:4px}
 .faq details[open] summary i{transform:rotate(45deg)}
-.faq .a{padding:0 24px 24px;color:var(--text-2)}
+.faq .a{padding:0 24px 24px;color:var(--ink-2)}
 
 /* final */
 .final{text-align:center}
 .final .h2,.final .lead{margin-left:auto;margin-right:auto}
-.final .cta-row{justify-content:center}
-.risk{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 24px;margin-top:24px;font-size:14px;line-height:20px;color:var(--text-3)}
+.risk{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 24px;margin-top:24px;font-size:14px;line-height:20px;color:var(--ink-3)}
 .risk span{display:inline-flex;align-items:center;gap:4px}
-footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);font-size:14px;line-height:20px}
+footer{border-top:1px solid var(--line);padding:48px 0 64px;color:var(--ink-3);font-size:14px;line-height:20px}
 .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px}
 .foot nav{display:flex;flex-wrap:wrap;gap:8px 24px}
 .foot a{text-decoration:none;transition:color 400ms var(--ease)}
-.foot a:hover{color:var(--text)}
+.foot a:hover{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -205,20 +278,20 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
   <div class="pill">
     <a class="brand" href="./" aria-label="AI Video Production OS トップ"><img src="icon.png" alt="" width="24" height="24">AI Video Production OS</a>
     <nav class="links" aria-label="ページ内">
-      <a href="#how">しくみ</a>
-      <a href="#ecosystem">エコシステム</a>
-      <a href="#faq">FAQ</a>
-      <a href="../">ダッシュボード</a>
+      <a href="#uses">できること</a>
+      <a href="#start">はじめかた</a>
+      <a href="#price">料金</a>
+      <a href="#faq">よくある質問</a>
     </nav>
-    <a class="btn btn-ghost btn-sm" href="https://github.com/kajisho5/AI-video-production-OS"><i class="ph ph-github-logo" aria-hidden="true"></i>GitHub</a>
+    <a class="btn btn-primary btn-sm nav-cta" href="#start">無料ではじめる</a>
     <button class="burger" type="button" aria-label="メニュー" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
   </div>
 </header>
 <div class="menu" id="menu" aria-hidden="true">
-  <a href="#how">しくみ</a>
-  <a href="#ecosystem">エコシステム</a>
-  <a href="#faq">FAQ</a>
-  <a href="../">ダッシュボード</a>
+  <a href="#uses">できること</a>
+  <a href="#start">はじめかた</a>
+  <a href="#price">料金</a>
+  <a href="#faq">よくある質問</a>
   <a href="https://github.com/kajisho5/AI-video-production-OS">GitHub</a>
 </div>
 
@@ -226,200 +299,309 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
 
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow rv"><i class="ph ph-film-strip" aria-hidden="true"></i>Open source · MIT</div>
-    <h1 class="rv">映像制作を、<br>検証できる工程に。</h1>
-    <p class="sub rv">編集、カラー、音声、字幕、QC、納品。<br>それぞれ独立した Skill をエージェントがつなぎ、結果を測ってから次へ進みます。何をしたか、なぜそうなったかは、すべて記録に残ります。</p>
-    <div class="rv">
-      <div class="cta-row">
-        <div class="cmd">
-          <code id="cmd">curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash</code>
-          <button class="btn btn-primary" type="button" data-copy="cmd"><i class="ph ph-copy" aria-hidden="true"></i>コマンドをコピー</button>
-        </div>
-      </div>
-      <div class="copied" role="status" aria-live="polite"></div>
+    <div class="eyebrow rv"><span class="d"></span>オープンソース・無料</div>
+    <h1 class="rv">撮った動画を、<br>話しかけるだけで仕上げる。</h1>
+    <p class="sub rv">「えーっと」や無音のカット、字幕、音量の調整、サムネイル、YouTube への投稿まで。AI に頼めば、編集ソフトを開かずに終わります。仕上がりは AI が実際に測って確かめます。</p>
+    <div class="cta-row rv">
+      <a class="btn btn-primary btn-lg" href="#start">無料ではじめる<i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+      <a class="textlink" href="#uses">できることを見る</a>
     </div>
-    <div class="proof rv" aria-label="エコシステムの規模">
-      <span><b data-stat="total">33</b> リポジトリ</span>
-      <span><b data-stat="active">28</b> 稼働中</span>
-      <span><b data-stat="scaffold">4</b> 開発中</span>
-      <span>すべて <b>MIT</b> ライセンス</span>
+    <div class="works rv">
+      <span><i class="ph ph-chat-circle-text" aria-hidden="true"></i>Claude Code と Codex で使えます</span>
+      <span><i class="ph ph-lock-simple" aria-hidden="true"></i>処理はあなたのパソコンの中</span>
+      <span><i class="ph ph-github-logo" aria-hidden="true"></i>MIT ライセンス</span>
     </div>
 
-    <figure class="console rv" aria-label="エージェントの実行ログの例">
-      <div class="console-in">
-        <div class="console-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:8px">video-production-agent · 学会セッション収録の書き出し</span></div>
-        <div class="log" id="log">
-<div><span class="k">plan</span>   取込 → 文字起こし → 話者分離 → スライド同期 → 字幕 → 音声 → QC</div>
-<div><span class="k">ingest</span> CARD_A/  412 files  checksum <span class="s-ok">verified</span></div>
-<div><span class="k">asr</span>    session_03.wav  → transcript.json  (words, timestamps)</div>
-<div><span class="k">diar</span>   speakers 3  → speaker_id filled</div>
-<div><span class="k">slides</span> 47 slide changes detected</div>
-<div><span class="k">audio</span>  loudness  −23.0 LUFS target  filler removed 18</div>
-<div><span class="k">qc</span>     loudness <span class="s-ok">PASS</span>  black frames <span class="s-ok">PASS</span>  subtitle CPS <span class="s-warn">WARN</span> (2 cues)</div>
-<div><span class="k">qc</span>     flash risk <span class="s-un">UNKNOWN</span>  → 人の確認待ち。PASS 扱いにはしない</div>
-<div><span class="k">record</span> provenance.json  <span class="s-acc">every step, input hash, tool version</span></div>
+    <figure class="demo rv" id="demo" aria-label="AI に頼んだときの流れの例">
+      <div class="demo-in">
+        <div class="chat">
+          <div class="bubble">この講演の動画、無音と「えーっと」を切って、字幕をつけて、YouTube 用に音量をそろえて。</div>
+          <div class="agent">
+            <div class="av"><i class="ph ph-sparkle" aria-hidden="true"></i></div>
+            <ul class="steps-list">
+              <li class="step-line"><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>話している内容を<b>文字に起こしました</b></span></li>
+              <li class="step-line"><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>無音と言いよどみを<b>47 か所カット</b>しました</span></li>
+              <li class="step-line"><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>字幕を<b>312 行</b>つけました</span></li>
+              <li class="step-line"><i class="ph-fill ph-check-circle" aria-hidden="true"></i><span>音量を<b>配信向けにそろえ</b>、測って確認しました</span></li>
+              <li class="step-line q"><i class="ph-fill ph-question" aria-hidden="true"></i><span>字幕が速すぎる箇所が<b>2 つ</b>あります。直しますか？</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="result">
+          <div class="screen" role="img" aria-label="字幕つきに仕上がった講演動画のイメージ">
+            <div class="slide"></div>
+            <div class="person"><div class="hd"></div><div class="bd"></div></div>
+            <div class="badge"><span class="rec"></span>仕上がり 12:48</div>
+            <div class="cap">ここからが今日いちばん伝えたいところです</div>
+          </div>
+          <div class="timeline" aria-hidden="true" id="tl"></div>
+          <div class="chips">
+            <span class="chip g"><i class="ph ph-scissors" aria-hidden="true"></i>18:31 → 12:48</span>
+            <span class="chip b"><i class="ph ph-closed-captioning" aria-hidden="true"></i>字幕つき</span>
+            <span class="chip g"><i class="ph ph-speaker-high" aria-hidden="true"></i>音量 確認済み</span>
+            <span class="chip y"><i class="ph ph-hand" aria-hidden="true"></i>あなたの確認待ち 2</span>
+          </div>
         </div>
       </div>
-      <figcaption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">処理の流れと QC 判定を示した例示用のログです。</figcaption>
+      <figcaption class="demo-note">表示は流れを説明するためのイメージです。数字は動画によって変わります。</figcaption>
     </figure>
   </div>
 </section>
 
-<section aria-labelledby="ps-h">
+<section aria-labelledby="pl-h" style="padding-top:48px">
   <div class="wrap">
-    <div class="eyebrow rv">なぜ作ったか</div>
-    <h2 class="h2 rv" id="ps-h">ツールはつながらず、<br>AI は中身を見せない。</h2>
-    <p class="lead rv">現場の映像制作は、編集、色、音、字幕、QC、納品がそれぞれ別のツールに分かれ、何が起きたかを共有する記録がありません。いま増えている AI ツールの多くは、プロンプトを入れて MP4 が出てくるだけの閉じた箱です。</p>
-    <div class="ps">
-      <div class="card rv">
-        <h3><i class="ph ph-x-circle" style="color:var(--fail)" aria-hidden="true"></i>これまで</h3>
+    <div class="eyebrow rv"><span class="d"></span>しくみはシンプル</div>
+    <h2 class="h2 rv" id="pl-h">頼む。仕上がる。<br>確かめてから渡す。</h2>
+    <div class="pillars">
+      <div class="pillar rv">
+        <div class="num" style="color:var(--blue)">01 · 頼む</div>
+        <h3>普段の言葉で</h3>
+        <p>「短くして」「字幕をつけて」「サムネも作って」。専門用語もボタンの場所も覚えなくて大丈夫です。</p>
+      </div>
+      <div class="pillar rv">
+        <div class="num" style="color:var(--yellow)">02 · 仕上がる</div>
+        <h3>専門の部品が分担</h3>
+        <p>文字起こし、音声、字幕、色、サムネイル。数十の専用部品から、AI が必要なものを選んで順番に動かします。</p>
+      </div>
+      <div class="pillar rv">
+        <div class="num" style="color:var(--green)">03 · 確かめる</div>
+        <h3>測ってから渡す</h3>
+        <p>音量、真っ黒な画面、字幕の速さなどを実際に測ります。確かめられなかったことは、正直に「確認してください」と伝えます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="uses" aria-labelledby="uses-h">
+  <div class="wrap">
+    <div class="eyebrow rv"><span class="d"></span>こんな動画に</div>
+    <h2 class="h2 rv" id="uses-h">撮ったまま眠っている動画、<br>ありませんか。</h2>
+    <div class="cases">
+      <article class="case rv">
+        <div class="ic" style="background:var(--red-soft);color:var(--red)"><i class="ph ph-youtube-logo" aria-hidden="true"></i></div>
+        <h3>YouTube や SNS の投稿</h3>
+        <p>撮って出しの動画を、見やすい長さと音量に。サムネイルも作れて、投稿まで任せられます。</p>
+        <div class="ask">間を詰めて、字幕とサムネをつけて投稿して</div>
+      </article>
+      <article class="case rv">
+        <div class="ic" style="background:var(--blue-soft);color:var(--blue)"><i class="ph ph-presentation-chart" aria-hidden="true"></i></div>
+        <h3>講演・授業・ウェビナー</h3>
+        <p>スライドが切り替わる場所を見つけ、話した内容を字幕にします。話している人が何人いても分けられます。</p>
+        <div class="ask">スライドごとに区切りを入れて</div>
+      </article>
+      <article class="case rv">
+        <div class="ic" style="background:var(--yellow-soft);color:var(--yellow)"><i class="ph ph-baby" aria-hidden="true"></i></div>
+        <h3>家族や旅の思い出</h3>
+        <p>スマホにたまった動画を、見返しやすい一本に。おじいちゃんおばあちゃん用に DVD にもできます。</p>
+        <div class="ask">運動会の動画を 5 分にまとめて DVD に</div>
+      </article>
+      <article class="case rv">
+        <div class="ic" style="background:var(--green-soft);color:var(--green)"><i class="ph ph-storefront" aria-hidden="true"></i></div>
+        <h3>お店や会社の紹介</h3>
+        <p>タイトルやテロップを入れて、色味をそろえ、見せる場所に合わせた形式で書き出します。</p>
+        <div class="ask">頭にタイトル、最後に地図と電話番号を</div>
+      </article>
+      <article class="case rv">
+        <div class="ic" style="background:var(--blue-soft);color:var(--blue)"><i class="ph ph-microphone" aria-hidden="true"></i></div>
+        <h3>声が聞き取りにくい動画</h3>
+        <p>雑音や響きを抑え、小さい声と大きい声の差をならします。BGM は話している間だけ自動で下げます。</p>
+        <div class="ask">エアコンの音を消して、声を聞きやすく</div>
+      </article>
+      <article class="case rv">
+        <div class="ic" style="background:var(--red-soft);color:var(--red)"><i class="ph ph-closed-captioning" aria-hidden="true"></i></div>
+        <h3>字幕だけほしい</h3>
+        <p>文字起こしから、字幕ファイルの作成、画面への焼き込みまで。一文が長すぎないかも確かめます。</p>
+        <div class="ask">この動画の字幕ファイルだけ作って</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="tagline" aria-label="私たちの考え">
+  <div class="wrap">
+    <p id="tagline">AI が「できました」と<br>言うだけで、終わらせない。</p>
+  </div>
+</section>
+
+<section aria-labelledby="ft-h" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow rv"><span class="d"></span>できること</div>
+    <h2 class="h2 rv" id="ft-h">手間のかかる作業ほど、<br>任せてください。</h2>
+
+    <div class="feature">
+      <div class="fx rv" aria-hidden="true">
+        <div class="wave" id="wave"></div>
+        <div class="legend"><span><i style="background:var(--blue)"></i>残す部分</span><span><i style="background:var(--red);opacity:0.35"></i>無音や「えーっと」</span></div>
+        <div class="meter">
+          <div class="row"><span>音量の目安</span><span style="color:var(--green);font-weight:600">合格</span></div>
+          <div class="bar"><span style="width:78%"></span></div>
+        </div>
+      </div>
+      <div class="rv">
+        <h3>間延びを切って、音をそろえる</h3>
+        <p>長い沈黙や言いよどみを見つけて自然につなぎます。小さすぎる声、大きすぎる音も、配信先に合った音量にそろえます。</p>
         <ul>
-          <li><i class="ph ph-minus" aria-hidden="true"></i>同じ計測を別々のツールが別々に実装し、誰も重複に気づけない</li>
-          <li><i class="ph ph-minus" aria-hidden="true"></i>AI の出力が正しいかを確かめる手段がない</li>
-          <li><i class="ph ph-minus" aria-hidden="true"></i>よいエンジンが出ても、周りを全部書き直さないと入れ替えられない</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>無音と「えーっと」のカット</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>雑音や響きを抑えて声を聞きやすく</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>話している間だけ BGM を下げる</li>
         </ul>
       </div>
-      <div class="card after rv">
-        <h3><i class="ph ph-check-circle" style="color:var(--ok)" aria-hidden="true"></i>AI Video Production OS</h3>
+    </div>
+
+    <div class="feature flip">
+      <div class="fx rv" aria-hidden="true">
+        <div class="subs">
+          <div class="sub-row"><time>00:12</time><span>みなさん、こんにちは。</span></div>
+          <div class="sub-row"><time>00:15</time><span>今日は撮った動画を手早く仕上げる方法をお話しします。</span></div>
+          <div class="sub-row"><time>00:21</time><span>まずは、いちばん時間がかかる字幕づくりから。</span></div>
+        </div>
+      </div>
+      <div class="rv">
+        <h3>字幕は、文字起こしから自動で</h3>
+        <p>話した言葉を時間つきで文字にして、そのまま字幕にします。誰が話しているかの区別や、読みやすい長さへの調整もおまかせです。</p>
         <ul>
-          <li><i class="ph ph-check" aria-hidden="true"></i>機械が読める契約で、各 Skill が何をできて何をするかを宣言</li>
-          <li><i class="ph ph-check" aria-hidden="true"></i>各工程の結果を測り、判定と来歴を残してから次へ</li>
-          <li><i class="ph ph-check" aria-hidden="true"></i>Skill は独立したリポジトリ。契約を守れば、誰が作ったものでも差し替えられる</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>字幕ファイル（SRT と WebVTT）の作成</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>画面への字幕の焼き込み</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>話している人ごとの区別、専門用語の登録</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="fx rv" aria-hidden="true">
+        <div class="checks">
+          <div class="check"><span>音量</span><span class="chip g">合格</span></div>
+          <div class="check"><span>真っ黒な画面</span><span class="chip g">合格</span></div>
+          <div class="check"><span>字幕の速さ</span><span class="chip y">要注意 2 か所</span></div>
+          <div class="check"><span>点滅の強さ</span><span class="chip b">確認できず</span></div>
+        </div>
+      </div>
+      <div class="rv">
+        <h3>渡す前に、AI が自分で検品</h3>
+        <p>仕上げた動画を実際に測って、問題がないか確かめます。測れなかった項目を「たぶん大丈夫」で済ませず、あなたに確認をお願いします。</p>
+        <ul>
+          <li><i class="ph ph-check" aria-hidden="true"></i>合格、要注意、不合格、確認できず の 4 段階</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>何をしたかの記録が残るので、あとからやり直せる</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature flip">
+      <div class="fx rv" aria-hidden="true">
+        <div class="disc"></div>
+        <div class="disc-cap">DVD や Blu-ray のメニューと区切りも</div>
+      </div>
+      <div class="rv">
+        <h3>サムネイルから、ディスクまで</h3>
+        <p>目を引くサムネイル、タイトルやテロップ、色味の調整。ネットに出すだけでなく、DVD や Blu-ray にして手渡すこともできます。</p>
+        <ul>
+          <li><i class="ph ph-check" aria-hidden="true"></i>サムネイルとタイトル画面の作成</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>明るさや色味の補正</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>YouTube への投稿、DVD と Blu-ray の作成</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<section class="tagline" aria-label="コンセプト">
+<section id="start" aria-labelledby="start-h">
   <div class="wrap">
-    <p id="tagline">何を、なぜ、どう変えたか。<br>すべての工程を、<br>あとから確かめられる。</p>
+    <div class="eyebrow rv"><span class="d"></span>はじめかた</div>
+    <h2 class="h2 rv" id="start-h">3 ステップで、<br>今日から使えます。</h2>
+    <p class="lead rv">いまはパソコンの「ターミナル」に 1 行貼り付ける準備が必要です。一度入れれば、あとは話しかけるだけです。</p>
+    <div class="start">
+      <div class="st rv">
+        <div class="n">1</div>
+        <h3>AI アシスタントを用意</h3>
+        <p><a class="inline" href="https://claude.com/claude-code">Claude Code</a> か Codex を入れます。話しかける相手になる AI です。</p>
+      </div>
+      <div class="st rv">
+        <div class="n">2</div>
+        <h3>動画の道具を追加</h3>
+        <p>ターミナルに次の 1 行を貼り付けて実行します。必要な部品がまとめて入り、もう一度実行すると最新になります。</p>
+        <div class="code"><code id="c1">curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash</code><button class="copy" type="button" data-copy="c1" aria-label="コマンドをコピー"><i class="ph ph-copy" aria-hidden="true"></i></button></div>
+      </div>
+      <div class="st rv">
+        <div class="n">3</div>
+        <h3>動画を渡して、頼む</h3>
+        <p>動画のファイルを指定して、やってほしいことを書くだけ。途中で「ここはどうしますか」と聞かれたら答えてください。</p>
+        <div class="code"><code>この動画を 3 分にまとめて、字幕をつけて</code></div>
+      </div>
+    </div>
+    <div class="status" role="status" aria-live="polite"></div>
   </div>
 </section>
 
-<section aria-labelledby="bn-h">
+<section id="price" aria-labelledby="price-h">
   <div class="wrap">
-    <div class="eyebrow rv">できること</div>
-    <h2 class="h2 rv" id="bn-h">現場の素材から、納品まで。</h2>
-    <div class="grid">
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-seal-check" aria-hidden="true"></i></div>
-        <h3>確かめてから、次へ進む</h3>
-        <p>qc-skill の判定は 4 種類。測れなかったものは <code>UNKNOWN</code> のまま残し、黙って合格にはしません。</p>
-        <div class="chips"><span class="chip c-ok">PASS</span><span class="chip c-warn">WARN</span><span class="chip c-fail">FAIL</span><span class="chip c-un">UNKNOWN</span></div>
-      </article>
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-puzzle-piece" aria-hidden="true"></i></div>
-        <h3>部品ごとに差し替えられる</h3>
-        <p>文字起こしも、音声処理も、字幕も、それぞれが独立したリポジトリ。skillpact の契約で副作用や依存を宣言するので、入れ替えても周りは壊れません。</p>
-      </article>
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-microphone-stage" aria-hidden="true"></i></div>
-        <h3>収録素材をそのまま扱う</h3>
-        <p>カードからの取込とチェックサム検証、文字起こし、話者分離、スライド切替の検出まで。学会やカンファレンスの収録を前提にしています。</p>
-      </article>
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-waveform" aria-hidden="true"></i></div>
-        <h3>音と字幕を、規格どおりに</h3>
-        <p>ラウドネス正規化、フィラーと無音の除去、ダッキング。字幕は SRT と WebVTT の生成と検証、焼き込みに対応します。</p>
-      </article>
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-disc" aria-hidden="true"></i></div>
-        <h3>ディスク納品まで自前で</h3>
-        <p>Blu-ray（BDMV）と DVD-Video のオーサリング、UDF イメージ、Line 21 のクローズドキャプション。配信だけで終わらない案件にも対応します。</p>
-      </article>
-      <article class="feat rv">
-        <div class="ic"><i class="ph ph-robot" aria-hidden="true"></i></div>
-        <h3>いつものエージェントから使える</h3>
-        <p>Claude Code のプラグイン、Codex、MCP サーバーから呼び出せます。どの Skill を使い、どこで別の手段に切り替えたかも報告します。</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section id="how" aria-labelledby="how-h">
-  <div class="wrap">
-    <div class="eyebrow rv">しくみ</div>
-    <h2 class="h2 rv" id="how-h">3 ステップで動きます。</h2>
-    <div class="steps">
-      <div class="step rv">
-        <div class="n">01</div>
-        <h3>まとめてインストール</h3>
-        <p>1 行で OS、エージェント、ecosystem.json に載っているすべての Skill を取得します。もう一度実行すれば最新に更新されます。</p>
-        <div class="snip">curl -fsSL .../install.sh | bash</div>
+    <div class="eyebrow rv"><span class="d"></span>料金</div>
+    <h2 class="h2 rv" id="price-h">ずっと無料。<br>中身もすべて公開しています。</h2>
+    <div class="price">
+      <div class="pcard rv">
+        <div style="font-weight:700">AI Video Production OS</div>
+        <div class="amt">¥0<small>ずっと</small></div>
+        <ul>
+          <li><i class="ph ph-check" aria-hidden="true"></i>すべての部品をそのまま利用可能</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>MIT ライセンス。仕事でも自由に使えます</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>アカウント登録なし</li>
+          <li><i class="ph ph-check" aria-hidden="true"></i>使いたい部品だけ入れることもできます</li>
+        </ul>
+        <div style="margin-top:32px"><a class="btn btn-primary" href="#start">無料ではじめる</a></div>
       </div>
-      <div class="step rv">
-        <div class="n">02</div>
-        <h3>エージェントに頼む</h3>
-        <p>Claude Code ならマーケットプレイスから追加。作りたいものを伝えると、エージェントが工程を計画し、必要な Skill を選びます。</p>
-        <div class="snip">/plugin marketplace add kajisho5/AI-video-production-OS
-/plugin install video-production-os@ai-video-production-os</div>
-      </div>
-      <div class="step rv">
-        <div class="n">03</div>
-        <h3>測って、記録して、納品</h3>
-        <p>各 Skill が実行し、QC が結果を判定します。入力のハッシュ、ツールの版、判定がすべて残るので、あとから同じ結果を再現できます。</p>
-        <div class="snip">qc  PASS · WARN · FAIL · UNKNOWN
-→ provenance.json</div>
+      <div class="pcard alt rv">
+        <div style="font-weight:700">別途かかることがあるもの</div>
+        <ul>
+          <li><i class="ph ph-info" aria-hidden="true"></i>話しかける AI（Claude Code や Codex など）の利用料。各サービスの料金に従います</li>
+          <li><i class="ph ph-info" aria-hidden="true"></i>声の生成など、追加で入れる AI エンジンの利用条件。入れるときに確認できます</li>
+          <li><i class="ph ph-info" aria-hidden="true"></i>投稿先のサービス（YouTube など）の規約</li>
+        </ul>
       </div>
     </div>
-  </div>
-</section>
-
-<section id="ecosystem" aria-labelledby="eco-h">
-  <div class="wrap">
-    <div class="eco-head">
-      <div>
-        <div class="eyebrow rv">エコシステム</div>
-        <h2 class="h2 rv" id="eco-h">すべて公開リポジトリ。<br>いまの状態をそのまま表示しています。</h2>
-      </div>
-      <div class="legend rv" aria-hidden="true">
-        <span><i class="ld" style="background:var(--ok)"></i>稼働中</span>
-        <span><i class="ld" style="background:var(--warn)"></i>開発中</span>
-        <span><i class="ld" style="background:var(--unknown)"></i>計画中</span>
-      </div>
-    </div>
-    <div class="groups" id="groups" aria-busy="true">
-      <div class="group"><div class="sk" style="width:40%"></div><div class="repos"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div>
-      <div class="group"><div class="sk" style="width:40%"></div><div class="repos"><div class="sk"></div><div class="sk"></div><div class="sk"></div></div></div>
-    </div>
-    <p class="lead rv" style="font-size:14px;line-height:20px;color:var(--text-3)">出典は <a href="https://github.com/kajisho5/AI-video-production-OS/blob/main/ecosystem.json">ecosystem.json</a>。各リポジトリの CI やロードマップの進み具合は <a href="../">ダッシュボード</a> で見られます。</p>
   </div>
 </section>
 
 <section id="faq" aria-labelledby="faq-h">
   <div class="wrap">
-    <div class="eyebrow rv">FAQ</div>
-    <h2 class="h2 rv" id="faq-h">よくある質問</h2>
+    <div class="eyebrow rv"><span class="d"></span>よくある質問</div>
+    <h2 class="h2 rv" id="faq-h">気になること</h2>
     <div class="faq">
-      <details class="rv"><summary>AI で動画を生成するツールですか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">違います。プロンプトから MP4 を作る生成ツールではなく、実際の素材に対する編集、音声、字幕、QC、納品といった工程を、検証と記録つきで実行するための基盤です。</div></details>
-      <details class="rv"><summary>料金はかかりますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">OS と各リポジトリは MIT ライセンスで無料です。任意で導入する AI エンジンや外部サービスは、それぞれのライセンスと料金に従います。</div></details>
-      <details class="rv"><summary>Premiere Pro や DaVinci Resolve の代わりになりますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">なりませんし、目指していません。NLE とのタイムライン連携（nle-bridge-skill）は計画中で、まだ実装されていません。エージェントは OTIO でのタイムライン書き出しに対応しています。</div></details>
-      <details class="rv"><summary>素材がクラウドに送られることはありますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">各 Skill はローカルでの実行が基本です。配信先へのアップロードや外部 AI プロバイダのように外部サービスを使う機能は、その副作用を skillpact の契約に宣言しています。どの機能がどこへ通信するかは、各リポジトリの契約と README で確認できます。</div></details>
-      <details class="rv"><summary>何が必要ですか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">インストーラーに必要なのは <code>git</code> です。ffmpeg や Python など、各 Skill が使うものはそれぞれの README に書いてあり、<code>ffmpeg-skill doctor</code> で環境を確認できます。</div></details>
-      <details class="rv"><summary>Claude 以外でも使えますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">使えます。Codex 向けにはインストーラーが <code>~/.agents/skills</code> にリンクを張ります。MCP サーバーも用意しています。Skill の多くは単体の CLI としても動きます。</div></details>
-      <details class="rv"><summary>開発中の Skill はどれですか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">上のエコシステム一覧で「開発中」と表示されているものです。AI による声の分離、ナレーションと吹き替え、BGM と効果音の生成、配信先へのアップロードがここに入ります。完成度は README とダッシュボードで正直に書いています。</div></details>
-      <details class="rv"><summary>自分で Skill を作って参加できますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">できます。契約（skillpact）に沿って能力と副作用を宣言すれば、中心部分を作り直さずにエージェントから呼べます。手順は README の「Skill author experience」にあります。</div></details>
+      <details class="rv"><summary>動画編集の経験がなくても使えますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">使えます。やりたいことを普段の言葉で伝えれば、AI が手順を組み立てて実行します。編集ソフトの操作を覚える必要はありません。</div></details>
+      <details class="rv"><summary>本当に無料ですか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">AI Video Production OS とすべての部品は MIT ライセンスのオープンソースで、無料です。話しかける相手の AI（Claude Code や Codex など）の利用料は、それぞれのサービスの料金に従います。</div></details>
+      <details class="rv"><summary>動画がネットに勝手にアップロードされませんか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">されません。処理は基本的にあなたのパソコンの中で行います。YouTube への投稿のように外に送る機能は、あなたが頼んだときだけ動きます。どの部品が何をするかは、それぞれ公開された約束事（契約）に書かれています。</div></details>
+      <details class="rv"><summary>AI が作る動画ですか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">いいえ。文章から映像をまるごと作る生成 AI ではありません。あなたが撮った本物の動画を、カットや字幕、音量の調整で仕上げる道具です。</div></details>
+      <details class="rv"><summary>どんなパソコンで動きますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">ターミナルで 1 行のコマンド（bash）を実行できるパソコンが必要です。部品によって必要なもの（ffmpeg など）があり、それぞれの説明書きで案内しています。</div></details>
+      <details class="rv"><summary>うまくいかなかったら、元の動画はどうなりますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">元の動画はそのまま残し、仕上がりは別のファイルとして書き出します。何をしたかの記録も残るので、やり直しも簡単です。</div></details>
+      <details class="rv"><summary>まだできないことはありますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">あります。AI の声でのナレーションや吹き替え、BGM と効果音の生成、YouTube 以外への投稿などは開発中です。いまの進み具合は<a href="../">進捗ダッシュボード</a>でいつでも見られます。</div></details>
+      <details class="rv"><summary>Premiere Pro などの編集ソフトと一緒に使えますか？<i class="ph ph-plus" aria-hidden="true"></i></summary><div class="a">編集の流れ（タイムライン）を OTIO という共通形式で書き出せます。Premiere Pro や DaVinci Resolve と直接やり取りする機能は、これから作る予定です。</div></details>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="dev-h" style="padding-top:0">
+  <div class="wrap">
+    <div class="dev rv">
+      <div class="eyebrow"><span class="d" style="background:var(--blue)"></span>開発者のかたへ</div>
+      <h2 class="h2" id="dev-h" style="font-size:30px;line-height:36px">中身は、独立したオープンソースの集まり。</h2>
+      <p class="lead">どの部品も単体で使え、約束事（契約）を守れば自分の部品を加えることもできます。一覧はいまの GitHub の状態をそのまま読み込んでいます。</p>
+      <div class="cloud" id="cloud" aria-busy="true"><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div>
+      <div class="dev-links">
+        <a class="btn btn-ghost btn-sm" href="https://github.com/kajisho5/AI-video-production-OS"><i class="ph ph-github-logo" aria-hidden="true"></i>GitHub で見る</a>
+        <a class="btn btn-ghost btn-sm" href="../"><i class="ph ph-chart-bar" aria-hidden="true"></i>進捗ダッシュボード</a>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="final" aria-labelledby="final-h">
   <div class="wrap">
-    <h2 class="h2 rv" id="final-h">次の現場の書き出しから、<br>検証つきにしましょう。</h2>
-    <p class="lead rv">1 行で全部入ります。合わなければ、使いたい Skill だけ残せます。</p>
-    <div class="rv">
-      <div class="cta-row">
-        <div class="cmd">
-          <code id="cmd2">curl -fsSL https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/install.sh | bash</code>
-          <button class="btn btn-primary" type="button" data-copy="cmd2"><i class="ph ph-copy" aria-hidden="true"></i>コマンドをコピー</button>
-        </div>
-      </div>
-      <div class="copied" role="status" aria-live="polite"></div>
+    <h2 class="h2 rv" id="final-h">次の動画は、<br>話しかけて仕上げよう。</h2>
+    <p class="lead rv">準備は 3 ステップ。お金もアカウント登録もいりません。</p>
+    <div class="cta-row rv">
+      <a class="btn btn-primary btn-lg" href="#start">無料ではじめる<i class="ph ph-arrow-right" aria-hidden="true"></i></a>
     </div>
     <div class="risk rv">
-      <span><i class="ph ph-check" aria-hidden="true"></i>MIT ライセンスで無料</span>
-      <span><i class="ph ph-check" aria-hidden="true"></i>Skill 単体でも使える</span>
+      <span><i class="ph ph-check" aria-hidden="true"></i>ずっと無料</span>
+      <span><i class="ph ph-check" aria-hidden="true"></i>元の動画はそのまま</span>
       <span><i class="ph ph-check" aria-hidden="true"></i>ソースはすべて公開</span>
     </div>
   </div>
@@ -432,7 +614,7 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
     <div>© 2026 kajisho5 · AI Video Production OS</div>
     <nav aria-label="フッター">
       <a href="https://github.com/kajisho5/AI-video-production-OS">GitHub</a>
-      <a href="../">ダッシュボード</a>
+      <a href="../">進捗ダッシュボード</a>
       <a href="https://github.com/kajisho5/AI-video-production-OS/blob/main/LICENSE">ライセンス（MIT）</a>
       <a href="https://github.com/kajisho5/AI-video-production-OS/blob/main/SECURITY.md">セキュリティ</a>
     </nav>
@@ -441,6 +623,8 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
 
 <script>
 (function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   // mobile menu
   var burger = document.querySelector(".burger"), menu = document.getElementById("menu");
   function setMenu(open) {
@@ -452,11 +636,11 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
   menu.addEventListener("click", function (e) { if (e.target.tagName === "A") setMenu(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
 
-  // copy install command
+  // copy buttons
+  var status = document.querySelector("#start .status");
   document.querySelectorAll("[data-copy]").forEach(function (b) {
     b.addEventListener("click", function () {
       var text = document.getElementById(b.dataset.copy).textContent.trim();
-      var status = b.closest(".rv").querySelector(".copied");
       function done(msg) { status.textContent = msg; setTimeout(function () { status.textContent = ""; }, 4000); }
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(function () { done("コピーしました。ターミナルに貼り付けて実行してください。"); },
@@ -469,22 +653,36 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
   }, { rootMargin: "0px 0px -10% 0px" });
-  function observe(root) { root.querySelectorAll(".rv:not(.in)").forEach(function (el) { io.observe(el); }); }
-  observe(document);
+  document.querySelectorAll(".rv").forEach(function (el) { io.observe(el); });
 
-  // console log lines play in sequence
-  var log = document.getElementById("log");
+  // decorative bars: hero timeline and the cut waveform
+  function bars(el, n, look) {
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement("span"), c = look(i);
+      if (c.cls) s.className = c.cls;
+      s.style.height = c.h;
+      el.appendChild(s);
+    }
+  }
+  var cutsTl = { 3: 1, 4: 1, 11: 1, 17: 1, 18: 1, 25: 1, 31: 1, 36: 1, 37: 1 };
+  bars(document.getElementById("tl"), 40, function (i) { return { cls: cutsTl[i] ? "cut" : "", h: (40 + ((i * 37) % 60)) + "%" }; });
+  var cutsWave = { 6: 1, 7: 1, 8: 1, 9: 1, 22: 1, 23: 1, 24: 1, 39: 1, 40: 1, 41: 1, 42: 1, 43: 1 };
+  bars(document.getElementById("wave"), 56, function (i) {
+    var h = cutsWave[i] ? 6 + (i % 3) * 4 : 20 + Math.abs(Math.sin(i * 1.7)) * 70 + (i % 4) * 2;
+    return { cls: cutsWave[i] ? "x" : "", h: Math.min(100, h) + "%" };
+  });
+
+  // hero demo lines play in sequence
+  var demo = document.getElementById("demo");
   new IntersectionObserver(function (es, o) {
     if (!es[0].isIntersecting) return;
     o.disconnect();
-    Array.prototype.forEach.call(log.children, function (d, i) { d.style.transitionDelay = (300 + i * 260) + "ms"; });
-    log.classList.add("play");
-  }, { threshold: 0.3 }).observe(log);
+    demo.querySelectorAll(".step-line").forEach(function (d, i) { d.style.transitionDelay = (reduce ? 0 : 500 + i * 450) + "ms"; });
+    demo.classList.add("play");
+  }, { threshold: 0.25 }).observe(demo);
 
-  // tagline: words light up one at a time as they cross the trigger line
+  // tagline: rebuilt from its text nodes with DOM calls; chunks light up in reading order
   var tg = document.getElementById("tagline");
-  // Rebuild the tagline from its text nodes with DOM calls only (no HTML string round trip).
-  // Japanese has no spaces, so each line is cut into short chunks that light up in reading order.
   var lines = Array.prototype.filter.call(tg.childNodes, function (n) { return n.nodeType === 3; })
     .map(function (n) { return n.textContent; });
   tg.textContent = "";
@@ -493,7 +691,8 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
     var chunk = "";
     for (var i = 0; i < t.length; i++) {
       chunk += t[i];
-      if ((chunk.length >= 2 && !/[、。]/.test(t[i + 1] || "")) || /[、。]/.test(t[i]) || i === t.length - 1) {
+      var next = t[i + 1] || "";
+      if ((chunk.length >= 2 && !/[、。」]/.test(next)) || i === t.length - 1) {
         var s = document.createElement("span");
         s.className = "w";
         s.textContent = chunk;
@@ -503,62 +702,64 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
     }
   });
   var words = tg.querySelectorAll(".w");
-  var ticking = false;
-  function paint() {
-    ticking = false;
-    var r = tg.getBoundingClientRect(), vh = window.innerHeight;
-    var p = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (r.height + vh * 0.35)));
-    var n = Math.round(p * words.length);
-    words.forEach(function (w, i) { w.classList.toggle("on", i < n); });
+  if (reduce) {
+    words.forEach(function (w) { w.classList.add("on"); });
+  } else {
+    var ticking = false, active = false;
+    var paint = function () {
+      ticking = false;
+      var r = tg.getBoundingClientRect(), vh = window.innerHeight;
+      var p = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (r.height + vh * 0.35)));
+      var n = Math.round(p * words.length);
+      words.forEach(function (w, i) { w.classList.toggle("on", i < n); });
+    };
+    var onScroll = function () { if (!ticking) { ticking = true; requestAnimationFrame(paint); } };
+    new IntersectionObserver(function (es) {
+      var vis = es[0].isIntersecting;
+      if (vis && !active) { window.addEventListener("scroll", onScroll, { passive: true }); active = true; paint(); }
+      if (!vis && active) { window.removeEventListener("scroll", onScroll); active = false; paint(); }
+    }).observe(tg);
   }
-  function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(paint); } }
-  var active = false;
-  new IntersectionObserver(function (es) {
-    var vis = es[0].isIntersecting;
-    if (vis && !active) { window.addEventListener("scroll", onScroll, { passive: true }); active = true; paint(); }
-    if (!vis && active) { window.removeEventListener("scroll", onScroll); active = false; paint(); }
-  }).observe(tg);
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) words.forEach(function (w) { w.classList.add("on"); });
 
-  // ecosystem, live from ecosystem.json
-  var GROUPS = [
-    ["取込と解析", "ph-hard-drives", ["ingest-skill", "media-analysis-skill", "transcription-skill", "diarization-skill", "detection-skill", "slide-sync-skill"]],
-    ["映像", "ph-film-slate", ["video-editing-skill", "color-grading-skill", "motion-graphics-skill", "subtitle-skill", "thumbnail-skill", "imagemagick-skill", "blender-skill", "remotion-ffmpeg-skill", "hyperframes-skill", "nle-bridge-skill"]],
-    ["音声", "ph-speaker-high", ["audio-production-skill", "voice-enhance-skill", "dubbing-skill", "sound-design-skill"]],
-    ["検証と納品", "ph-package", ["qc-skill", "artifacts-skill", "publish-skill", "bdmvkit", "vtskit", "udfkit", "dvdcc", "oncemore"]],
-    ["エージェントと基盤", "ph-cpu", ["video-production-agent", "ffmpeg-skill", "skillpact", "system-intelligence", "stepcap"]]
-  ];
-  var COLOR = { active: "var(--ok)", scaffold: "var(--warn)", planned: "var(--unknown)" };
+  // developer cloud, live from ecosystem.json (DOM calls only)
+  var COLOR = { active: "var(--green)", scaffold: "var(--yellow)", planned: "var(--ink-3)" };
   var LABEL = { active: "稼働中", scaffold: "開発中", planned: "計画中" };
-  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-  var box = document.getElementById("groups");
+  var cloud = document.getElementById("cloud");
   fetch("https://raw.githubusercontent.com/kajisho5/AI-video-production-OS/main/ecosystem.json")
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
     .then(function (m) {
-      var comps = m.components || [], byRepo = {}, seen = {};
-      comps.forEach(function (c) { byRepo[c.repo] = c; });
-      var count = { total: comps.length, active: 0, scaffold: 0 };
-      comps.forEach(function (c) { if (count[c.status] !== undefined) count[c.status]++; });
-      Object.keys(count).forEach(function (k) { var el = document.querySelector('[data-stat="' + k + '"]'); if (el) el.textContent = count[k]; });
-      var groups = GROUPS.map(function (g) {
-        var list = g[2].filter(function (r) { return byRepo[r]; }).map(function (r) { seen[r] = 1; return byRepo[r]; });
-        return [g[0], g[1], list];
+      var comps = m.components || [];
+      cloud.textContent = "";
+      comps.forEach(function (c) {
+        var st = COLOR[c.status] ? c.status : "planned";
+        var a = document.createElement("a");
+        a.href = "https://github.com/" + encodeURIComponent(m.org) + "/" + encodeURIComponent(c.repo);
+        a.title = (c.role || "") + "（" + LABEL[st] + "）";
+        var dot = document.createElement("span");
+        dot.className = "dot";
+        dot.style.background = COLOR[st];
+        var sr = document.createElement("span");
+        sr.className = "sr";
+        sr.textContent = LABEL[st];
+        var nm = document.createElement("span");
+        nm.textContent = c.repo;
+        a.appendChild(dot); a.appendChild(sr); a.appendChild(nm);
+        cloud.appendChild(a);
       });
-      var rest = comps.filter(function (c) { return !seen[c.repo]; });
-      if (rest.length) groups.push(["その他", "ph-dots-three", rest]);
-      box.innerHTML = groups.filter(function (g) { return g[2].length; }).map(function (g) {
-        return '<div class="group rv"><h3><i class="ph ' + g[1] + '" aria-hidden="true"></i>' + esc(g[0]) + '<span style="margin-left:auto;font-family:var(--mono)">' + g[2].length + '</span></h3><div class="repos">' +
-          g[2].map(function (c) {
-            var st = c.status in COLOR ? c.status : "planned";
-            return '<a class="repo" href="https://github.com/' + esc(m.org) + "/" + esc(c.repo) + '"><i class="ld st" style="background:' + COLOR[st] + '" title="' + LABEL[st] + '"></i><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">' + LABEL[st] + '</span><span class="nm">' + esc(c.repo) + '</span><span class="rl">' + esc(c.role || "") + "</span></a>";
-          }).join("") + "</div></div>";
-      }).join("");
-      box.setAttribute("aria-busy", "false");
-      observe(box);
+      cloud.setAttribute("aria-busy", "false");
+      if (comps.length) document.getElementById("dev-h").textContent = "中身は、" + comps.length + " の独立したオープンソース。";
     })
     .catch(function () {
-      box.setAttribute("aria-busy", "false");
-      box.outerHTML = '<div class="err">一覧を読み込めませんでした。ネットワークを確認するか、<a href="https://github.com/kajisho5/AI-video-production-OS/blob/main/ecosystem.json">ecosystem.json</a> を直接ご覧ください。</div>';
+      cloud.setAttribute("aria-busy", "false");
+      cloud.textContent = "";
+      var p = document.createElement("p");
+      p.className = "err";
+      p.append("一覧を読み込めませんでした。");
+      var a = document.createElement("a");
+      a.href = "https://github.com/kajisho5/AI-video-production-OS/blob/main/ecosystem.json";
+      a.textContent = "ecosystem.json";
+      p.append(a, " を直接ご覧ください。");
+      cloud.appendChild(p);
     });
 })();
 </script>
