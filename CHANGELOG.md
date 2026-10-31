@@ -1,3 +1,12 @@
+## v0.7.16 (2026-10-31)
+
+## What's Changed
+
+- Landing page: keep the hero monitor at 16:9 at every width (#104)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.15 (2026-10-31)
 
 ## What's Changed
