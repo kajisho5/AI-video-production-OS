@@ -59,7 +59,7 @@
     {"repo": "voice-enhance-skill", "department": "audio", "install": "pip", "status": "scaffold",
      "role": "AI voice isolation, dereverberation and mic-bleed reduction for recorded speech",
      "owns": ["声の分離(AI)", "残響除去", "マイク被り低減"],
-     "engines": [{"name": "DeepFilterNet3 (deep-filter)", "note": "声の分離 / MIT・Apache-2.0(コード・重み) / CPU実時間 / PyTorch不要"}, {"name": "nara_wpe", "note": "残響除去 / MIT / 重みなし・信号処理 / CPU"}]},
+     "engines": [{"name": "DeepFilterNet3 (deep-filter)", "note": "声の分離 / MIT・Apache-2.0(コード・重み) / CPU実時間 / PyTorch不要"}, {"name": "nara_wpe", "note": "残響除去 / MIT / 重みなし・信号処理 / CPU"}, {"name": "crosstalk (自前)", "note": "マイク間のかぶり低減 / MIT / NumPyのみ・重みなし / CPU (ADR-005)"}]},
     {"repo": "dubbing-skill", "department": "audio", "install": "pip", "status": "scaffold",
      "role": "AI narration (TTS), voice replacement, fitting translated lines to source timing, audio description",
      "owns": ["AIナレーション(TTS)", "吹替・声の置換", "音声解説"],
