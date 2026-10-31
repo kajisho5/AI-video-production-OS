@@ -23,6 +23,9 @@ export default defineConfig({
       // fabricated one.
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+        // /lp/ is a static landing page, not the app: never answer its navigations with the
+        // dashboard shell.
+        navigateFallbackDenylist: [/\/lp\//],
         runtimeCaching: [
           {
             urlPattern: /\/data\/ecosystem-snapshot\.json$/,
