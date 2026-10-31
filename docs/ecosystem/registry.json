@@ -4,8 +4,8 @@
   "updated_at": "2026-10-29",
   "repos": [
     {
-      "slug": "kajisho5/AI-video-production-OS",
-      "name": "AI-video-production-OS",
+      "slug": "kajisho5/Velisa",
+      "name": "Velisa",
       "type": "OS",
       "role": "Architecture, registry/ library, ecosystem state documents. Describes the others; nothing depends on it at runtime.",
       "depends_on": []

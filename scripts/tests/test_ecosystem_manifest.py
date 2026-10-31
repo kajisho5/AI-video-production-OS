@@ -59,7 +59,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_dashboard_roster_names_the_same_repositories(self):
         registry = json.loads((ROOT / "docs" / "ecosystem" / "registry.json").read_text(encoding="utf-8"))
-        roster = {r["name"] for r in registry["repos"]} - {"AI-video-production-OS"}
+        roster = {r["name"] for r in registry["repos"]} - {"Velisa"}
         self.assertEqual(roster, set(REPOS))
 
 

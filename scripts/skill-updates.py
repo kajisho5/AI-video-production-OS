@@ -190,7 +190,7 @@ def main(argv: List[str]) -> int:
     manifest = json.loads((ROOT / "ecosystem.json").read_text(encoding="utf-8"))
     fetch = github(os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
     if a.issue:
-        repository = os.environ.get("GITHUB_REPOSITORY") or f"{manifest['org']}/AI-video-production-OS"
+        repository = os.environ.get("GITHUB_REPOSITORY") or f"{manifest['org']}/Velisa"
         text, rc = run_issue(fetch, manifest, repository, os.environ.get("NOTIFY") or repository.split("/")[0])
     else:
         path = Path(a.state).expanduser()

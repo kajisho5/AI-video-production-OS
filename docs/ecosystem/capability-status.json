@@ -117,7 +117,7 @@
       "verified_e2e_evidence": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance",
       "as_of": "2026-09-06"
     },
-    "kajisho5/AI-video-production-OS": {
+    "kajisho5/Velisa": {
       "registry_library": "implemented",
       "registry_library_evidence": "registry/ Python library, 50 tests passing, all 8 SKILL_SPEC.md section 8 conformance checks real as of 2026-09-05",
       "as_of": "2026-09-06"

@@ -60,8 +60,8 @@ def build(manifest: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         "displayName": "AI Video Production OS",
         "description": "The whole AI Video Production OS in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
         "author": {"name": org, "url": f"https://github.com/{org}"},
-        "homepage": f"https://github.com/{org}/AI-video-production-OS",
-        "repository": f"https://github.com/{org}/AI-video-production-OS",
+        "homepage": f"https://github.com/{org}/Velisa",
+        "repository": f"https://github.com/{org}/Velisa",
         "keywords": ["video", "audio", "ffmpeg", "production"],
         "dependencies": [c["repo"] for c in plugins if not c.get("optional")],
     }

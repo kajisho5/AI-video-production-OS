@@ -50,7 +50,7 @@ interface FakeRepoData {
 
 // Real facts as verified via the GitHub MCP tool, 2026-09-05.
 const REAL_FACTS: Record<string, FakeRepoData> = {
-  "kajisho5/AI-video-production-OS": {
+  "kajisho5/Velisa": {
     default_branch: "main",
     pushed_at: "2026-09-05T21:37:14Z",
     size: 3200,

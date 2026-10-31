@@ -180,7 +180,7 @@ generated. The static HTML and the PWA manifest are English. See
   was verified with fixture/mock Octokit objects there instead, `test/github.test.ts` et
   al. — but the real CI environment has a genuine ambient token and unrestricted egress,
   and its first run succeeded once GitHub Pages was enabled). Live at
-  `https://kajisho5.github.io/AI-video-production-OS/dashboard/` (the site root is the landing
+  `https://kajisho5.github.io/Velisa/dashboard/` (the site root is the landing
   page in `site/`; the old root URLs redirect), refreshed hourly and on every
   push to `main` that touches `dashboard/**` or the ecosystem state JSON files.
 - **PR `mergeable_state` is only fetched for the first 8 open PRs per repo** (a bounded

@@ -155,8 +155,8 @@ jobs:
           owner="${GITHUB_REPOSITORY%%/*}"; name="${GITHUB_REPOSITORY#*/}"
           site_url="https://${owner,,}.github.io/${name}/"
           find _site -name '*.html' -exec sed -i \
-            -e "s#https://kajisho5.github.io/AI-video-production-OS/#${site_url}#g" \
-            -e "s#kajisho5/AI-video-production-OS#${GITHUB_REPOSITORY}#g" {} +
+            -e "s#https://kajisho5.github.io/Velisa/#${site_url}#g" \
+            -e "s#kajisho5/Velisa#${GITHUB_REPOSITORY}#g" {} +
           if grep -rE "gh[ps]_[A-Za-z0-9]{20,}" _site/ ; then
             echo "::error::A GitHub token literal was found in the assembled site."
             exit 1
