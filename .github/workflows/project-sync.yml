@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Add items to the project
         env:
           PROJECT_TOKEN: ${{ secrets.PROJECT_TOKEN }}
