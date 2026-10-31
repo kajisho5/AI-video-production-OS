@@ -1,3 +1,14 @@
+## v0.7.33 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- ecosystem: mark nle-bridge-skill active and add it to the marketplace (#129)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.32 (2026-10-31)
 
 ## What's Changed
