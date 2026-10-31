@@ -2,7 +2,7 @@
 
 Status: **CURRENT process, draft, 2026-09-05.** This document describes how decisions
 actually get made in this project today, and how that should change if the project grows
-beyond one maintainer. It is intentionally lightweight: `AI-video-production-OS` is a
+beyond one maintainer. It is intentionally lightweight: `Velisa` is a
 single-owner (`kajisho5`) project, pre-1.0 across all 11 repos in the ecosystem
 (`REPOSITORY_MAP.md`), with no outside contributors today. A governance document sized for
 a foundation or a multi-vendor standards body would be inventing process for a scale this
@@ -45,7 +45,7 @@ Architecture Decision Record. A decision that is purely internal to one Skill's 
 implementation detail does not require one at the OS-repo level (it may still get one in
 that Skill's own `docs/decisions.md`, per its own existing convention).
 
-**Format and location:** ADRs for this repository (`AI-video-production-OS`) live in
+**Format and location:** ADRs for this repository (`Velisa`) live in
 `docs/adr/`, one file per decision, numbered sequentially
 (`0001-title-in-kebab-case.md`, `0002-...`). Each ADR states, at minimum:
 

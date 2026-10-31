@@ -2,7 +2,7 @@
 
 **Status: CURRENT / IMPLEMENTED, v1 (read-only), 2026-09-05.** A web-based, mobile-first,
 PWA-ready dashboard showing the real, live development/integration status of the whole
-AI Video Production OS ecosystem from one place. See
+Velisa ecosystem from one place. See
 [`docs/adr/ADR-011-ecosystem-dashboard.md`](../docs/adr/ADR-011-ecosystem-dashboard.md)
 for the architecture decision this implements, and
 [`docs/ecosystem/MATURITY_MODEL.md`](../docs/ecosystem/MATURITY_MODEL.md) for the

@@ -6,7 +6,7 @@ repository — not inferred from README marketing copy. Where something could no
 verified it is marked `UNKNOWN`. Where the code contradicts a repo's own docs, that is
 called out explicitly.
 
-This document is the ground truth the rest of `AI-video-production-OS`'s architecture
+This document is the ground truth the rest of `Velisa`'s architecture
 docs are built on. If a later document disagrees with this one, this one wins unless it
 is explicitly revised.
 

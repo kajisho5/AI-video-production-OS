@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/kajisho5/AI-video-production-OS/registry/capability_contract.schema.json",
+  "$id": "https://github.com/kajisho5/Velisa/registry/capability_contract.schema.json",
   "title": "CapabilityContract",
   "description": "The full shape docs/SPEC.md section 1 sketches, as an actual JSON Schema document (docs/ROADMAP.md Phase 1, item 1's 'not just the prose shape already written'). This is the ASPIRATIONAL shape: no Skill in the ecosystem publishes every field below yet (see docs/ROADMAP.md Phase 2 and registry/README.md's 'What this deliberately is not'). `required` below is deliberately narrow -- only what every real Skill's `contract --json` / `<skill> contract --json` output already carries today, per registry/contract.py and registry/tests/fixtures/*.provides.json -- so this schema both documents the target shape in full AND validates today's real, minimal contracts without rejecting any of them. The richer per-`provides`-entry fields stay optional until a real Skill publishes them (VISION, per registry/README.md), at which point they become checkable, not just described.",
   "type": "object",

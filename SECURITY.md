@@ -13,7 +13,7 @@ public until a fix is ready.
 
 ## Scope
 
-This repository (`AI-video-production-OS`) is architecture, contracts, and a read-only
+This repository (`Velisa`) is architecture, contracts, and a read-only
 ecosystem dashboard (see `dashboard/README.md` for its own security notes on how it
 handles GitHub tokens). It has no server, no user data store, and no published package
 of its own today. If your report concerns one of the Skill repositories or

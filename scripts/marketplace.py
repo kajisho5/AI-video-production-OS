@@ -37,7 +37,7 @@ def build(manifest: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     entries: List[Dict[str, Any]] = [{
         "name": META,
         "source": f"./{META_DIR}",
-        "description": "Installs the whole AI Video Production OS: every Skill below except the optional disc-authoring kits, and the routing skill that picks the right one.",
+        "description": "Installs the whole of Velisa (formerly AI Video Production OS): every Skill below except the optional disc-authoring kits, and the routing skill that picks the right one.",
         "category": "os",
     }]
     for c in plugins:
@@ -51,14 +51,14 @@ def build(manifest: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         })
     marketplace = {
         "name": MARKETPLACE_NAME,
-        "description": "AI Video Production OS: production skills for video, audio, subtitles, QC and delivery, and the agent that plans with them.",
+        "description": "Velisa (formerly AI Video Production OS): production skills for video, audio, subtitles, QC and delivery, and the agent that plans with them.",
         "owner": {"name": org, "url": f"https://github.com/{org}"},
         "plugins": entries,
     }
     meta = {
         "name": META,
-        "displayName": "AI Video Production OS",
-        "description": "The whole AI Video Production OS in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
+        "displayName": "Velisa",
+        "description": "The whole of Velisa in one install: the production agent and every Skill, plus the routing skill that prefers them and falls back honestly when one is missing.",
         "author": {"name": org, "url": f"https://github.com/{org}"},
         "homepage": f"https://github.com/{org}/Velisa",
         "repository": f"https://github.com/{org}/Velisa",
