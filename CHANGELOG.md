@@ -1,3 +1,14 @@
+## v0.7.24 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- Dashboard: English by default with the landing page's EN/JA switch (#112)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.23 (2026-10-31)
 
 ## What's Changed
