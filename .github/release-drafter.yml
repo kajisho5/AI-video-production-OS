@@ -14,43 +14,41 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
 
+# release-drafter v7 format (release-drafter#1558): each category matches through `when`, and the
+# version increment comes from `semver-increment` on the categories themselves instead of the old
+# `categories[*].labels` / `version-resolver.<level>.labels` lists. Same labels, same result as before:
+# major > minor > patch, and a PR with none of these labels still resolves to a patch release.
 categories:
   - title: "Breaking changes"
-    labels:
-      - major
+    semver-increment: major
+    when:
+      labels:
+        - major
   - title: "Features"
-    labels:
-      - minor
-      - feature
+    semver-increment: minor
+    when:
+      labels:
+        - minor
+        - feature
   - title: "Fixes"
-    labels:
-      - fix
-      - bug
+    semver-increment: patch
+    when:
+      labels:
+        - fix
+        - bug
   - title: "Other changes"
-    labels:
-      - chore
-      - docs
-      - ci
+    semver-increment: patch
+    when:
+      labels:
+        - chore
+        - docs
+        - ci
+  # fallback when no category above matches (was `version-resolver.default: patch`)
+  - type: version-resolver
+    semver-increment: patch
 
 change-template: "- $TITLE (#$NUMBER)"
 change-title-escapes: '\<*_&'
-
-version-resolver:
-  major:
-    labels:
-      - major
-  minor:
-    labels:
-      - minor
-      - feature
-  patch:
-    labels:
-      - fix
-      - bug
-      - chore
-      - docs
-      - ci
-  default: patch
 
 # `major` is deliberately NOT autolabeled from title/body text (no "feat!:" / "BREAKING CHANGE"
 # rule). The autolabeler runs on pull_request_target, so anyone opening a fork PR controls the
