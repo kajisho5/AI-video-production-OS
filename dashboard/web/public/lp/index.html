@@ -483,19 +483,26 @@ footer{border-top:1px solid var(--bg-4);padding:48px 0 64px;color:var(--text-3);
 
   // tagline: words light up one at a time as they cross the trigger line
   var tg = document.getElementById("tagline");
-  var parts = tg.innerHTML.split("<br>");
-  tg.innerHTML = parts.map(function (line) {
-    return line.split(/(?<=[、。])/).map(function (w) { return '<span class="w">' + w + "</span>"; }).join("");
-  }).join("<br>");
-  var words = tg.querySelectorAll(".w");
-  // Japanese has no spaces: split further into short chunks so the reveal reads word by word
-  words.forEach(function (span) {
-    var t = span.textContent, out = [], chunk = "";
-    for (var i = 0; i < t.length; i++) { chunk += t[i]; if (chunk.length >= 2 || /[、。]/.test(t[i])) { out.push(chunk); chunk = ""; } }
-    if (chunk) out.push(chunk);
-    span.outerHTML = out.map(function (c) { return '<span class="w">' + c + "</span>"; }).join("");
+  // Rebuild the tagline from its text nodes with DOM calls only (no HTML string round trip).
+  // Japanese has no spaces, so each line is cut into short chunks that light up in reading order.
+  var lines = Array.prototype.filter.call(tg.childNodes, function (n) { return n.nodeType === 3; })
+    .map(function (n) { return n.textContent; });
+  tg.textContent = "";
+  lines.forEach(function (t, li) {
+    if (li) tg.appendChild(document.createElement("br"));
+    var chunk = "";
+    for (var i = 0; i < t.length; i++) {
+      chunk += t[i];
+      if ((chunk.length >= 2 && !/[、。]/.test(t[i + 1] || "")) || /[、。]/.test(t[i]) || i === t.length - 1) {
+        var s = document.createElement("span");
+        s.className = "w";
+        s.textContent = chunk;
+        tg.appendChild(s);
+        chunk = "";
+      }
+    }
   });
-  words = tg.querySelectorAll(".w");
+  var words = tg.querySelectorAll(".w");
   var ticking = false;
   function paint() {
     ticking = false;
