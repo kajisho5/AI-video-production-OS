@@ -131,7 +131,7 @@ def report(org: str, found: List[Dict[str, Any]], errors: List[str], notify: Opt
         lines.append("### Could not read")
         lines += [f"- {e}" for e in errors]
     lines.append("")
-    lines.append("Update: Claude Code `/plugin marketplace update ai-video-production-os` (or turn on auto-update for it under `/plugin` → Marketplaces); CLIs and Python packages: re-run `./install.sh`.")
+    lines.append("Update: Claude Code `/plugin marketplace update velisa` (or turn on auto-update for it under `/plugin` → Marketplaces); CLIs and Python packages: re-run `./install.sh`.")
     return "\n".join(lines) + "\n"
 
 

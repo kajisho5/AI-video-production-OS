@@ -40,12 +40,13 @@ only the small manual steps below.
 
 ## Old names still in the tree (2026-10-31)
 
+The plugin marketplace and its meta plugin were renamed to `velisa` / `velisa` on 2026-10-31 (see "Plugin marketplace name" below); `ai-video-production-os` and `video-production-os` now appear only in this file, the README's reinstall pointer, `CHANGELOG.md`, ADR-013/ADR-015 (as the former names) and the historical records listed here.
+
 Found with `git grep -n -i -E "ai-video-production-os|video-production-os|AI Video Production|AVOS_HOME|ai-video-os|AI-video-production-OS\.icon"`.
 Names that only described the project were changed to Velisa. These stay, on purpose:
 
 | Where | Why it stays |
 |---|---|
-| `.claude-plugin/marketplace.json`, `scripts/marketplace.py`, `plugins/video-production-os/`, README, ADR-013, `scripts/skill-updates.py` (`ai-video-production-os`, `video-production-os`) | The marketplace and meta-plugin names. See "Plugin marketplace name" below. |
 | `install.sh`, `scripts/bootstrap.sh`, their tests (`AVOS_HOME`, `~/ai-video-os`, `AI-video-production-OS/.git`) | Read only as fallbacks so installs made before the rename keep working. See "Workspace directory" below. |
 | `scripts/tests` (`AVOS_TEST_BASH`) | A test-harness variable set by `install.yml`; users never see it. |
 | `scripts/project-sync.py`, `scripts/skill-updates.py` (`User-Agent: ai-video-os-…`) | HTTP header values. Changing them changes no behaviour anyone relies on, but this cleanup changed no code behaviour beyond the workspace fallback. |
@@ -83,17 +84,43 @@ links into the old directory are removed first.
 
 ## Plugin marketplace name
 
-The marketplace is still `ai-video-production-os` and the meta plugin still `video-production-os`. They are not
-renamed yet because `video-production-agent` writes `/plugin install <skill>@ai-video-production-os` into every
-handoff it prints for a missing Skill (its `skills/ecosystem.py` and tests). Renaming here alone would make those
-commands fail. The rename happens once, in one change of `scripts/marketplace.py` (`MARKETPLACE_NAME`, `META`,
-then `python3 scripts/marketplace.py` to regenerate) together with the agent, to `velisa` / `velisa`.
-Changing the marketplace name means every existing user reinstalls. When it happens, they run:
+**Done (2026-10-31).** The marketplace `ai-video-production-os` is now `velisa`, and the meta plugin
+`video-production-os` is now `velisa` (directory `plugins/velisa/`, routing skill `/velisa:velisa`).
+Every Skill keeps its own name, so a single Skill installs as `<skill>@velisa`, for example `qc-skill@velisa`.
+The change was made once, in `scripts/marketplace.py` (`MARKETPLACE_NAME`, `META`; then `python3 scripts/marketplace.py`),
+in Velisa #132, together with a video-production-agent PR that changes the handoff it prints for a missing Skill
+from `/plugin install <skill>@ai-video-production-os` to `/plugin install <skill>@velisa` (ADR-015). The two are
+merged together, Velisa first and the agent right after, so the agent never prints a command for a marketplace
+name that does not exist.
+
+### Existing users: reinstall once
+
+Claude Code knows a marketplace by the name in its `marketplace.json`, so plugins installed as
+`…@ai-video-production-os` do not move to `…@velisa` by themselves, and `/plugin marketplace update` keeps
+the old registration. Run this once in a Claude Code session:
 
 ```text
-/plugin uninstall video-production-os@ai-video-production-os
-/plugin uninstall <each skill you installed on its own>@ai-video-production-os
 /plugin marketplace remove ai-video-production-os
 /plugin marketplace add kajisho5/Velisa
 /plugin install velisa@velisa
 ```
+
+- `/plugin marketplace remove` also uninstalls every plugin you installed from that marketplace (the meta plugin,
+  the Skills it pulled in as dependencies and any Skill you installed on its own) and removes their
+  `enabledPlugins` entries; the **Marketplaces** tab in `/plugin` lists them before it asks you to confirm.
+  So no separate `/plugin uninstall` is needed. Remove before you add: both point at the same repository.
+- `/plugin install velisa@velisa` opens the plugin's details; choose a scope (user, project or local) there. It
+  installs every non-optional Skill as a dependency. For one Skill only: `/plugin install <skill>@velisa`.
+- Auto-update is off by default for marketplaces outside Anthropic's, and the setting belonged to the old
+  registration: turn it on again under `/plugin` → **Marketplaces** → `velisa` → **Enable auto-update**.
+- From the shell (scripts, `claude -p`) the same steps are
+  `claude plugin marketplace remove ai-video-production-os`, `claude plugin marketplace add kajisho5/Velisa`
+  and `claude plugin install velisa@velisa` (add `--scope project` or `--scope local` as needed).
+- A repository that turns the plugins on for collaborators in its committed `.claude/settings.json`
+  (`enabledPlugins`, e.g. `"video-production-os@ai-video-production-os": true`) needs those keys changed to
+  `"velisa@velisa"` / `"<skill>@velisa"`, and each collaborator runs the install once.
+- Skills installed by `install.sh` (links in `~/.claude/skills`, `~/.agents/skills`) are not plugins and are unaffected.
+
+Commands as documented in Claude Code's "Install and manage plugins" page:
+<https://code.claude.com/docs/en/discover-plugins> (sections "Add a marketplace", "Manage marketplaces",
+"Keep plugins updated").

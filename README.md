@@ -211,19 +211,19 @@ This repository is also a Claude Code plugin marketplace, generated from `ecosys
 
 ```text
 /plugin marketplace add kajisho5/Velisa
-/plugin install video-production-os@ai-video-production-os    # everything: the agent, every Skill, the routing skill
-/plugin install qc-skill@ai-video-production-os               # or just one Skill
+/plugin install velisa@velisa       # everything: the agent, every Skill, the routing skill
+/plugin install qc-skill@velisa     # or just one Skill
 ```
 
-`video-production-os` depends on every non-optional Skill, so it installs them all; its routing
-skill prefers the OS Skills that are installed and says so when it falls back to another skill,
+`velisa` depends on every non-optional Skill, so it installs them all; its routing
+skill (`/velisa:velisa`) prefers the OS Skills that are installed and says so when it falls back to another skill,
 a plain tool or the model itself. Plugins carry the skills (`SKILL.md`); the Python packages and
 CLIs behind them still come from `install.sh` — run it with `--no-claude-skills` so Claude Code
-does not see each skill twice. Updates: turn on **auto-update** for `ai-video-production-os`
+does not see each skill twice. Updates: turn on **auto-update** for `velisa`
 under `/plugin` → Marketplaces (off by default for every non-Anthropic marketplace), and Claude
-Code reports `Plugin updated: <name>`; or run `/plugin marketplace update ai-video-production-os`.
-The marketplace and the meta plugin keep their pre-rename names for now; why, and the one-time
-reinstall when they change, are in [`docs/RENAMING.md`](docs/RENAMING.md).
+Code reports `Plugin updated: <name>`; or run `/plugin marketplace update velisa`.
+Installed before the rename (`@ai-video-production-os`)? Reinstall once — the commands are in
+[`docs/RENAMING.md`](docs/RENAMING.md#plugin-marketplace-name).
 
 **Update notices.** `.github/workflows/skill-updates.yml` checks every repository daily and
 posts what changed (new commits with their subjects, new version tags) on the issue labelled

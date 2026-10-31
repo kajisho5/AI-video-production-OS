@@ -23,9 +23,9 @@ OpenAI's skills page (learn.chatgpt.com/docs/build-skills) lists `$HOME/.agents/
 
 ## Decision
 
-1. **This repository is the marketplace `ai-video-production-os`.** `scripts/marketplace.py` generates `.claude-plugin/marketplace.json` from `ecosystem.json`.
+1. **This repository is the marketplace `velisa`** (named `ai-video-production-os` until the rename in ADR-015). `scripts/marketplace.py` generates `.claude-plugin/marketplace.json` from `ecosystem.json`.
    - Each component with `"plugin": true` gets one entry, with a `github` source and no version.
-   - The meta plugin `video-production-os` depends on every non-optional plugin, so one install brings the whole OS.
+   - The meta plugin `velisa` (formerly `video-production-os`) depends on every non-optional plugin, so one install brings the whole OS.
    - The meta plugin's routing skill has a "who owns what" table, which is regenerated from the same file.
    - `--check` and a unit test keep the generated files in step with `ecosystem.json`.
 2. **Plugins carry skills, not runtimes.** Python packages, npm packages and CLIs still come from `install.sh` (`--no-claude-skills` when the plugins are used, so no skill appears twice).
