@@ -123,7 +123,7 @@ Neither vendor ships a desktop MCP server. Community servers exist. Verified on 
    - semantic deletion.
 7. **Governance.**
    - system-intelligence reads ecosystem.json ownership and the contracts.
-   - skillpact conformance runs as a non-blocking OS job.
+   - skillpact conformance runs as a non-blocking OS job. Done: `skillpact-conformance.yml`, ADR-014 ([#127](https://github.com/kajisho5/Velisa/pull/127)).
 
 ## Decided by the owner (2026-10-30)
 
