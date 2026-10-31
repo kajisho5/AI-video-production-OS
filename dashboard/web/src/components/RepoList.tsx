@@ -9,7 +9,7 @@ function CiChip({ repo }: { repo: RepoStatus }) {
   const tone = ciTone(repo.ci.conclusion);
   const label = ciConclusionLabelJa(repo.ci.conclusion);
   return repo.ci.runUrl !== UNKNOWN ? (
-    <a href={repo.ci.runUrl as string} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+    <a href={repo.ci.runUrl as string} target="_blank" rel="noreferrer">
       <StatusChip label={label} tone={tone} />
     </a>
   ) : (
@@ -30,8 +30,8 @@ function RelativeTime({ iso }: { iso: string | typeof UNKNOWN }) {
 
 function RepoCard({ repo }: { repo: RepoStatus }) {
   return (
-    <div className="repo-card">
-      <div className="repo-card-header">
+    <li className="repo-row">
+      <div className="repo-row-header">
         <div className="repo-name">
           <a href={`https://github.com/${repo.slug}`} target="_blank" rel="noreferrer">
             {repo.name}
@@ -41,9 +41,13 @@ function RepoCard({ repo }: { repo: RepoStatus }) {
       </div>
       <div className="repo-role">{repo.role}</div>
       <div className="repo-meta-row">
-        <CiChip repo={repo} />
-        {repo.type === "Skill" && <ProvidesChip repo={repo} />}
-        <span>Lv{repo.maturity.level} · {MATURITY_LEVEL_NAMES_JA[repo.maturity.level]}</span>
+        <span className="chips">
+          <CiChip repo={repo} />
+          {repo.type === "Skill" && <ProvidesChip repo={repo} />}
+        </span>
+        <span>
+          Lv{repo.maturity.level} {MATURITY_LEVEL_NAMES_JA[repo.maturity.level]}
+        </span>
       </div>
       <div className="repo-meta-row">
         <span>オープンPR {repo.openPullRequests.length}件</span>
@@ -53,19 +57,19 @@ function RepoCard({ repo }: { repo: RepoStatus }) {
         </span>
       </div>
       {repo.openPullRequests.length > 0 && (
-        <div style={{ marginTop: "var(--space-2)" }}>
+        <ul className="repo-prs">
           {repo.openPullRequests.slice(0, 3).map((pr) => (
-            <div key={pr.number} style={{ fontSize: 12, color: "var(--text-secondary)" }}>
-              <a href={pr.url} target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
+            <li key={pr.number}>
+              <a href={pr.url} target="_blank" rel="noreferrer">
                 #{pr.number} {pr.title}
               </a>
-              {pr.draft && <span className="type-badge" style={{ marginLeft: 4 }}>draft</span>}
+              {pr.draft && <span className="type-badge">draft</span>}
               {pr.mergeableState === "dirty" && <StatusChip label="競合あり" tone="bad" />}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </li>
   );
 }
 
@@ -73,7 +77,7 @@ function RepoTableRow({ repo }: { repo: RepoStatus }) {
   return (
     <tr>
       <td>
-        <a href={`https://github.com/${repo.slug}`} target="_blank" rel="noreferrer" style={{ color: "var(--text-primary)" }}>
+        <a className="repo-link" href={`https://github.com/${repo.slug}`} target="_blank" rel="noreferrer">
           {repo.name}
         </a>
       </td>
@@ -83,13 +87,13 @@ function RepoTableRow({ repo }: { repo: RepoStatus }) {
       <td>
         <CiChip repo={repo} />
       </td>
-      <td>{repo.openPullRequests.length}</td>
-      <td>{repo.openIssues.length}</td>
-      <td>{repo.type === "Skill" ? <ProvidesChip repo={repo} /> : <span style={{ color: "var(--text-muted)" }}>—</span>}</td>
+      <td className="num">{repo.openPullRequests.length}</td>
+      <td className="num">{repo.openIssues.length}</td>
+      <td>{repo.type === "Skill" ? <ProvidesChip repo={repo} /> : <span className="dim">—</span>}</td>
       <td>
-        {repo.maturity.level} · {MATURITY_LEVEL_NAMES_JA[repo.maturity.level]}
+        Lv{repo.maturity.level} {MATURITY_LEVEL_NAMES_JA[repo.maturity.level]}
       </td>
-      <td>
+      <td className="num">
         <RelativeTime iso={repo.lastUpdatedAt} />
       </td>
     </tr>
@@ -99,23 +103,23 @@ function RepoTableRow({ repo }: { repo: RepoStatus }) {
 export function RepoList({ repos }: { repos: RepoStatus[] }) {
   return (
     <Section title={`リポジトリ（${repos.length}件）`}>
-      <div className="mobile-only card-grid">
+      <ul className="mobile-only repo-rows">
         {repos.map((r) => (
           <RepoCard key={r.slug} repo={r} />
         ))}
-      </div>
-      <div className="desktop-only table-scroll">
+      </ul>
+      <div className="desktop-only report table-scroll">
         <table className="repo-table">
           <thead>
             <tr>
               <th>リポジトリ</th>
               <th>種別</th>
               <th>CI</th>
-              <th>PR</th>
-              <th>Issue</th>
+              <th className="num">PR</th>
+              <th className="num">Issue</th>
               <th>Capability</th>
               <th>成熟度</th>
-              <th>更新日</th>
+              <th className="num">更新日</th>
             </tr>
           </thead>
           <tbody>

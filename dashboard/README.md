@@ -128,12 +128,17 @@ own tests for the exact rules.
 
 ## Design language
 
-This is the first real UI this ecosystem has ever had — `docs/DESIGN_SYSTEM.md` §7
-explicitly deferred a visual design system until one existed; `ADR-011` is that
-decision. Deliberately restrained: dark-only, high information density, a handful of
-load-bearing status colors (green=ok, amber=caution, red=bad/bottleneck, gray-dashed=
-UNKNOWN, blue=neutral/in-progress), a monospace treatment for identifiers/numbers, no
-illustration or marketing chrome. See `src/styles/tokens.css`.
+Both pages share the landing page's visual language (`web/public/lp/index.html`, whose
+`<style>` block is the reference): white/mist/graphite/slate, Manrope with Japanese system
+fallbacks and `word-break: auto-phrase`, a plain sticky header with a hairline under it,
+left-aligned content at most 1200px wide, hairlines between list rows, 12px radius for the
+few bordered panels (the overview numbers, the repo table, error banners), 8px buttons, 6px
+chips, light and dark schemes via `prefers-color-scheme`. Status chips use the landing
+page's four verdict colors and nothing else: ok (green), warn (amber), fail (red), unknown
+(gray, with a dashed edge so it can never be read as a measured value). "In progress" is not
+a verdict and is a graphite outline chip. The highlighter yellow marks only the recommended
+next task. The header links the two pages to each other and back to the landing page
+(`lp/`). See `src/styles/tokens.css` and `docs/ecosystem/DECISION_LOG.md` D10.
 
 ## Mobile / PWA
 

@@ -9,17 +9,17 @@ export function RoadmapDriftPanel({ drifts }: { drifts: RoadmapDrift[] }) {
   return (
     <Section title={`ロードマップの食い違い (${drifts.length})`} defaultOpen={drifts.length > 0}>
       {drifts.length === 0 ? (
-        <p className="footer-note">現在検出されている食い違いはありません。</p>
+        <p className="empty">現在検出されている食い違いはありません。</p>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+        <ul className="rows">
           {drifts.map((d) => (
-            <li key={d.id} className="panel" style={{ padding: 10 }}>
-              <div className="status-chip warn" style={{ marginBottom: 6 }}>DRIFT DETECTED</div>
-              <div style={{ fontSize: 13.5 }}>{d.summary}</div>
-              <div className="footer-note" style={{ marginTop: 6 }}>
+            <li key={d.id} className="row">
+              <span className="status-chip warn">DRIFT DETECTED</span>
+              <div className="row-body">{d.summary}</div>
+              <div className="note">
                 Source A: <span className="mono">{d.sourceA.locator}</span> — {d.sourceA.detail}
               </div>
-              <div className="footer-note">
+              <div className="note">
                 Source B: <span className="mono">{d.sourceB.locator}</span> — {d.sourceB.detail}
               </div>
             </li>

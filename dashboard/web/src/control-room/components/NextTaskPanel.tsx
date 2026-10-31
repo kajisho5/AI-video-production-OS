@@ -8,18 +8,18 @@ export function NextTaskPanel({ next }: { next: NextExecutableTaskRecommendation
   return (
     <Section title="次に着手すべきタスク (Next Executable Task)" defaultOpen>
       {next === null ? (
-        <p className="footer-note">現時点で「未着手・PR未作成」の推奨タスクはありません。</p>
+        <p className="empty">現時点で「未着手・PR未作成」の推奨タスクはありません。</p>
       ) : (
         <div>
-          <div className="status-chip neutral" style={{ marginBottom: 8 }}>
+          <div className="status-chip neutral wrap">
             推奨 (Recommendation) — 確定した事実ではありません
           </div>
-          <p style={{ fontSize: 15 }}>
-            WORK_QUEUE.md item <strong>{next.taskId}</strong>
+          <p className="next-task">
+            WORK_QUEUE.md item <mark>{next.taskId}</mark>
           </p>
-          <p style={{ fontSize: 13, color: "var(--text-secondary)" }}>{next.reason}</p>
+          <p className="row-body">{next.reason}</p>
           {next.evidence.map((e, i) => (
-            <div className="footer-note" key={i}>
+            <div className="note" key={i}>
               根拠: <span className="mono">{e.locator}</span> — {e.detail}
             </div>
           ))}

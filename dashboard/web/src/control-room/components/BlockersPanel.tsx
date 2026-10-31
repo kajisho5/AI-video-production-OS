@@ -7,14 +7,14 @@ export function BlockersPanel({ blockers }: { blockers: Blocker[] }) {
   return (
     <Section title={`ブロッカー (${blockers.length})`} defaultOpen={blockers.length > 0}>
       {blockers.length === 0 ? (
-        <p className="footer-note">現在検出されているブロッカーはありません。</p>
+        <p className="empty">現在検出されているブロッカーはありません。</p>
       ) : (
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+        <ul className="rows">
           {blockers.map((b) => (
-            <li key={b.id} className="panel" style={{ padding: 10 }}>
-              <div className="status-chip bad" style={{ marginBottom: 4 }}>ブロック中</div>
-              <div style={{ fontSize: 13.5 }}>{b.description}</div>
-              {b.affects.length > 0 && <div className="footer-note">影響範囲: {b.affects.join(", ")}</div>}
+            <li key={b.id} className="row">
+              <span className="status-chip bad">ブロック中</span>
+              <div className="row-body">{b.description}</div>
+              {b.affects.length > 0 && <div className="note">影響範囲: {b.affects.join(", ")}</div>}
             </li>
           ))}
         </ul>
