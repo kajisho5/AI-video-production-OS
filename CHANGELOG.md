@@ -1,3 +1,14 @@
+## v0.7.13 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- Add a landing page at /lp/ on GitHub Pages (#101)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.12 (2026-10-31)
 
 ## What's Changed
