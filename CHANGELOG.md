@@ -1,3 +1,14 @@
+## v0.7.36 (2026-10-31)
+
+## What's Changed
+
+## Other changes
+
+- build(deps-dev): bump @types/node from 22.20.1 to 22.20.5 in /dashboard/aggregator (#121)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.35 (2026-10-31)
 
 ## What's Changed
