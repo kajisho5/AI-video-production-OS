@@ -1,3 +1,12 @@
+## v0.7.10 (2026-10-31)
+
+## What's Changed
+
+- ecosystem.json: add voice-enhance crosstalk engine (#98)
+
+Cross-check this against CHANGELOG.md's own entry for this version before relying on it as the full picture.
+
+
 ## v0.7.9 (2026-10-31)
 
 ## What's Changed
