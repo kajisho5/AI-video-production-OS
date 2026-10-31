@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ControlRoomApp from "./ControlRoomApp.js";
 import type { ControlRoomSnapshot } from "@ecosystem/control-room-types";
 
@@ -32,6 +32,8 @@ describe("ControlRoomApp", () => {
   it("shows a loading state before the snapshot arrives", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
     render(<ControlRoomApp />);
+    expect(screen.getByText(/Loading the Control Room snapshot/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
     expect(screen.getByText(/読み込み中/)).toBeInTheDocument();
   });
 
@@ -50,7 +52,9 @@ describe("ControlRoomApp", () => {
   it("shows an explicit error banner, not a blank screen, when the snapshot fails to load", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("not found", { status: 404 }))));
     render(<ControlRoomApp />);
-    await waitFor(() => expect(screen.getByText(/読み込めませんでした/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Couldn't load the snapshot/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
+    expect(screen.getByText(/読み込めませんでした/)).toBeInTheDocument();
   });
 
   it("shows a pre-PR task as ready/planned work, never as 'nothing happening'", async () => {
@@ -79,6 +83,11 @@ describe("ControlRoomApp", () => {
     render(<ControlRoomApp />);
 
     await waitFor(() => expect(screen.getByText(/Investigate something/)).toBeInTheDocument());
+    expect(screen.getByText(/No PR yet/)).toBeInTheDocument();
+    expect(screen.getByText("Recommended task")).toBeInTheDocument();
+    expect(screen.getByText(/not a settled fact/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
     expect(screen.getByText(/PR未作成/)).toBeInTheDocument();
     expect(screen.getAllByText(/推奨/).length).toBeGreaterThan(0);
     expect(screen.getByText(/確定した事実ではありません/)).toBeInTheDocument();
@@ -163,7 +172,9 @@ describe("ControlRoomApp", () => {
 
     render(<ControlRoomApp />);
 
-    await waitFor(() => expect(screen.getByText(/到達できませんでした/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Unreachable repositories \(1\)/)).toBeInTheDocument());
     expect(screen.getByText("kajisho5/renamed-skill")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
+    expect(screen.getByText(/到達できませんでした/)).toBeInTheDocument();
   });
 });

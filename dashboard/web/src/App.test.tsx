@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "./App.js";
 import type { EcosystemSnapshot } from "@ecosystem/types";
 
@@ -37,6 +37,8 @@ describe("App", () => {
   it("shows a loading state before the snapshot arrives", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {}))); // never resolves
     render(<App />);
+    expect(screen.getByText(/Loading the ecosystem snapshot/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
     expect(screen.getByText(/読み込み中/)).toBeInTheDocument();
   });
 
@@ -46,7 +48,9 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/認証あり/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/GitHub API access: authenticated/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
+    expect(screen.getByText(/認証あり/)).toBeInTheDocument();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const calledUrl = String(fetchMock.mock.calls[0][0]);
@@ -59,7 +63,9 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/読み込めませんでした/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Couldn't load the ecosystem snapshot/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
+    expect(screen.getByText(/読み込めませんでした/)).toBeInTheDocument();
   });
 
   it("surfaces unreachable repos explicitly rather than silently dropping them", async () => {
@@ -68,7 +74,10 @@ describe("App", () => {
 
     render(<App />);
 
-    await waitFor(() => expect(screen.getByText(/到達できませんでした/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Unreachable repositories in registry.json \(1\)/)).toBeInTheDocument());
+    expect(screen.getByText("kajisho5/renamed-skill")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "JA" }));
+    expect(screen.getByText(/到達できませんでした/)).toBeInTheDocument();
     expect(screen.getByText("kajisho5/renamed-skill")).toBeInTheDocument();
   });
 });

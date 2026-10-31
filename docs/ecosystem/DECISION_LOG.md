@@ -312,3 +312,25 @@ config and the token-safety checks are unchanged; the UI stays Japanese (no i18n
 **Why**: one site, one visual language; the verdict colors already mean pass/warn/fail/unknown
 on the landing page's QC report, so reusing them keeps "green" meaning the same thing on every
 page.
+
+## D11 — The Dashboard and Control Room are English by default, with the landing page's EN/JA switch
+
+**Context**: the landing page (site root) became English by default with a Japanese toggle,
+but the Dashboard and Control Room under `/dashboard/` were Japanese only (D10: "no i18n
+yet"). A visitor who chose English or Japanese on the landing page lost that choice one
+click later.
+
+**Decision**: the same rule and storage key as the landing page: `?lang=` in the URL first,
+then `localStorage["avos-lang"]`, then English; toggling writes the key and rewrites the URL
+with `history.replaceState`. A small in-repo layer (`dashboard/web/src/lib/i18n.ts`, a React
+context plus `en`/`ja` dictionaries) instead of an i18n library: two languages and about 160
+strings do not justify a dependency. `en` is the source and `ja` is typed against its
+keys, so a missing translation is a type error; the existing Japanese wording is kept as the
+`ja` strings. Header links carry `?lang=ja` while Japanese is active. Dates go through `Intl`
+with the active locale. The initial HTML and the PWA manifest are English.
+
+**Not translated**: snapshot data (repo names, roles, PR titles, roadmap and WORK_QUEUE.md
+text, evidence strings, System Intelligence findings). It mirrors the project's English docs
+(ADR-011), the same scope `lib/labels.ts` already drew.
+
+**Why**: one site, one language rule; a link shared in Japanese opens in Japanese.

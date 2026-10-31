@@ -1,15 +1,17 @@
 import type { Phase } from "@ecosystem/control-room-types";
 import { StatusChip } from "../../components/StatusChip.js";
 import { Section } from "../../components/Section.js";
-import { lifecycleLabelJa, lifecycleTone } from "../lifecycleTone.js";
+import { lifecycleLabel, lifecycleTone } from "../lifecycleTone.js";
+import { useI18n } from "../../lib/i18n.js";
 
 /** Section B: "Phase / Epic / Milestone / Task hierarchy as supported by source
  * evidence." This ecosystem's own docs only support the Phase level structurally
  * (docs/ROADMAP.md) -- Epic/Milestone are shown per-Task as UNKNOWN in TasksPanel
  * rather than invented here. */
 export function PhasesPanel({ phases }: { phases: Phase[] }) {
+  const { t } = useI18n();
   return (
-    <Section title={`ロードマップ — Phase (${phases.length})`}>
+    <Section title={t("phases.title", { count: phases.length })}>
       <ul className="rows">
         {phases.map((p) => (
           <li key={p.id} className="row">
@@ -17,10 +19,10 @@ export function PhasesPanel({ phases }: { phases: Phase[] }) {
               <strong className="row-title">
                 {p.id} — {p.title}
               </strong>
-              <StatusChip label={lifecycleLabelJa(p.status)} tone={lifecycleTone(p.status)} />
+              <StatusChip label={lifecycleLabel(t, p.status)} tone={lifecycleTone(p.status)} />
             </div>
             <div className="note">{p.statusText}</div>
-            {p.dependsOnPhaseIds.length > 0 && <div className="note">依存: {p.dependsOnPhaseIds.join(", ")}</div>}
+            {p.dependsOnPhaseIds.length > 0 && <div className="note">{t("phases.dependsOn", { list: p.dependsOnPhaseIds.join(", ") })}</div>}
           </li>
         ))}
       </ul>

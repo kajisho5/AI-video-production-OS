@@ -2,7 +2,8 @@ import type { Task } from "@ecosystem/control-room-types";
 import { UNKNOWN } from "@ecosystem/control-room-types";
 import { StatusChip } from "../../components/StatusChip.js";
 import { Section } from "../../components/Section.js";
-import { lifecycleLabelJa, lifecycleTone } from "../lifecycleTone.js";
+import { lifecycleLabel, lifecycleTone } from "../lifecycleTone.js";
+import { useI18n, type MessageKey } from "../../lib/i18n.js";
 
 const DONE_LIKE = new Set(["DONE", "VERIFIED", "MERGED", "DEFERRED"]);
 
@@ -13,20 +14,22 @@ const DONE_LIKE = new Set(["DONE", "VERIFIED", "MERGED", "DEFERRED"]);
  * "doesn't exist" -- so every task from WORK_QUEUE.md is always shown here, with
  * its own real status, never hidden. */
 export function TasksPanel({ tasks }: { tasks: Task[] }) {
-  const active = tasks.filter((t) => !DONE_LIKE.has(t.status) && t.pullRequests.length > 0);
-  const done = tasks.filter((t) => DONE_LIKE.has(t.status));
-  const prePr = tasks.filter((t) => !DONE_LIKE.has(t.status) && t.pullRequests.length === 0);
+  const active = tasks.filter((task) => !DONE_LIKE.has(task.status) && task.pullRequests.length > 0);
+  const done = tasks.filter((task) => DONE_LIKE.has(task.status));
+  const prePr = tasks.filter((task) => !DONE_LIKE.has(task.status) && task.pullRequests.length === 0);
 
+  const { t } = useI18n();
   return (
-    <Section title={`タスク (${tasks.length})`} defaultOpen>
-      <TaskGroup title="進行中 — PRあり (Active work)" tasks={active} emptyText="現在進行中のPR付きタスクはありません。" />
-      <TaskGroup title="PR未作成 — 計画済み/着手可能 (Pre-PR work)" tasks={prePr} emptyText="PR未作成のタスクはありません。" />
-      <TaskGroup title="完了・検証済み・保留" tasks={done} emptyText="完了したタスクはまだありません。" />
+    <Section title={t("tasks.title", { count: tasks.length })} defaultOpen>
+      <TaskGroup title={t("tasks.active")} tasks={active} emptyText={t("tasks.activeEmpty")} />
+      <TaskGroup title={t("tasks.prePr")} tasks={prePr} emptyText={t("tasks.prePrEmpty")} />
+      <TaskGroup title={t("tasks.done")} tasks={done} emptyText={t("tasks.doneEmpty")} />
     </Section>
   );
 }
 
 function TaskGroup({ title, tasks, emptyText }: { title: string; tasks: Task[]; emptyText: string }) {
+  const { t } = useI18n();
   return (
     <div className="task-group">
       <h3>{title}</h3>
@@ -34,26 +37,26 @@ function TaskGroup({ title, tasks, emptyText }: { title: string; tasks: Task[]; 
         <p className="empty">{emptyText}</p>
       ) : (
         <ul className="rows">
-          {tasks.map((t) => (
-            <li key={t.id} className="row">
+          {tasks.map((task) => (
+            <li key={task.id} className="row">
               <div className="row-head">
                 <strong className="row-title">
-                  {t.id}. {t.title}
+                  {task.id}. {task.title}
                 </strong>
-                <StatusChip label={lifecycleLabelJa(t.status)} tone={lifecycleTone(t.status)} />
+                <StatusChip label={lifecycleLabel(t, task.status)} tone={lifecycleTone(task.status)} />
               </div>
-              {t.isRecommendedNext && (
+              {task.isRecommendedNext && (
                 <div className="chips">
-                  <span className="status-chip mark">推奨タスク</span>
+                  <span className="status-chip mark">{t("tasks.recommended")}</span>
                 </div>
               )}
-              {t.phaseId !== UNKNOWN && <div className="note">{t.phaseId}</div>}
-              {t.pullRequests.length > 0 && (
+              {task.phaseId !== UNKNOWN && <div className="note">{task.phaseId}</div>}
+              {task.pullRequests.length > 0 && (
                 <div>
-                  {t.pullRequests.map((pr, i) => (
+                  {task.pullRequests.map((pr, i) => (
                     <div key={i} className="note">
-                      {pr.repoSlug === UNKNOWN ? "リポジトリ不明" : pr.repoSlug}#{pr.number} —{" "}
-                      {pr.resolution === "resolved" && pr.state ? (pr.state.merged ? "マージ済み" : pr.state.state === "open" ? (pr.state.draft ? "Draft" : "Open") : "Closed") : pr.resolution === "not_found" ? "見つかりません" : pr.resolution === "ambiguous_repo" ? "リポジトリ特定不可" : "未解決"}
+                      {pr.repoSlug === UNKNOWN ? t("tasks.unknownRepo") : pr.repoSlug}#{pr.number} —{" "}
+                      {t(prStateKey(pr))}
                     </div>
                   ))}
                 </div>
@@ -64,4 +67,15 @@ function TaskGroup({ title, tasks, emptyText }: { title: string; tasks: Task[]; 
       )}
     </div>
   );
+}
+
+function prStateKey(pr: Task["pullRequests"][number]): MessageKey {
+  if (pr.resolution === "resolved" && pr.state) {
+    if (pr.state.merged) return "tasks.pr.merged";
+    if (pr.state.state === "open") return pr.state.draft ? "tasks.pr.draft" : "tasks.pr.open";
+    return "tasks.pr.closed";
+  }
+  if (pr.resolution === "not_found") return "tasks.pr.notFound";
+  if (pr.resolution === "ambiguous_repo") return "tasks.pr.ambiguous";
+  return "tasks.pr.unresolved";
 }

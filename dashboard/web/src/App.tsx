@@ -5,31 +5,42 @@ import { AgentPanel } from "./components/AgentPanel.js";
 import { BottlenecksPanel } from "./components/BottlenecksPanel.js";
 import { EcosystemGraphPanel } from "./components/EcosystemGraphPanel.js";
 import { SiteHeader } from "./components/SiteHeader.js";
+import { LanguageProvider } from "./components/LanguageProvider.js";
+import { useI18n, withLang } from "./lib/i18n.js";
 import { UNKNOWN } from "@ecosystem/types";
 
 export default function App() {
+  return (
+    <LanguageProvider page="dashboard">
+      <Dashboard />
+    </LanguageProvider>
+  );
+}
+
+function Dashboard() {
   const state = useEcosystemSnapshot();
+  const { t, lang, locale } = useI18n();
 
   return (
     <>
       <SiteHeader current="dashboard" />
       <main id="main" className="wrap">
         <div className="page-head">
-          <h1>エコシステムダッシュボード</h1>
+          <h1>{t("dashboard.title")}</h1>
           <p className="lede">
-            読み取り専用の観測レイヤー。開発の進み具合は<a href={`${import.meta.env.BASE_URL}control-room.html`}>コントロールルーム</a>で見られます。
+            {t("dashboard.lede.before")}
+            <a href={withLang(`${import.meta.env.BASE_URL}control-room.html`, lang)}>{t("dashboard.lede.link")}</a>
+            {t("dashboard.lede.after")}
           </p>
         </div>
 
-        {state.status === "loading" && <div className="loading-state">エコシステムのスナップショットを読み込み中…</div>}
+        {state.status === "loading" && <div className="loading-state">{t("dashboard.loading")}</div>}
 
         {state.status === "error" && (
           <div className="error-banner" role="alert">
-            <strong>エコシステムのスナップショットを読み込めませんでした。</strong>
+            <strong>{t("dashboard.error.title")}</strong>
             <div className="detail">{state.message}</div>
-            <div className="hint">
-              このダッシュボードは常に静的な生成済みJSONファイルのみを読み込みます — GitHubを直接呼び出すことはありません（dashboard/README.md参照）。デプロイ直後の場合、集計ワークフローがまだ実行されていない可能性があります。
-            </div>
+            <div className="hint">{t("dashboard.error.hint")}</div>
           </div>
         )}
 
@@ -37,7 +48,7 @@ export default function App() {
           <>
             {state.snapshot.unreachableRepos.length > 0 && (
               <div className="error-banner">
-                <strong>registry.json内の{state.snapshot.unreachableRepos.length}件のリポジトリに到達できませんでした：</strong>
+                <strong>{t("dashboard.unreachable", { count: state.snapshot.unreachableRepos.length })}</strong>
                 <ul>
                   {state.snapshot.unreachableRepos.map((r) => (
                     <li key={r.slug}>
@@ -60,13 +71,22 @@ export default function App() {
       {state.status === "ready" && (
         <footer className="site-footer">
           <div className="wrap meta">
-            <span>{new Date(state.snapshot.generatedAt).toLocaleString("ja-JP")} 生成</span>
+            <span>{t("common.generatedAt", { date: new Date(state.snapshot.generatedAt).toLocaleString(locale) })}</span>
             <span>
               {state.snapshot.generator.name} v{state.snapshot.generator.version}
             </span>
-            <span>GitHub APIアクセス：{state.snapshot.authTokenPresent ? "認証あり" : "認証なし"}</span>
             <span>
-              レート制限 {state.snapshot.rateLimit.remaining === UNKNOWN ? "不明" : `${state.snapshot.rateLimit.remaining}/${state.snapshot.rateLimit.limit}`}
+              {t("dashboard.footer.apiAccess", {
+                state: t(state.snapshot.authTokenPresent ? "dashboard.footer.authenticated" : "dashboard.footer.unauthenticated"),
+              })}
+            </span>
+            <span>
+              {t("dashboard.footer.rateLimit", {
+                value:
+                  state.snapshot.rateLimit.remaining === UNKNOWN
+                    ? t("common.unknown")
+                    : `${state.snapshot.rateLimit.remaining}/${state.snapshot.rateLimit.limit}`,
+              })}
             </span>
           </div>
         </footer>

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { OverviewPanel } from "./OverviewPanel.js";
 import type { OsOverview } from "@ecosystem/types";
+import { renderInLang } from "../test/renderInLang.js";
 
 function overview(overrides: Partial<OsOverview> = {}): OsOverview {
   return {
@@ -26,12 +27,22 @@ describe("OverviewPanel", () => {
 
   it("renders every maturity level even when its count is zero, never omitting a level", () => {
     render(<OverviewPanel overview={overview()} />);
+    expect(screen.getByText(/0\. Proposed/)).toBeInTheDocument();
+    expect(screen.getByText(/6\. Distributed/)).toBeInTheDocument();
+  });
+
+  it("names the maturity levels in Japanese when the UI is Japanese", () => {
+    renderInLang("ja", <OverviewPanel overview={overview()} />);
     expect(screen.getByText(/0\. 提案段階/)).toBeInTheDocument();
     expect(screen.getByText(/6\. 配布済み/)).toBeInTheDocument();
   });
 
   it("does not crash when maturityDistribution.totalRepos is 0 (all counts zero)", () => {
-    render(<OverviewPanel overview={overview({ maturityDistribution: { counts: [0, 0, 0, 0, 0, 0, 0], totalRepos: 0 } })} />);
+    const empty = overview({ maturityDistribution: { counts: [0, 0, 0, 0, 0, 0, 0], totalRepos: 0 } });
+    const { unmount } = render(<OverviewPanel overview={empty} />);
+    expect(screen.getByText(/0 Skill\/Provider\/Extension repos/)).toBeInTheDocument();
+    unmount();
+    renderInLang("ja", <OverviewPanel overview={empty} />);
     expect(screen.getByText(/Skill\/Provider\/Extension 0件/)).toBeInTheDocument();
   });
 });

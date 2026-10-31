@@ -1,5 +1,6 @@
 import type { SystemIntelligenceStatus } from "@ecosystem/control-room-types";
 import { Section } from "../../components/Section.js";
+import { useI18n } from "../../lib/i18n.js";
 
 /** Section I: System Intelligence findings/recommendations. Never executes a
  * proposal, never merges, never installs anything -- purely a read-through of
@@ -7,14 +8,15 @@ import { Section } from "../../components/Section.js";
  * confidence vocabulary is shown verbatim, not remapped into this dashboard's own
  * status colors, since SI is a separate project with its own conventions. */
 export function IntelligencePanel({ si }: { si: SystemIntelligenceStatus }) {
+  const { t } = useI18n();
   return (
     <Section title="System Intelligence">
       <p className="note">{si.reason}</p>
       {si.available && (
         <>
           <div className="meta" style={{ marginTop: "var(--space-2)" }}>
-            <span>Research: {si.researchCount}件</span>
-            <span>Verification: {si.verificationCount}件（System Intelligence側の該当フェーズが未実装のため、現時点では常に0件）</span>
+            <span>{t("si.research", { count: si.researchCount })}</span>
+            <span>{t("si.verification", { count: si.verificationCount })}</span>
           </div>
           {si.findings.length > 0 && (
             <ul className="rows" style={{ marginTop: "var(--space-4)" }}>
