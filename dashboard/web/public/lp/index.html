@@ -96,7 +96,19 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--paper
 .frame{position:relative;border-radius:12px;background:var(--frame);color:var(--frame-ink);overflow:hidden;aspect-ratio:16/9}
 /* the footage plays under a flat shade so the caption stays readable */
 .footage{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.shade{position:absolute;inset:0;background:rgba(10,12,16,0.5)}
+/* before/after: the processed clip is clipped to the right of the divider */
+.frame{--pos:50%;cursor:ew-resize;touch-action:pan-y;user-select:none}
+.footage.after{clip-path:inset(0 0 0 var(--pos))}
+.shade{position:absolute;inset:0;background:rgba(10,12,16,0.32)}
+.divider{position:absolute;top:0;bottom:0;left:var(--pos);width:2px;margin-left:-1px;background:#FFFFFF;box-shadow:0 0 12px rgba(0,0,0,0.35);pointer-events:none}
+.divider .knob{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:9999px;background:#FFFFFF;color:#16181D;display:grid;place-items:center;font-size:18px;box-shadow:0 2px 12px rgba(0,0,0,0.3);transition:transform 200ms var(--ease)}
+.frame.dragging .divider .knob{transform:scale(1.08)}
+.frame:has(.cmp-range:focus-visible) .divider .knob{outline:3px solid var(--mark);outline-offset:2px}
+.cmp-range{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.side{position:absolute;top:16%;padding:2px 8px;border-radius:6px;background:rgba(0,0,0,0.55);color:#FFFFFF;font-size:12px;line-height:16px;font-weight:600;pointer-events:none}
+.side.l{left:5%;margin-left:16px}.side.r{right:5%;margin-right:16px}
+@media(max-width:639px){.side{top:auto;bottom:4px;font-size:11px}.side.l{left:8px;margin:0}.side.r{right:8px;margin:0}.divider .knob{width:32px;height:32px;margin:-16px 0 0 -16px;font-size:14px}}
+.cmp-note{margin-top:8px;font-size:12px;line-height:16px;color:var(--slate)}
 .caption h1{text-shadow:0 2px 24px rgba(0,0,0,0.45)}
 /* title-safe and action-safe guides, as on a monitor */
 .frame .safe{position:absolute;inset:5%;border:1px dashed rgba(255,255,255,0.14);border-radius:4px;pointer-events:none}
@@ -267,11 +279,19 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
 <section class="hero" aria-labelledby="hero-h">
   <div class="wrap">
     <div class="frame" id="frame">
-      <video class="footage" id="footage" autoplay muted loop playsinline preload="metadata" poster="hero.jpg" aria-hidden="true" tabindex="-1">
-        <source src="hero.webm" type="video/webm">
-        <source src="hero.mp4" type="video/mp4">
+      <video class="footage" id="vBefore" autoplay muted loop playsinline preload="auto" poster="before.jpg" aria-hidden="true" tabindex="-1">
+        <source src="before.webm" type="video/webm">
+        <source src="before.mp4" type="video/mp4">
+      </video>
+      <video class="footage after" id="vAfter" autoplay muted loop playsinline preload="auto" poster="after.jpg" aria-hidden="true" tabindex="-1">
+        <source src="after.webm" type="video/webm">
+        <source src="after.mp4" type="video/mp4">
       </video>
       <div class="shade" aria-hidden="true"></div>
+      <span class="side l" aria-hidden="true" data-i="cmp.l">Original</span>
+      <span class="side r" aria-hidden="true" data-i="cmp.r">Stabilized and graded</span>
+      <div class="divider" aria-hidden="true"><span class="knob"><i class="ph ph-arrows-left-right"></i></span></div>
+      <input class="cmp-range" id="cmpRange" type="range" min="0" max="100" value="50" step="1" aria-label="Compare the original footage with the processed footage">
       <div class="safe" aria-hidden="true"></div>
       <div class="safe t" aria-hidden="true"></div>
       <div class="hud" aria-hidden="true"><span class="rec"><i></i><span data-i="hud.file">pino.mp4</span></span><span class="tc" id="tc">00:00:12:02</span></div>
@@ -285,6 +305,7 @@ footer.site{border-top:1px solid var(--mist-2);padding:32px 0 48px;font-size:14p
       <div class="lane" id="laneA"></div>
       <div class="tl-meta"><span id="tl-l" data-i="tl.before">Before: 12.1 s, 2 filler words</span><span id="tl-r"></span></div>
     </div>
+    <p class="cmp-note" data-i="cmp.note">Drag the line across the picture. Left is the phone's original. Right is the same clip stabilized with ffmpeg-skill and color corrected with color-grading-skill.</p>
 
     <div class="intro">
       <div>
@@ -446,7 +467,7 @@ Let’s finish it.</h2>
     "skip": "本文へスキップ",
     "nav.ask": "できること", "nav.checks": "検品", "nav.start": "はじめかた", "nav.price": "料金", "nav.faq": "よくある質問", "nav.dash": "ダッシュボード",
     "cta.short": "はじめる", "cta.main": "無料ではじめる", "cta.gh": "GitHub を見る",
-    "hud.file": "pino.mp4", "hero.replay": "カットをもう一度", "tl.before": "カット前：12.1 秒、言いよどみ 2 か所",
+    "hud.file": "pino.mp4", "cmp.l": "元の映像", "cmp.r": "手ブレ補正＋色補正", "cmp.note": "画面の線をドラッグして比べられます。左はスマホで撮ったまま、右は同じ映像を ffmpeg-skill で手ブレ補正し、color-grading-skill で色補正したものです。", "cmp.aria": "元の映像と補正後の映像を比べる", "hero.replay": "カットをもう一度", "tl.before": "カット前：12.1 秒、言いよどみ 2 か所",
     "intro.p": "動画に必要なことを AI に伝えるだけ。間と言いよどみのカット、字幕、音量の調整、サムネイル、投稿まで。仕上がりは AI が実際に測ってから、あなたに返します。",
     "fact.1": "あなたのパソコンで動作", "fact.2": "MIT ライセンスで無料", "fact.3": "Claude Code と Codex で使えます",
     "ask.h": "人に頼むように、頼めばいい。", "ask.p": "タイムラインもメニューもいりません。実際の頼み方と、そのあと起きることです。",
@@ -503,6 +524,8 @@ Let’s finish it.</h2>
     lang = l === "ja" ? "ja" : "en";
     document.documentElement.lang = lang;
     nodes.forEach(function (el) { var k = el.dataset.i; setText(el, lang === "ja" && JA[k] ? JA[k] : EN[k]); });
+    var rg = document.getElementById("cmpRange");
+    if (rg) { if (!rg.dataset.en) rg.dataset.en = rg.getAttribute("aria-label"); rg.setAttribute("aria-label", lang === "ja" ? JA["cmp.aria"] : rg.dataset.en); }
     document.title = META[lang].title;
     document.querySelector('meta[name="description"]').setAttribute("content", META[lang].desc);
     document.querySelectorAll(".lang button").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.lang === lang)); });
@@ -558,9 +581,27 @@ Let’s finish it.</h2>
     run();
   });
 
-  // footage: hold still for reduced motion
-  var footage = document.getElementById("footage");
-  if (reduce && footage) { footage.removeAttribute("autoplay"); footage.pause(); }
+  // before/after comparison: two clips kept in step, a divider dragged across the frame
+  var vB = document.getElementById("vBefore"), vA = document.getElementById("vAfter"), range = document.getElementById("cmpRange");
+  if (reduce) { [vB, vA].forEach(function (v) { v.removeAttribute("autoplay"); v.pause(); }); }
+  else {
+    vB.addEventListener("timeupdate", function () { if (Math.abs(vA.currentTime - vB.currentTime) > 0.08) vA.currentTime = vB.currentTime; });
+    vB.addEventListener("play", function () { var p = vA.play(); if (p && p.catch) p.catch(function () {}); });
+  }
+  function setPos(pct) {
+    pct = Math.max(0, Math.min(100, pct));
+    frame.style.setProperty("--pos", pct + "%");
+    range.value = String(Math.round(pct));
+  }
+  function fromEvent(e) { var r = frame.getBoundingClientRect(); setPos((e.clientX - r.left) / r.width * 100); }
+  frame.addEventListener("pointerdown", function (e) {
+    if (e.target.closest("button, a")) return;
+    frame.classList.add("dragging"); fromEvent(e);
+    try { frame.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  frame.addEventListener("pointermove", function (e) { if (frame.classList.contains("dragging")) fromEvent(e); });
+  ["pointerup", "pointercancel"].forEach(function (t) { frame.addEventListener(t, function () { frame.classList.remove("dragging"); }); });
+  range.addEventListener("input", function () { setPos(Number(range.value)); });
 
   // copy
   var status = document.querySelector("#start .status");
