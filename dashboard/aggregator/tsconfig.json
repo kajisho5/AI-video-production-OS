@@ -8,6 +8,8 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "outDir": "dist",
+    "rootDir": "..",
+    "types": ["node"],
     "paths": {
       "@ecosystem/types": ["../shared/types.ts"]
     }

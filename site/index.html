@@ -302,9 +302,10 @@ section.blk{padding:112px 0}
 .dev h3{font-size:22px;line-height:30px;letter-spacing:-0.01em;font-weight:700}
 .dev p{color:var(--ink-dim);margin-top:8px;font-size:15px;line-height:22px}
 .repos{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-top:24px}
-.repos a{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;line-height:20px;padding:6px 12px;border-radius:9999px;background:var(--ink-2);border:1px solid var(--ink-line);color:#E8EAED;text-decoration:none;transition:border-color 300ms var(--ease)}
+.repos a,.repos .repo{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;line-height:20px;padding:6px 12px;border-radius:9999px;background:var(--ink-2);border:1px solid var(--ink-line);color:#E8EAED;text-decoration:none;transition:border-color 300ms var(--ease)}
 .repos a:hover{border-color:#8A909C}
 .repos .d{width:7px;height:7px;border-radius:9999px}
+.repos .d.ring{background:transparent;border:1.5px solid var(--unk)}
 .sk{height:34px;width:140px;border-radius:9999px;background:var(--ink-2);animation:pulse 1600ms var(--ease) infinite}
 @keyframes pulse{50%{opacity:0.5}}
 @media(prefers-reduced-motion:reduce){.sk{animation:none}}
@@ -713,10 +714,20 @@ Let’s finish it.</h2>
       repos.textContent = "";
       (m.components || []).forEach(function (c) {
         var st = COLOR[c.status] ? c.status : "planned";
-        var a = document.createElement("a");
-        a.href = "https://github.com/" + encodeURIComponent(m.org) + "/" + encodeURIComponent(c.repo);
-        a.title = c.role || "";
-        var d = document.createElement("span"); d.className = "d"; d.style.background = COLOR[st];
+        // A planned component has no repository yet, so it is shown without a link (a link would 404).
+        var planned = c.status === "planned";
+        var a = document.createElement(planned ? "span" : "a");
+        if (planned) {
+          a.className = "repo";
+          a.title = (c.role ? c.role + " " : "") + "(planned: repository not created yet)";
+        } else {
+          a.href = "https://github.com/" + encodeURIComponent(m.org) + "/" + encodeURIComponent(c.repo);
+          a.title = c.role || "";
+        }
+        var d = document.createElement("span");
+        // Green means verified only; planned / unknown is a hollow ring, never a filled dot.
+        if (st === "planned") d.className = "d ring";
+        else { d.className = "d"; d.style.background = COLOR[st]; }
         var s = document.createElement("span"); s.className = "sr"; s.textContent = st;
         a.appendChild(d); a.appendChild(s); a.appendChild(document.createTextNode(c.repo));
         repos.appendChild(a);
