@@ -1,7 +1,7 @@
 {
   "name": "@ecosystem-dashboard/web",
   "private": true,
-  "version": "0.7.26",
+  "version": "0.7.27",
   "type": "module",
   "description": "Ecosystem Dashboard UI: a read-only, mobile-first, PWA-ready static view over one aggregator-generated EcosystemSnapshot JSON. Never calls GitHub directly, never holds a token (docs/adr/ADR-011-ecosystem-dashboard.md).",
   "scripts": {
