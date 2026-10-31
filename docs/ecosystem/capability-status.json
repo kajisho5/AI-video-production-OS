@@ -1,126 +1,465 @@
 {
   "$schema_note": "Structured mirror of capability/integration facts documented in CURRENT_STATE.md, CROSS_REPO_STATUS.md, CAPABILITY_MATRIX.md and MATURITY_MODEL.md (see docs/adr/ADR-011-ecosystem-dashboard.md). Update this file in the same commit that updates those prose documents. Every field not directly re-verifiable by the Dashboard's aggregator from a GitHub API call is 'documented' evidence per MATURITY_MODEL.md, carries 'as_of' (the date this entry was last checked against real source), and an 'evidence' pointer (a PR, ADR, or file this fact is drawn from) -- never asserted without one.",
   "schema_version": 1,
-  "updated_at": "2026-09-06",
+  "updated_at": "2026-10-31",
   "repos": {
     "kajisho5/ffmpeg-skill": {
       "contract_published": true,
+      "contract_evidence": "scripts/_contract.py --json on main @86b5145",
       "provides_published": true,
-      "provides_evidence": "PR #24 merged 2026-09-06",
+      "provides_evidence": "PR #24 merged 2026-09-06; re-read 2026-10-31: provides[] emitted by scripts/_contract.py:1916 on main @86b5145",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent depends on this Skill for all 9 other Skills' delegated execution; not a single named adapter, it is the shared execution substrate",
-      "verified_e2e": "unknown",
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/ffmpeg_skill/adapter.py; default_registry() lists 20 tool ids ffmpeg-skill/* (probe, cut, loudness, export, check, sync, multicam, ...)",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py RealMediaTests (ADR-034 revise -> render -> QA -> artifact on real media) and the *RealTests classes for sync / multicam / crop / beats (ADR-035/045/046/053/060) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
       "distribution": {
         "kind": "npm",
         "package": "ffmpeg-skill",
-        "note": "published to npm per docs/ecosystem/CURRENT_STATE.md; version not independently re-checked by this file"
+        "note": "live npm lookup 2026-10-31: 2.24.0, repository field points at kajisho5/ffmpeg-skill"
       },
-      "as_of": "2026-09-06"
+      "ci_main": "tests: success @55d753c (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/video-editing-skill": {
       "contract_published": true,
+      "contract_evidence": "src/video_editing_skill/cli.py:205 (`video-editing contract --json`) on main @0ca166f",
       "provides_published": true,
-      "provides_evidence": "PR #2 merged",
+      "provides_evidence": "PR #2 merged; re-read 2026-10-31: provides[] emitted by src/video_editing_skill/contract.py:170 on main @0ca166f",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(), package id video-editing matches SKILL_ID exactly",
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/video_editing/adapter.py; default_registry() lists 10 tool ids video-editing/* (cut, concat, speed, resize, fit, fill, overlay, trim, rotate, image_insert)",
       "verified_e2e": "documented",
-      "verified_e2e_evidence": "video-production-agent README's real end-to-end pipeline command sequence includes an editing step",
-      "as_of": "2026-09-06"
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py VideoEditingRealTests / VideoEditingOperationsRealTests (ADR-028/029/062/070: two real inputs trimmed, joined, rotated) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'video-editing-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests (schedule): success @0ca166f (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/audio-production-skill": {
       "contract_published": true,
+      "contract_evidence": "src/audio_production/cli.py (`audio-production skill --json`, alias `contract --json`) on main @b08609d",
       "provides_published": true,
-      "provides_evidence": "PR #3 merged",
+      "provides_evidence": "PR #3 merged; re-read 2026-10-31: provides[] emitted by src/audio_production/contract.py (capability_provides) on main @b08609d",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(), package id audio-production matches SKILL_ID exactly",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/audio_production/adapter.py; default_registry() lists audio-production/run for 14 audio_* SkillSpecs",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py AudioProductionRealTests (ADR-030/063/068/072 on the real Skill and real ffmpeg) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'audio-production-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests (schedule): success @b08609d (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/color-grading-skill": {
       "contract_published": true,
+      "contract_evidence": "src/color_grading/cli.py (`color-grading skill --json`, alias `contract --json`) on main @c7faa40",
       "provides_published": true,
-      "provides_evidence": "PR #4 merged 2026-09-06 after a real merge conflict against PR #5 (PRIMARY_CORRECTION, merged first): both sides had independently claimed ADR-15, and PRIMARY_CORRECTION had no Capability id assigned in CAPABILITY_IDS -- resolved by renumbering the provides ADR to ADR-16 and adding a provisional id (color.primary_correction, following the matrix's own <domain>.<verb> convention) so contract.capability_provides() doesn't KeyError.",
+      "provides_evidence": "PR #4 merged 2026-09-06 after a real merge conflict against PR #5 (PRIMARY_CORRECTION, merged first): both sides had independently claimed ADR-15, and PRIMARY_CORRECTION had no Capability id assigned in CAPABILITY_IDS -- resolved by renumbering the provides ADR to ADR-16 and adding a provisional id (color.primary_correction, following the matrix's own <domain>.<verb> convention) so contract.capability_provides() doesn't KeyError.; re-read 2026-10-31: provides[] emitted by src/color_grading/contract.py:93 on main @c7faa40",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(), package id color-grading matches SKILL_ID exactly",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/color_grading/adapter.py; default_registry() lists color-grading/run",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_adapter_color_grading.py ColorGradingRealSkillTests (ADR-076, RETAG / PRIMARY_CORRECTION on real media, run by the agent's integration job) and tests/test_integration.py IntegratedPipelineRealTests (ADR-031/032) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'color-grading-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests (schedule): success @c7faa40 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/subtitle-skill": {
       "contract_published": true,
+      "contract_evidence": "src/subtitle_skill/cli.py:108 (`subtitle-skill contract --json`) on main @f852555",
       "provides_published": true,
-      "provides_evidence": "PR #2 merged 2026-09-06",
+      "provides_evidence": "PR #2 merged 2026-09-06; re-read 2026-10-31: provides[] emitted by src/subtitle_skill/contract.py:166 on main @f852555",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'subtitle', deliberately different from this Skill's own SKILL_ID 'subtitle-skill' (commented in adapter.py) -- join by Capability id, never tool-id string, per WORK_QUEUE.md item 1's finding",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/subtitle/adapter.py; default_registry() lists subtitle/generate, subtitle/render (agent package id 'subtitle', Skill's own SKILL_ID 'subtitle-skill')",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py SubtitleMuxRealTests (ADR-063/071) and IntegratedPipelineRealTests (ADR-031/032) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'subtitle-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "CI: success @69159a2 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/motion-graphics-skill": {
       "contract_published": true,
+      "contract_evidence": "src/motion_graphics/cli.py (`motion-graphics skill --json`, alias `contract --json`) on main @a389da9",
       "provides_published": true,
-      "provides_evidence": "PR #2 merged",
+      "provides_evidence": "PR #2 merged; re-read 2026-10-31: provides[] emitted by src/motion_graphics/contract.py:114 on main @a389da9",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(), package id motion-graphics matches SKILL_ID exactly; agent's pinned MotionGraphicsAdapter.check_contract() re-verified against this Skill's live contract as of PR #4/#6",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/motion_graphics/adapter.py; default_registry() lists motion-graphics/run",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py IntegratedPipelineRealTests (ADR-031/032, real motion-graphics-skill checkout) and tests/test_adapter_motion_graphics.py RealSkillTests -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'motion-graphics-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: in progress @cf4990d at read time (CodeQL / Release success) (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/thumbnail-skill": {
       "contract_published": true,
+      "contract_evidence": "src/thumbnail_skill/cli.py (`thumbnail skill --json`, alias `contract --json`) on main @6228721",
       "provides_published": true,
-      "provides_evidence": "PR #2 merged",
+      "provides_evidence": "PR #2 merged; re-read 2026-10-31: provides[] emitted by src/thumbnail_skill/contract.py:157 on main @6228721",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'thumbnail', deliberately different from this Skill's own SKILL_ID 'thumbnail-skill' -- join by Capability id, never tool-id string",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/thumbnail/adapter.py; default_registry() lists thumbnail/render, thumbnail/extract_frame (agent package id 'thumbnail')",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py IntegratedPipelineRealTests (ADR-031/032) and tests/test_adapter_thumbnail.py RealSkillTests -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'thumbnail-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests (schedule): success @6228721 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/qc-skill": {
       "contract_published": true,
+      "contract_evidence": "src/qc_skill/cli.py:128 (`qc contract --json`) on main @4c17248",
       "provides_published": true,
-      "provides_evidence": "PR #5 merged 2026-09-06 after a real merge conflict against 4 stacked feature PRs (#2/#3/#4/#6, delivery_package/cross_artifact/timeline_integrity/luminance checks, merged first): both sides had independently claimed ADR-009, and the 4 PRs' 7 new checks were unaccounted for in UNGROUPED_CHECKS -- resolved by renumbering the provides ADR to ADR-014 and adding the 7 checks to UNGROUPED_CHECKS (test_contract_completeness.py's own completeness invariant correctly caught this, not silently passed). This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).",
+      "provides_evidence": "PR #5 merged 2026-09-06 after a real merge conflict against 4 stacked feature PRs (#2/#3/#4/#6, delivery_package/cross_artifact/timeline_integrity/luminance checks, merged first): both sides had independently claimed ADR-009, and the 4 PRs' 7 new checks were unaccounted for in UNGROUPED_CHECKS -- resolved by renumbering the provides ADR to ADR-014 and adding the 7 checks to UNGROUPED_CHECKS (test_contract_completeness.py's own completeness invariant correctly caught this, not silently passed). This is one half of the ecosystem's one documented Capability collision (measure.audio.loudness/silence/integrity, shared with media-analysis-skill).; re-read 2026-10-31: provides[] emitted by src/qc_skill/contract.py:411 on main @4c17248",
       "os_integration": "integrated_as_gate",
-      "os_integration_evidence": "video-production-agent ADR-032: qc-skill is connected as the final promotion gate, never as an alternative per-measurement Provider to media-analysis-skill -- confirmed deliberate, not a gap",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/qc/adapter.py; default_registry() lists qc/check (the final promotion gate); agent ADR-032: connected as the final promotion gate, never as an alternative per-measurement Provider to media-analysis-skill",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_adapter_qc.py QcRealSkillTests (ADR-058, SSIM / PSNR on real media) and tests/test_integration.py IntegratedPipelineRealTests (ADR-065 delivery_package gate) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'qc-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @be038d6 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/media-analysis-skill": {
       "contract_published": true,
+      "contract_evidence": "src/media_analysis/cli.py:126 (`media-analysis contract`) on main @16f1f9f",
       "provides_published": true,
-      "provides_evidence": "PR #4 merged, including a follow-up commit resolving all 10 analysis kinds' Capability ids",
+      "provides_evidence": "PR #4 merged, including a follow-up commit resolving all 10 analysis kinds' Capability ids; re-read 2026-10-31: provides[] emitted by src/media_analysis/contract.py capability_provides() (11 kinds incl. noise_floor, #21) on main @16f1f9f",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(), package id media-analysis matches SKILL_ID exactly",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/media_analysis/adapter.py; default_registry() lists 10 tool ids media-analysis/* (probe, silence, loudness, streams, video, audio, timing, integrity, scenes)",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py MediaAnalysisRealTests (ADR-023, real media through the JSON process boundary) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'media-analysis-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @c61c223 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/transcription-skill": {
       "contract_published": true,
+      "contract_evidence": "src/transcription_skill/cli.py:496 (`transcription contract`) on main @774259e",
       "provides_published": true,
-      "provides_evidence": "PR #5 merged",
+      "provides_evidence": "PR #5 merged; re-read 2026-10-31: provides[] emitted by src/transcription_skill/skill.py:120 on main @774259e",
       "os_integration": "integrated",
-      "os_integration_evidence": "video-production-agent registry.py default_registry(); agent's internal package id is 'transcription', matches this Skill's tool id prefix by convention (commented in adapter.py) though SKILL_ID is 'transcription-skill' -- join by Capability id, never tool-id string",
-      "verified_e2e": "unknown",
-      "as_of": "2026-09-06"
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/transcription/adapter.py; default_registry() lists transcription/transcribe",
+      "verified_e2e_note": "UNKNOWN: tests/test_integration.py TranscriptionRealTests runs contract / doctor against the real Skill, but real recognition is skipped unless faster_whisper and a local model are present, and the agent's integration job installs neither (tests.yml comment: 'no ASR engine, no model download in CI'), so recognition on real media has no evidence (video-production-agent main @21d3685)",
+      "distribution_note": "none found: no 'transcription-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @29b38c0 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     },
     "kajisho5/video-production-agent": {
       "architecture": "documented",
-      "architecture_evidence": "34 ADRs (docs/decisions.md), real Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance pipeline",
+      "architecture_evidence": "76 ADR sections in docs/decisions.md (ADR-001..ADR-077, no ADR-035 heading) at video-production-agent main @21d3685, real Observation -> Inference -> Decision -> Plan -> Project IR -> Validation -> Execute -> QA -> Report/Provenance pipeline",
       "capability_discovery": "static",
       "capability_discovery_evidence": "SkillRegistry.select_tool() with declared-order candidate lists (src/video_agent/skills/registry.py, default_registry()), not this project's Capability-id-based provides/registry system -- the two are not yet connected (see WORK_QUEUE.md item 1)",
-      "skill_integration": "integrated_all_10",
-      "skill_integration_evidence": "adapters for all 10 Skills confirmed by reading each adapter module in a live checkout, 2026-09-05",
-      "ai_provider": "not_wired",
-      "ai_provider_evidence": "video-production-agent's own docs/GAP_ANALYSIS_PHASE2.md section 2: only NullProvider exists, no real LLM reasoning connected -- the single biggest gap between current state and the ecosystem Mission",
+      "skill_integration": "integrated_13",
+      "skill_integration_evidence": "video-production-agent main @21d3685: 13 adapter modules under src/video_agent/tools/*/adapter.py (ffmpeg_skill, video_editing, audio_production, color_grading, subtitle, motion_graphics, thumbnail, qc, media_analysis, transcription, ingest, voice_enhance, imagemagick), each with tool ids in default_registry(); 14 more ecosystem jobs are declared only as phase-2 ECOSYSTEM_JOB_SKILLS handoffs (ADR-057, never selected)",
+      "ai_provider": "optional",
+      "ai_provider_evidence": "video-production-agent main @21d3685: src/video_agent/providers/ has NullProvider (default), AnthropicProvider (claude.py, ADR-049, opt-in via VIDEO_AGENT_AI_PROVIDER=anthropic and the `ai` extra) and HostProvider (host.py, the host chat model answers); tests/test_ai_claude.py uses a fake client",
       "tests": {
         "total": 187,
         "passing": 184,
-        "note": "3 failures confirmed to be this session's own sandbox environment contamination (other repos pip-installed into the same Python environment), not real agent bugs -- do not 'fix' without reproducing in a clean checkout"
+        "note": "3 failures confirmed to be this session's own sandbox environment contamination (other repos pip-installed into the same Python environment), not real agent bugs -- do not 'fix' without reproducing in a clean checkout -- counts NOT re-checked on 2026-10-31 (the suite has grown since; see ci_main)",
+        "as_of": "2026-09-06"
       },
       "verified_e2e": "documented",
-      "verified_e2e_evidence": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance",
-      "as_of": "2026-09-06"
+      "verified_e2e_evidence": "README's real command sequence: concatenate, clean up silence, generate+burn-in subtitles, render thumbnail, run QC, produce delivery artifact with provenance; re-read 2026-10-31: tests/test_integration.py (3165 lines) holds the real-media *RealTests classes -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "as_of": "2026-10-31",
+      "ci_main": ".github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run; no push / pull_request trigger"
     },
     "kajisho5/Velisa": {
       "registry_library": "implemented",
       "registry_library_evidence": "registry/ Python library, 50 tests passing, all 8 SKILL_SPEC.md section 8 conformance checks real as of 2026-09-05",
       "as_of": "2026-09-06"
+    },
+    "kajisho5/dubbing-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/dubbing_skill/cli.py (`dubbing contract --json`) on main @e0ed47d",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/dubbing_skill/contract.py:205 on main @e0ed47d",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `dubbing` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'dubbing-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: in progress @e0ed47d at read time (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/publish-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/publish_skill/cli.py (`publish contract --json`) on main @e2978e4",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/publish_skill/contract.py:90 on main @e2978e4",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `platform_publish` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'publish-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @e2978e4 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/detection-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/detection_skill/cli.py:255 (`detection contract --json`) on main @af26fc3",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/detection_skill/contract.py:71 on main @af26fc3",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `visual_detection` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'detection-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @af26fc3 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/slide-sync-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/slide_sync/cli.py:283 (`slide-sync contract --json`) on main @03a48a1",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/slide_sync/contract.py:75 on main @03a48a1",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `slide_sync` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'slide-sync-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @03a48a1 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/imagemagick-skill": {
+      "contract_published": true,
+      "contract_evidence": "scripts/_contract.py --json on main @a885df8",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by scripts/_contract.py:635 on main @a885df8",
+      "os_integration": "integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/imagemagick/adapter.py; default_registry() lists imagemagick-skill/strip, resize, pad (ADR-077)",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py ImagePrepareRealTests (ADR-077, real ImageMagick strip / resize / pad before the real video-editing-skill composites) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution": {
+        "kind": "npm",
+        "package": "imagemagick-skill",
+        "note": "live npm lookup 2026-10-31: 0.8.1, repository field points at kajisho5/imagemagick-skill"
+      },
+      "ci_main": "test: success @a885df8 (skillpact job success) (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/nle-bridge-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/nle_bridge/cli.py:286 (`nle-bridge contract --json`) on main @ce59483",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/nle_bridge/contract.py:76 on main @ce59483",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: not named anywhere in default_registry() or ECOSYSTEM_JOB_SKILLS, no adapter module",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'nle-bridge-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @ce59483 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/blender-skill": {
+      "contract_published": true,
+      "contract_evidence": "scripts/_contract.py --json (README) on main @befc3e3",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by scripts/_contract.py:64 on main @befc3e3",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `render_3d` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "npm",
+        "package": "blender-skill",
+        "note": "live npm lookup 2026-10-31: 0.31.0, repository field points at kajisho5/blender-skill"
+      },
+      "ci_main": "tests: success @befc3e3 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/artifacts-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/artifact_skill/cli/main.py:87 (`contract` subcommand) on main @aea2499",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/artifact_skill/core/contract.py:506 on main @aea2499",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `document_verification` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "npm",
+        "package": "artifacts-skill",
+        "note": "live npm lookup 2026-10-31: 0.3.0, repository field points at kajisho5/artifacts-skill"
+      },
+      "ci_main": "CI: success @aea2499 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/stepcap": {
+      "contract_published": true,
+      "contract_evidence": "src/stepcap/cli.py:1002 (`stepcap contract --json`) on main @7a1c1bb",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/stepcap/contract.py:60 on main @7a1c1bb",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: not named anywhere in default_registry() or ECOSYSTEM_JOB_SKILLS, no adapter module",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "stepcap",
+        "note": "live pypi lookup 2026-10-31: 0.1.7, repository field points at kajisho5/stepcap"
+      },
+      "ci_main": "tests: success @7a1c1bb (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/bdmvkit": {
+      "contract_published": true,
+      "contract_evidence": "bdmvkit/__main__.py (`bdmvkit contract --json`) on main @5789076",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by bdmvkit/contract.py:26 on main @5789076",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `bluray_authoring` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "bdmvkit",
+        "note": "live pypi lookup 2026-10-31: 0.7.0, repository field points at kajisho5/bdmvkit"
+      },
+      "ci_main": "CI: success @5789076 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/vtskit": {
+      "contract_published": true,
+      "contract_evidence": "vtskit/__main__.py (`python -m vtskit contract --json`) on main @9a64ba4",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by vtskit/contract.py:26 on main @9a64ba4",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `dvd_authoring` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "vtskit",
+        "note": "live pypi lookup 2026-10-31: 0.3.1, repository field points at kajisho5/vtskit"
+      },
+      "ci_main": "CI: success @9a64ba4 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/udfkit": {
+      "contract_published": true,
+      "contract_evidence": "udfkit/__main__.py (`udfkit contract --json`) on main @b939610",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by udfkit/contract.py:29 on main @b939610",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `disc_image` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "udfkit",
+        "note": "live pypi lookup 2026-10-31: 0.1.0, repository field points at kajisho5/udfkit"
+      },
+      "ci_main": "CI: success @b939610 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/dvdcc": {
+      "contract_published": true,
+      "contract_evidence": "dvdcc/__main__.py (`dvdcc contract --json`) on main @f6652cb",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by dvdcc/contract.py:23 on main @f6652cb",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `dvd_line21_captions` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "dvdcc",
+        "note": "live pypi lookup 2026-10-31: 0.1.1, repository field points at kajisho5/dvdcc"
+      },
+      "ci_main": "CI: success @f6652cb (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/oncemore": {
+      "contract_published": true,
+      "contract_evidence": "oncemore/cli.py:504 (`oncemore contract --json`) on main @33a72b6",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by oncemore/contract.py:33 on main @33a72b6",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: not named anywhere in default_registry() or ECOSYSTEM_JOB_SKILLS, no adapter module",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "the npm package named 'oncemore' (1.2.0) belongs to github.com/kanongil/node-oncemore, not this repo; nothing on PyPI under 'oncemore' -- no distribution recorded",
+      "ci_main": "CI: FAILURE @33a72b6 (ubuntu job failed; macos / macos-app jobs success) (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/voice-enhance-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/voice_enhance_skill/cli.py (`voice-enhance contract --json`) on main @264649b",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/voice_enhance_skill/contract.py:110 on main @264649b",
+      "os_integration": "integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/voice_enhance/adapter.py; default_registry() lists voice-enhance/isolate, dereverb, bleed-reduce (ADR-073)",
+      "verified_e2e_note": "UNKNOWN: tests/test_integration.py VoiceEnhanceRealTests (ADR-073) runs the real Skill with FAKE engines (a deep-filter that copies its input, an identity nara_wpe), so no evidence the real engines run end-to-end (video-production-agent main @21d3685)",
+      "distribution_note": "none found: no 'voice-enhance-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @264649b (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/sound-design-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/sound_design_skill/cli.py (`sound-design contract --json`) on main @6b55abe",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/sound_design_skill/contract.py:130 on main @6b55abe",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `sound_design` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'sound-design-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @6b55abe (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/diarization-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/diarization_skill/cli.py:180 (`diarization contract --json`) on main @36732a5",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/diarization_skill/contract.py:62 on main @36732a5",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `speaker_diarization` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'diarization-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @36732a5 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/remotion-ffmpeg-skill": {
+      "contract_published": true,
+      "contract_evidence": "cli/remotion-ffmpeg-skill.js:52 (`npx remotion-ffmpeg-skill contract --json`) on main @cacb0a9",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by scripts/_contract.py:267 on main @cacb0a9",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `measured_motion_graphics` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "npm",
+        "package": "remotion-ffmpeg-skill",
+        "note": "live npm lookup 2026-10-31: 0.12.0, repository field points at kajisho5/remotion-ffmpeg-skill"
+      },
+      "ci_main": "ci: success @d511308 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/hyperframes-skill": {
+      "contract_published": true,
+      "contract_evidence": "lib/contract.mjs (`hyperframes-skill contract --json`) on main @7476dc7",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by lib/contract.mjs:86 on main @7476dc7",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: no adapter module; default_registry() only declares the phase-2 job `html_scene_render` from ECOSYSTEM_JOB_SKILLS (ADR-057), which is never selected and shows a handoff naming the package",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "none found: no 'hyperframes-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "CI: success @0071f23 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/skillpact": {
+      "contract_note": "UNKNOWN: no `contract --json` entrypoint of its own found on main @b67531a (it reads / validates other components' contracts); not asserted true or false",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: not named anywhere in default_registry() or ECOSYSTEM_JOB_SKILLS, no adapter module",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution": {
+        "kind": "pypi",
+        "package": "skillpact",
+        "note": "live pypi lookup 2026-10-31: 0.8.0, repository field points at kajisho5/skillpact; also on npm as skillpact 0.8.0 (repository kajisho5/skillpact, directory ts) -- the aggregator checks one registry per repo"
+      },
+      "ci_main": "ci: success @b67531a (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/system-intelligence": {
+      "contract_note": "UNKNOWN: no `contract --json` entrypoint of its own found on main @cbbb82b (it reads / validates other components' contracts); not asserted true or false",
+      "os_integration": "not_integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: not named anywhere in default_registry() or ECOSYSTEM_JOB_SKILLS, no adapter module",
+      "verified_e2e_note": "UNKNOWN: not exercised by the agent's pipeline (no adapter, see os_integration_evidence)",
+      "distribution_note": "the PyPI project named 'system-intelligence' (2.0.2) belongs to github.com/zethson/system_intelligence, not this repo -- no distribution recorded",
+      "ci_main": "CI: success @b789260 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
+    },
+    "kajisho5/ingest-skill": {
+      "contract_published": true,
+      "contract_evidence": "src/ingest_skill/cli.py:47 (`ingest contract --json`) on main @edd9818",
+      "provides_published": true,
+      "provides_evidence": "provides[] emitted by src/ingest_skill/contract.py:57 on main @edd9818",
+      "os_integration": "integrated",
+      "os_integration_evidence": "video-production-agent main @21d3685: src/video_agent/tools/ingest/adapter.py; default_registry() lists ingest/offload (ADR-066; URL inputs via `ingest fetch`, ADR-059)",
+      "verified_e2e": "documented",
+      "verified_e2e_evidence": "video-production-agent main @21d3685: tests/test_integration.py IngestOffloadRealTests (ADR-066, a synthetic XDCAM EX-like card offloaded by the real ingest-skill) and IngestFetchRealTests (ADR-059, download from a 127.0.0.1 fixture) -- agent .github/workflows/tests.yml is workflow_dispatch-only and its last run (2026-09-11, @5094023) concluded failure, so this is test-file evidence, not a green CI run",
+      "distribution_note": "none found: no 'ingest-skill' package on npm or PyPI (2026-10-31); installed from a git checkout",
+      "ci_main": "tests: success @edd9818 (GitHub Actions API, read 2026-10-31)",
+      "as_of": "2026-10-31"
     }
   }
 }

@@ -201,6 +201,7 @@ a strict superset/subset relationship either — see 8b.
 | `measure.video.probe` | media-analysis-skill (`video_format`: resolution, fps, frame count, pixel format, colour, SAR/DAR, CFR/VFR of one video stream) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Deliberately *not* `measure.video.format`: that id is qc-skill's own (§8b) for a pass/fail judgment against caller-supplied thresholds — this is a raw, threshold-free probe, a different capability in kind, not degree (confirmed by re-reading both implementations: qc-skill's check compares against an expected value and emits PASS/FAIL/WARN; media-analysis-skill's analyzer only reports the measured value). `probe`, not `format`, marks that distinction in the id itself so the two are never mistaken for the same thing later. |
 | `measure.audio.probe` | media-analysis-skill (`audio_format`: sample rate, channels, layout, codec, sample format, bitrate of one audio stream) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Same reasoning as `measure.video.probe` above, for audio. |
 | `measure.media.duration` | media-analysis-skill (`duration`: per-stream durations and start times only — a strict subset of `media_probe`'s facts, with no packet-level timestamp analysis) | media-analysis-skill only | EXPERIMENTAL | **RESOLVED 2026-09-05.** Distinct from `measure.video.timing` (A-V sync, above): `duration`'s analyzer (`TimingAnalyzer.analyze`, `kind == "duration"`) returns only `_durations(p)` and does no packet-timestamp work at all; `timing` additionally runs `run_packets`/`timestamp_report`/`av_mismatch`. Kept as its own Capability id, consistent with every other analysis kind in this ecosystem getting one, rather than folded into `measure.media.probe` even though it reports a subset of the same underlying facts. |
+| `measure.audio.noise_floor` | media-analysis-skill (`noise_floor`, tool `media-analysis/noise`: RMS level of consecutive windows via `astats` after `asetnsamples`, noise floor = a low percentile (default p10), signal = a high one (p95), `snr_db` their difference; one channel or all pooled) | media-analysis-skill only | EXPERIMENTAL | **Added 2026-10-31** ([media-analysis-skill#21](https://github.com/kajisho5/media-analysis-skill/pull/21), its ADR-029). The acceptance measurement for voice-enhance ISOLATE / BLEED_REDUCE ("SNR rises", "lower cross-talk energy"). **Not a collision**: qc-skill measures peak / RMS / clipping / true peak, not a floor or SNR, and ffmpeg-skill's 20th-percentile floor inside `caption.py` is not published. Same PR adds `timing.av_start_offset` to the existing `timing` kind, under the existing `measure.video.timing` id (no new id). |
 
 **History — why these five were unassigned until now:** all five are ffprobe-only and
 purely observational (`REPOSITORY_MAP.md`); until this resolution they were kept as one
@@ -282,15 +283,16 @@ matrix above):**
 - **2 thumbnail** capabilities (thumbnail-skill, one self-contained via Pillow, one
   delegated)
 - **1 transcription** capability (transcription-skill → faster-whisper)
-- **17 measurement** capabilities across qc-skill and media-analysis-skill, of which
+- **18 measurement** capabilities across qc-skill and media-analysis-skill, of which
   **3 are confirmed collisions** (§8a), **7 are qc-skill-exclusive** (§8b), and
-  **7 are media-analysis-skill-exclusive** (§8c: `scene_detection`, `timing`, and five
+  **8 are media-analysis-skill-exclusive** (§8c: `scene_detection`, `timing`, five
   resolved 2026-09-05 — `media.probe`, `media.stream_layout`, `video.probe`,
   `audio.probe`, `media.duration` — each individually confirmed to carry only a
-  base-layer *tool* overlap note with `ffmpeg-skill`, never a Capability-level collision)
+  base-layer *tool* overlap note with `ffmpeg-skill`, never a Capability-level collision,
+  and `audio.noise_floor`, added 2026-10-31 by media-analysis-skill#21 / its ADR-029)
 - **21 base-layer** capabilities directly exposed by ffmpeg-skill's own tool scripts
 
-**Total distinct rows: 71**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
+**Total distinct rows: 72**, all `EXPERIMENTAL`, zero `STABLE`, zero registered
 `Provider` collisions resolved (the 3 in §8a are flagged, not yet resolved — that is
 `ROADMAP.md` Phase 3's job).
 
