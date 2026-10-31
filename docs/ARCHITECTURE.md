@@ -1,4 +1,6 @@
-# AI Video Production OS — Architecture
+# Velisa — Architecture
+
+(Formerly AI Video Production OS; renamed 2026-10-31, `docs/RENAMING.md`.)
 
 Status: draft architecture, Phase 0 (research) deliverable. This document is the
 synthesis of `REPOSITORY_MAP.md` (evidence), `CORE_PRIMITIVES.md` (definitions), and
@@ -9,7 +11,7 @@ fact, they shaped what follows.
 
 ## 1. What this project actually is
 
-An **AI Video Production OS** is a set of contracts and shared infrastructure that let
+**Velisa** is a set of contracts and shared infrastructure that let
 independently-built Skills (media-processing packages) and independently-built Agents
 (planning/reasoning software, human or AI) cooperate safely, reproducibly, and without
 either depending on the other's implementation.
@@ -43,7 +45,7 @@ this rules out two failure modes found by inspecting the actual repos:
 The task brief's proposed shape —
 
 ```
-AI Video Production OS
+Velisa
         ├── Agent        (intent, reasoning, planning, decisions, orchestration)
         ├── Core OS       (contracts, capabilities, artifacts, execution,
         │                  provenance, security, verification)

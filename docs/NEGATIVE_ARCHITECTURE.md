@@ -1,7 +1,7 @@
 # Negative Architecture: What This Is Not
 
 Status: **Derived, draft, 2026-09-05.** A positive architecture document (`ARCHITECTURE.md`)
-states what the AI Video Production OS is. This document states, with equal rigor and the
+states what Velisa is. This document states, with equal rigor and the
 same evidence base, what it explicitly **is not** — not as a marketing disclaimer, but
 because every boundary below prevents a specific, plausible misreading of the audit
 evidence that would otherwise lead someone to design (or evaluate) this project as the

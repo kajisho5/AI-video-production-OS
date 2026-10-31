@@ -1,6 +1,6 @@
 # Core Primitives
 
-This document defines the fundamental concepts of the AI Video Production OS. Every
+This document defines the fundamental concepts of Velisa. Every
 primitive below is justified by a concrete need found in `REPOSITORY_MAP.md`'s evidence,
 not introduced because it sounds sophisticated. Where a primitive already exists in
 `video-production-agent`'s code, that is stated, and this document either **adopts it
@@ -16,7 +16,7 @@ doc changes its name or scope to remove an ambiguity found in the audit).
 An **operating system for a domain** is a set of contracts and shared infrastructure that
 let independently-built programs cooperate safely without depending on each other's
 internals. That is the sense used here — not a kernel, not a daemon, not a service you
-deploy. Concretely, the AI Video Production OS is:
+deploy. Concretely, Velisa is:
 
 - A **set of typed contracts** (schemas) that a Skill must speak to be usable by any
   Agent, and that an Agent must speak to be usable with any Skill.

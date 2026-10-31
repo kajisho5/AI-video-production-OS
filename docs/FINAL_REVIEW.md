@@ -301,7 +301,7 @@ The architecture is not complete in the sense of "fully built" — it is coheren
 sense the final tests actually ask for: nothing here would need to be redesigned to
 close the remaining gaps, only built.
 
-## 5. What is the AI Video Production OS?
+## 5. What is Velisa?
 
 **One sentence:** A set of open contracts and shared execution infrastructure that let
 independent Skills, Providers, and Agents — human or AI — turn video-production intent
@@ -317,7 +317,7 @@ string to make it happen. Every output carries enough recorded provenance to ans
 principle, how it was made, from what, by which tool versions, and whether it passed
 verification — without requiring a blockchain, a database, or a cloud service to do so.
 
-**Architecture-level:** AI Video Production OS is the Capability/Skill/Provider/Runtime
+**Architecture-level:** Velisa is the Capability/Skill/Provider/Runtime
 contract layer (§`CAPABILITY_MODEL.md`) plus the Artifact/Plan/Execution/Provenance/
 Verification kernel (§`ARCHITECTURE.md` §8) that sits between an Agent (§`ARCHITECTURE.md`
 §3, intent/reasoning/decision layer, vendor- and framework-independent) and a growing,

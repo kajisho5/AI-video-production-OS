@@ -20,11 +20,15 @@ An open foundation for AI-native video production — not another AI video gener
 
 ---
 
-> **No badges here on purpose.** This repository has no CI, no package, and no license
-> of its own yet — it is architecture and contracts, not a running system. See
-> [Current status](#current-status) before assuming anything below is already built.
-> The Skill repositories it describes are real, tested, and independently released —
-> see [The ecosystem today](#the-ecosystem-today).
+> **Mostly architecture and contracts, not a running system.** This repository is
+> MIT-licensed ([`LICENSE`](LICENSE)) and has CI: nine GitHub Actions workflows in
+> [`.github/workflows/`](.github/workflows/) (installer and registry tests, dashboard
+> build and deploy, SkillPact conformance, CodeQL, releases, ecosystem audit, update
+> notices, project sync, PR labels). What runs here is the installer, the reference
+> Capability registry ([`registry/`](registry/)), the dashboard and the plugin
+> marketplace. See [Current status](#current-status) before assuming anything below is
+> already built. The Skill repositories it describes are real, tested, and independently
+> released — see [The ecosystem today](#the-ecosystem-today).
 
 ## What this is, in one sentence
 
@@ -60,7 +64,9 @@ Providers, and Agents nobody has built yet join without anyone redesigning the c
 - an FFmpeg wrapper pretending to be an operating system;
 - a single monolithic AI agent;
 - a closed AI-video SaaS;
-- a plugin marketplace (the foundation for one, deliberately not built yet);
+- an open marketplace for third-party Skills (this repository is a Claude Code plugin
+  marketplace for the ecosystem's own Skills — see [Quick start](#quick-start) — but a
+  marketplace anyone can publish to is deliberately not built yet);
 - a collection of unrelated prompts.
 
 Adjacent, real projects solve pieces of this space well — AI video generation tools,
@@ -122,14 +128,18 @@ this table follows the same rule:
 | Area | Status |
 |---|---|
 | 11-repository audit, evidence base | **Implemented** — [`REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md) |
-| Architecture, contracts, ~50 design docs, 10 ADRs | **Implemented** (as documentation — see [Documentation](#documentation)) |
+| Architecture, contracts, 44 design docs, 15 ADRs | **Implemented** (as documentation — see [Documentation](#documentation)) |
 | `video-production-agent` (Observation→Decision→Plan→Execution pipeline) | **Implemented, incomplete** — real, tested, no LLM wired in yet ([`NullProvider`](docs/REPOSITORY_MAP.md) only) |
 | 10 Skill repos (editing, audio, color, subtitle, motion graphics, thumbnail, QC, analysis, transcription, ffmpeg execution) | **Implemented** — independently, each with real tests and CI |
-| Capability Contract format, registry, conformance suite | **Planned** — [`docs/ROADMAP.md`](docs/ROADMAP.md) Phase 1 |
-| Cross-ecosystem Provider collision resolution | **Planned** — Phase 3 |
-| `ProductionReceipt`, edit-Timeline artifact | **Planned / designed, not built** |
+| Capability Contract format | **Implemented** — JSON Schema [`registry/capability_contract.schema.json`](registry/capability_contract.schema.json), read by [`registry/contract.py`](registry/contract.py) / [`registry/schema.py`](registry/schema.py) ([`docs/ROADMAP.md`](docs/ROADMAP.md) Phase 1) |
+| Reference Capability registry | **Implemented** — [`registry/registry.py`](registry/registry.py): who provides Capability X, collision detection, the 3-tier collision policy; tested in CI ([`install.yml`](.github/workflows/install.yml)) |
+| Conformance checks | **Implemented** — all eight `SKILL_SPEC.md` §8 checks in [`registry/conformance.py`](registry/conformance.py), verified live against `qc-skill`; plus a weekly, non-blocking SkillPact conformance job over every Skill with a `skill.contract.json` ([`skillpact-conformance.yml`](.github/workflows/skillpact-conformance.yml), [ADR-014](docs/adr/ADR-014-skillpact-conformance-job.md)) |
+| Cross-ecosystem Provider collision resolution | **Planned** — Phase 3 (the registry detects collisions and applies the policy as a library; no cross-ecosystem resolution yet) |
+| `ProductionReceipt` | **Implemented in `video-production-agent`** — [`audit/receipt.py`](https://github.com/kajisho5/video-production-agent/blob/main/src/video_agent/audit/receipt.py), one receipt per finished execution (its ADR-040, [`docs/ROADMAP.md`](docs/ROADMAP.md) Phase 6) |
+| Edit-Timeline artifact | **Planned / designed, not built** |
 | A second Agent, a second media-engine Provider, a real third-party Skill | **Vision, unverified** — architecturally designed for; nobody has built one yet. This is the single most important open question in the whole project — see [`docs/FINAL_REVIEW.md`](docs/FINAL_REVIEW.md). |
-| Skill registry / marketplace, self-evolving OS | **Vision** — see [Built to evolve](#built-to-evolve) below |
+| Plugin marketplace for the ecosystem's Skills | **Implemented** — [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json), generated by [`scripts/marketplace.py`](scripts/marketplace.py) from [`ecosystem.json`](ecosystem.json) ([ADR-013](docs/adr/ADR-013-marketplace-updates-and-fallback.md)) |
+| Open third-party Skill marketplace, self-evolving OS | **Vision** — see [Built to evolve](#built-to-evolve) below |
 
 Nothing here is described as "production-ready" or "complete," because it isn't, and
 this project's own principles argue against saying so prematurely
@@ -175,11 +185,14 @@ Installing the OS installs the whole ecosystem — the agent and every Skill lis
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/kajisho5/Velisa/main/install.sh | bash
-# options:  ... | bash -s -- --dir ~/work/avos --with-optional --no-claude-skills --no-codex-skills
+# options:  ... | bash -s -- --dir ~/work/velisa --with-optional --no-claude-skills --no-codex-skills
 ```
 
-Into `~/ai-video-os` (or `--dir`), this clones every repository (or fast-forwards an
-existing clone to the latest), `pip install -e`s the Python ones into `~/ai-video-os/.venv`,
+Into the workspace — `--dir`, else `$VELISA_HOME`, else `~/velisa-workspace` (an install made
+before the rename keeps working: `$AVOS_HOME` is still read, and `~/ai-video-os` is used when it
+is the only workspace there; see [`docs/RENAMING.md`](docs/RENAMING.md)) — this clones every
+repository (or fast-forwards an existing clone to the latest), `pip install -e`s the Python ones
+into `<workspace>/.venv`,
 links every Skill that has a `SKILL.md` into `~/.claude/skills/` (Claude Code) and
 `~/.agents/skills/` (Codex),
 checks `ffmpeg`/`ffprobe` (prints the `apt`/`brew` command if missing — it never installs
@@ -209,11 +222,14 @@ CLIs behind them still come from `install.sh` — run it with `--no-claude-skill
 does not see each skill twice. Updates: turn on **auto-update** for `ai-video-production-os`
 under `/plugin` → Marketplaces (off by default for every non-Anthropic marketplace), and Claude
 Code reports `Plugin updated: <name>`; or run `/plugin marketplace update ai-video-production-os`.
+The marketplace and the meta plugin keep their pre-rename names for now; why, and the one-time
+reinstall when they change, are in [`docs/RENAMING.md`](docs/RENAMING.md).
 
 **Update notices.** `.github/workflows/skill-updates.yml` checks every repository daily and
 posts what changed (new commits with their subjects, new version tags) on the issue labelled
 `skill-updates`, mentioning the owner, so GitHub notifies by mail and in the app. Locally:
-`python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json`.
+`python3 scripts/skill-updates.py --state ~/.velisa/updates.json` (any path; it is only where
+the last-seen state is kept).
 
 **SkillPact conformance.** `.github/workflows/skillpact-conformance.yml` checks, weekly, every
 repository in `ecosystem.json` that has a `skill.contract.json` with
@@ -224,7 +240,7 @@ in the run's summary. It never blocks anything (ADR-014).
 every repository in `ecosystem.json` to the project *AI Video Production Ecosystem* (kajisho5 #1)
 every hour, from this repository alone. It needs one secret here, `PROJECT_TOKEN`: a classic token
 with the `project` and `repo` scopes
-([create it](https://github.com/settings/tokens/new?scopes=project,repo&description=ai-video-os-project-sync)).
+([create it](https://github.com/settings/tokens/new?scopes=project,repo&description=velisa-project-sync)).
 Then add it under Settings → Secrets and variables → Actions → New repository secret. Each run
 looks back 60 days and adds only what the project does not have yet. Additions are paced for
 GitHub's write limits, so the first backfill finishes over a few hourly runs.
@@ -360,7 +376,7 @@ whatever sustains the person building it — not the reverse.
 ## Documentation
 
 The full architecture is documented across [`docs/`](docs/) (~50 files) and
-[`docs/adr/`](docs/adr/) (11 decision records). Start with these five, in order:
+[`docs/adr/`](docs/adr/) (15 decision records). Start with these five, in order:
 
 1. [`REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md) — the evidence base
 2. [`CORE_PRIMITIVES.md`](docs/CORE_PRIMITIVES.md) — what everything is
@@ -391,10 +407,12 @@ Want the actual code, not just the design? [`registry/`](registry/) is a small, 
 dependency-free Python library — Phase 1 of `ROADMAP.md` — that loads real
 `CapabilityContract` documents, answers "who provides Capability X", and detects the
 ecosystem's real Capability collisions. `python3 -m unittest discover -s registry/tests -t .`
-runs its 21 tests against real captured data from five Skills.
+runs its 62 tests — 21 of them (`test_registry.py`) against real captured data from five Skills —
+and CI runs them too ([`install.yml`](.github/workflows/install.yml)). 21 skip on a machine
+without the optional pieces, and say so: 11 need `qc-skill`'s `qc` on `PATH` (live conformance
+checks) and 10 need the optional `jsonschema` package (schema validation).
 
 ## License
 
-Not yet set for this repository (`UNKNOWN`). The individual Skill and Agent
-repositories linked above carry their own licenses — check each one directly rather
-than assuming they match.
+MIT — see [`LICENSE`](LICENSE). The individual Skill and Agent repositories linked above
+carry their own licenses — check each one directly rather than assuming they match.

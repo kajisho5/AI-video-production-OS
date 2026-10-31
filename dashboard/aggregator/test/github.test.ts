@@ -70,7 +70,7 @@ describe("fetchRepoFacts", () => {
 
   it("reports UNKNOWN CI with a fetchError when no workflow runs exist on the default branch", async () => {
     const octokit = fakeOctokit({ actions: { listWorkflowRunsForRepo: async () => ({ data: { workflow_runs: [] } }) } });
-    const facts = await fetchRepoFacts(octokit, "kajisho5", "AI-video-production-OS");
+    const facts = await fetchRepoFacts(octokit, "kajisho5", "Velisa");
     expect(facts.ci.conclusion).toBe(UNKNOWN);
     expect(facts.fetchErrors.some((e) => e.includes("no workflow runs"))).toBe(true);
   });

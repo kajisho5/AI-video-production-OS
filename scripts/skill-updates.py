@@ -12,7 +12,7 @@ Two ways to keep the "last check" state:
                  Used by .github/workflows/skill-updates.yml.
 
 Usage:
-  python3 scripts/skill-updates.py --state ~/.ai-video-os/updates.json
+  python3 scripts/skill-updates.py --state ~/.velisa/updates.json
   python3 scripts/skill-updates.py --issue [--report FILE]
 Exit codes: 0 checked (changes or not), 1 the API could not be read for every repository.
 """

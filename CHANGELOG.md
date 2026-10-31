@@ -1,3 +1,11 @@
+## Unreleased
+
+- README: the "no CI, no license" note and the `UNKNOWN` license replaced with the facts (MIT, nine workflows); the Current status table now names what is built (Capability Contract schema, registry, conformance checks, SkillPact job, `ProductionReceipt` in the agent, the plugin marketplace), with counts taken from the tree (44 design docs, 15 ADRs, 62 registry tests).
+- Install workspace: `VELISA_HOME` is read first and `AVOS_HOME` still works; the new default is `~/velisa-workspace`, and an existing `~/ai-video-os` keeps being used when it is the only one (ADR-015, `docs/RENAMING.md`). Tests for each case.
+- CI: `install.yml` also runs the registry tests (`python3 -m unittest discover -s registry/tests -t .`); 21 of the 62 skip on the runner, and the workflow says why.
+- `dashboard/web` declares `engines.node >=22`; `.nvmrc` (22) at the root.
+- Old project names replaced with Velisa where they only described the project; what stays, and why, is listed in `docs/RENAMING.md`.
+
 ## v0.7.40 (2026-10-31)
 
 ## What's Changed

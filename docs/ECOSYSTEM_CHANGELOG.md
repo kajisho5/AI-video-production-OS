@@ -25,7 +25,7 @@ Each entry:
 - **Repo(s)**: `owner/repo` (+ others if a coordinated cross-repo change)
 - **PR(s)**: link(s)
 - **What changed**: one or two sentences, factual.
-- **Why**: one sentence, pointing at the relevant AI-video-production-OS doc/ADR or the
+- **Why**: one sentence, pointing at the relevant Velisa doc/ADR or the
   originating repo's own ADR, not restating it in full.
 - **Status**: draft (open, CI pending/running) / open (CI green, awaiting review) / merged
   / closed (not merged — say why).

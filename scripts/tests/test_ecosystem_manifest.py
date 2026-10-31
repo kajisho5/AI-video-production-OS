@@ -19,6 +19,7 @@ REPOS = [c["repo"] for c in MANIFEST["components"] if c["repo"] not in PLANNED]
 DEFAULT = [c["repo"] for c in MANIFEST["components"] if not c.get("optional") and c["repo"] not in PLANNED]
 OPTIONAL = [c["repo"] for c in MANIFEST["components"] if c.get("optional")]
 BOOTSTRAP = ROOT / "scripts" / "bootstrap.sh"
+INSTALL = ROOT / "install.sh"
 BASH = os.environ.get("AVOS_TEST_BASH", "bash")  # CI sets /bin/bash on macOS: bash 3.2
 
 
@@ -81,6 +82,7 @@ def _env(home: Path) -> dict:
     env.update(HOME=str(home), CLAUDE_SKILLS_DIR=str(home / ".claude" / "skills"), CODEX_SKILLS_DIR=str(home / ".agents" / "skills"),
                PIP_NO_INDEX="1", PIP_DISABLE_PIP_VERSION_CHECK="1", GIT_TERMINAL_PROMPT="0")
     env.pop("AVOS_HOME", None)
+    env.pop("VELISA_HOME", None)
     return env
 
 
@@ -141,6 +143,66 @@ class BootstrapTests(unittest.TestCase):
                                    env=_env(home), capture_output=True, text=True, timeout=300)
             self.assertEqual(again.returncode, 0)
             self.assertIn(f"qc-skill: linked ({skills})\n", again.stdout)
+
+
+class WorkspaceDefaultTests(unittest.TestCase):
+    """Which workspace install.sh / bootstrap.sh pick with no --dir (docs/RENAMING.md, ADR-015): $VELISA_HOME, then
+    the pre-rename $AVOS_HOME, then ~/velisa-workspace -- or ~/ai-video-os when only that pre-rename workspace exists."""
+
+    def _workspace(self, script: Path, home: Path, **env_vars) -> str:
+        env = _env(home)
+        env.update(env_vars)
+        out = subprocess.run([BASH, str(script), "--dry-run", "--no-claude-skills", "--no-codex-skills"],
+                             env=env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        line = next(l for l in out.stdout.splitlines() if l.startswith("==> Workspace: "))
+        return line[len("==> Workspace: "):]
+
+    def _both(self, home: Path, **env_vars) -> str:
+        via_bootstrap = self._workspace(BOOTSTRAP, home, **env_vars)
+        via_install = self._workspace(INSTALL, home, **env_vars)  # from a checkout: execs bootstrap.sh, clones nothing
+        self.assertEqual(via_bootstrap, via_install)
+        return via_bootstrap
+
+    def test_velisa_home_wins_over_avos_home(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            self.assertEqual(self._both(home, VELISA_HOME=str(home / "new"), AVOS_HOME=str(home / "old")), str(home / "new"))
+
+    def test_avos_home_is_read_when_velisa_home_is_unset_or_empty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            self.assertEqual(self._both(home, AVOS_HOME=str(home / "old")), str(home / "old"))
+            self.assertEqual(self._both(home, VELISA_HOME="", AVOS_HOME=str(home / "old")), str(home / "old"))
+
+    def test_new_default_when_no_workspace_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            self.assertEqual(self._both(home), str(home / "velisa-workspace"))
+            self.assertEqual(sorted(p.name for p in home.iterdir()), [], "a dry run creates nothing")
+
+    def test_pre_rename_workspace_is_kept_when_it_is_the_only_one(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / "ai-video-os").mkdir()
+            self.assertEqual(self._both(home), str(home / "ai-video-os"))
+
+    def test_new_default_wins_once_it_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / "ai-video-os").mkdir()
+            (home / "velisa-workspace").mkdir()
+            self.assertEqual(self._both(home), str(home / "velisa-workspace"))
+
+    def test_dir_flag_still_wins(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            env = _env(home)
+            env.update(VELISA_HOME=str(home / "new"))
+            out = subprocess.run([BASH, str(BOOTSTRAP), "--dir", str(home / "flag"), "--dry-run"],
+                                 env=env, capture_output=True, text=True, timeout=60)
+            self.assertEqual(out.returncode, 0, out.stderr)
+            self.assertIn(f"==> Workspace: {home / 'flag'}\n", out.stdout)
 
 
 if __name__ == "__main__":
