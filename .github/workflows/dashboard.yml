@@ -96,6 +96,8 @@ jobs:
       - name: System Intelligence snapshot
         id: si
         continue-on-error: true
+        env:
+          SI_READ_ONLY: "1"  # system-intelligence ADR-013
         run: |
           python -m pip install -q "git+https://github.com/kajisho5/system-intelligence"
           si diagnose . --out "$RUNNER_TEMP/si"

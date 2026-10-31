@@ -17,6 +17,8 @@ SUMMARY="${2:-ecosystem-audit.md}"
 CLONE_DIR="${3:-.si-repos}"
 mkdir -p "$CLONE_DIR"
 command -v si >/dev/null 2>&1 || { echo "!! si not on PATH" >&2; exit 1; }
+# si refuses improve/execute/propose/verify under this flag (system-intelligence ADR-013).
+export SI_READ_ONLY=1
 
 REPOS="$(python3 - "$OS_ROOT/ecosystem.json" <<'EOF'
 import json, sys
