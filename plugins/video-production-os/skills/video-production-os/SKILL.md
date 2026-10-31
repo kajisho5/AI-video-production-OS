@@ -43,6 +43,7 @@ Never claim a result is verified, measured or approved unless a skill or the age
 | `media-analysis-skill` | 検証 | メディア計測 |
 | `artifacts-skill` | 検証 | 生成文書の検証 |
 | `publish-skill` (scaffold) -- CLI only, no skill yet | 納品 | 配信先アップロード, アップロード制限 |
+| `nle-bridge-skill` | 納品 | NLE連携(タイムライン受け渡し) |
 | `bdmvkit` (optional) -- CLI only, no skill yet | 納品 | Blu-ray作成 |
 | `vtskit` (optional) -- CLI only, no skill yet | 納品 | DVD-Video作成 |
 | `udfkit` (optional) -- CLI only, no skill yet | 納品 | ディスクイメージ(UDF) |

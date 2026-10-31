@@ -262,6 +262,19 @@
       ]
     },
     {
+      "name": "nle-bridge-skill",
+      "source": {
+        "source": "github",
+        "repo": "kajisho5/nle-bridge-skill"
+      },
+      "description": "Timeline interchange with Premiere Pro and DaVinci Resolve: OTIO / FCP7 XML / EDL + SRT export, conform packages, round trip of the editor's changes",
+      "category": "delivery",
+      "tags": [
+        "delivery",
+        "納品"
+      ]
+    },
+    {
       "name": "imagemagick-skill",
       "source": {
         "source": "github",

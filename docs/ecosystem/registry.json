@@ -134,6 +134,13 @@
       "depends_on": []
     },
     {
+      "slug": "kajisho5/nle-bridge-skill",
+      "name": "nle-bridge-skill",
+      "type": "Skill",
+      "role": "Timeline interchange with Premiere Pro and DaVinci Resolve: OTIO / FCP7 XML / CMX3600 EDL + SRT export, conform packages with relink manifests, beat-grid markers, and a diff of the editor's changes. v0.1 merged 2026-10-31 (nle-bridge-skill#1).",
+      "depends_on": ["kajisho5/ffmpeg-skill"]
+    },
+    {
       "slug": "kajisho5/blender-skill",
       "name": "blender-skill",
       "type": "Skill",
