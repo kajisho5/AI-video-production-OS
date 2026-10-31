@@ -24,7 +24,7 @@ jobs:
       - name: Install System Intelligence
         run: python -m pip install -q "git+https://github.com/kajisho5/system-intelligence"
       - name: Restore previous watch history
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .si-state
           key: si-watch-${{ github.run_id }}
